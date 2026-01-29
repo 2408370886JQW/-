@@ -146,7 +146,7 @@ export default function MerchantDetailPage() {
   const handleSubCategoryClick = (subId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // 防止触发一级分类点击
     setActiveSubCategory(subId);
-    toast.success("已切换分类", { duration: 1000 });
+    // 移除 toast 提示
   };
 
   return (
@@ -194,7 +194,7 @@ export default function MerchantDetailPage() {
                   {/* 一级标题 */}
                   <div
                     className={cn(
-                      "relative px-3 py-3 cursor-pointer transition-all duration-200 select-none active:bg-white/50 whitespace-nowrap",
+                      "relative px-2 py-3 cursor-pointer transition-all duration-200 select-none active:bg-white/50 whitespace-nowrap flex flex-col items-center justify-center text-center",
                       isActive && !isExpanded ? "bg-white" : "bg-transparent"
                     )}
                     onClick={() => handleCategoryClick(category.id)}
@@ -210,9 +210,13 @@ export default function MerchantDetailPage() {
                     )}>
                       {category.name}
                     </div>
+                    
+                    {/* 二级标题（胶囊样式） */}
                     <div className={cn(
-                      "text-[10px] mt-1 transition-colors",
-                      isActive ? "text-[#FF4D00]/80" : "text-slate-400"
+                      "text-[10px] mt-1.5 px-2 py-0.5 rounded-full transition-all duration-200",
+                      isActive 
+                        ? "bg-[#FF4D00] text-white font-medium shadow-sm" 
+                        : "bg-transparent text-slate-400"
                     )}>
                       {category.subTitle}
                     </div>
@@ -260,9 +264,9 @@ export default function MerchantDetailPage() {
           </div>
         </ScrollArea>
 
-        {/* 右侧内容区域 */}
-        <ScrollArea className="flex-1 bg-white h-full">
-          <div className="p-3 pb-24">
+        {/* 右侧内容区域 - 强制限制宽度防止溢出 */}
+        <ScrollArea className="flex-1 bg-white h-full w-0 min-w-0">
+          <div className="p-3 pb-24 w-full max-w-full overflow-hidden">
             {/* 顶部Banner与筛选 */}
             <div className="relative mb-4 rounded-xl overflow-hidden h-32">
               <img 
