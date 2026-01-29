@@ -1,445 +1,396 @@
-import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Star, Heart, Share2, Moon, ShoppingBag, Map as MapIcon, ChevronDown, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ChevronDown,
+  Heart,
+  Map,
+  Menu,
+  Search,
+  Share2,
+  ShoppingBag,
+  Star
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+
+// 分类数据结构
+interface SubCategory {
+  id: string;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  subTitle: string;
+  subCategories: SubCategory[];
+}
+
+const CATEGORIES: Category[] = [
+  {
+    id: "couple",
+    name: "情侣套餐",
+    subTitle: "约会首选",
+    subCategories: [
+      { id: "romantic", name: "浪漫晚餐" },
+      { id: "casual", name: "轻松休闲" },
+      { id: "interactive", name: "互动体验" },
+      { id: "view", name: "景观餐厅" },
+    ],
+  },
+  {
+    id: "bestie",
+    name: "闺蜜套餐",
+    subTitle: "出片圣地",
+    subCategories: [
+      { id: "photo", name: "拍照打卡" },
+      { id: "tea", name: "下午茶" },
+      { id: "brunch", name: "精致早餐" },
+      { id: "shopping", name: "逛吃逛吃" },
+    ],
+  },
+  {
+    id: "bro",
+    name: "兄弟套餐",
+    subTitle: "聚会必去",
+    subCategories: [
+      { id: "bbq", name: "烧烤撸串" },
+      { id: "pub", name: "精酿酒馆" },
+      { id: "game", name: "电竞开黑" },
+      { id: "sports", name: "运动竞技" },
+    ],
+  },
+  {
+    id: "fun",
+    name: "情趣套餐",
+    subTitle: "人气推荐",
+    subCategories: [
+      { id: "hotel", name: "主题酒店" },
+      { id: "spa", name: "私密SPA" },
+      { id: "bar", name: "氛围清吧" },
+    ],
+  },
+];
+
+// 商家数据
+const MERCHANTS = [
+  {
+    id: 1,
+    name: "丝路星光·旋转餐厅",
+    rating: 4.9,
+    price: 320,
+    distance: "500m",
+    tags: ["大...", "500m"],
+    image: "/images/category-food.jpg",
+    isAd: true,
+    adTitle: "猜你喜欢",
+    coupon: {
+      title: "周末浪漫抵扣券",
+      price: 50,
+      originalPrice: 100,
+      limit: "仅剩2h",
+    },
+  },
+  {
+    id: 2,
+    name: "红山顶·云端酒廊",
+    rating: 4.7,
+    price: 280,
+    distance: "1.2km",
+    tags: ["高空", "鸡尾酒", "爵士乐"],
+    image: "/images/category-coffee.jpg",
+    deals: [
+      { title: "云端微醺双人...", price: 398, originalPrice: 588 },
+      { title: "经典鸡尾酒2杯", price: 128, originalPrice: 198 },
+    ],
+  },
+  {
+    id: 3,
+    name: "莫奈花园·法式餐厅",
+    rating: 4.8,
+    price: 450,
+    distance: "2.1km",
+    tags: ["花园", "法餐", "露台"],
+    image: "/images/category-exhibition.jpg",
+    deals: [
+      { title: "法式浪漫双人餐", price: 888, originalPrice: 1288 },
+    ],
+  },
+];
 
 export default function MerchantDetailPage() {
-  // 状态管理
-  const [expandedCategory, setExpandedCategory] = useState<number | null>(0); // 默认展开第一个
-  const [activeSubCategory, setActiveSubCategory] = useState<string>("约会首选"); // 默认选中子分类
-  const [activeFilter, setActiveFilter] = useState("离我最近");
-  const [isLiked, setIsLiked] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>("couple");
+  const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>("couple");
 
-  // 数据结构：一级分类 -> 二级分类
-  const categories = [
-    { 
-      name: "情侣套餐", 
-      subs: ["约会首选", "浪漫晚餐", "纪念日", "求婚策划"] 
-    },
-    { 
-      name: "闺蜜套餐", 
-      subs: ["出片圣地", "下午茶", "美甲SPA", "逛街歇脚"] 
-    },
-    { 
-      name: "兄弟套餐", 
-      subs: ["聚会必去", "烧烤撸串", "电竞网咖", "运动看球"] 
-    },
-    { 
-      name: "情趣套餐", 
-      subs: ["人气推荐", "主题酒店", "私密SPA", "情趣用品"] 
-    },
-    { 
-      name: "周末去哪", 
-      subs: ["周边游", "露营野餐", "爬山徒步", "亲子乐园"] 
-    }
-  ];
-
-  const filters = [
-    "离我最近", "服务筛选", "价格不限", "好评优先", "人均排序"
-  ];
-
-  const handleInteraction = (message: string) => {
-    toast(message, {
-      duration: 1500,
-      position: "top-center",
-    });
-  };
-
-  const handleBuy = (itemName: string) => {
-    toast.success(`已选择：${itemName}`, {
-      description: "正在跳转支付页面...",
-      duration: 2000,
-    });
-  };
-
-  const toggleCategory = (index: number) => {
-    if (expandedCategory === index) {
-      setExpandedCategory(null); // 收起
+  // 处理一级分类点击
+  const handleCategoryClick = (categoryId: string) => {
+    if (expandedCategory === categoryId) {
+      // 如果点击已展开的分类，收起它
+      setExpandedCategory(null);
     } else {
-      setExpandedCategory(index); // 展开
+      // 展开新分类，并设为激活状态
+      setExpandedCategory(categoryId);
+      setActiveCategory(categoryId);
       // 默认选中第一个子分类
-      if (categories[index].subs.length > 0) {
-        setActiveSubCategory(categories[index].subs[0]);
+      const category = CATEGORIES.find(c => c.id === categoryId);
+      if (category && category.subCategories.length > 0) {
+        setActiveSubCategory(category.subCategories[0].id);
       }
     }
   };
 
+  // 处理二级分类点击
+  const handleSubCategoryClick = (subId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // 防止触发一级分类点击
+    setActiveSubCategory(subId);
+    toast.success("已切换分类", { duration: 1000 });
+  };
+
   return (
-    <Layout showNav={false}>
-      <div className="min-h-screen bg-[#f5f5f5] pb-28 font-sans">
-        {/* Header */}
-        <div className="sticky top-0 z-50 bg-white shadow-sm">
-          <div className="px-3 py-3 flex items-center gap-2">
-            <div 
-              className="flex items-center gap-1 text-red-500 font-bold text-lg shrink-0 active:scale-95 transition-transform cursor-pointer"
-              onClick={() => handleInteraction("定位功能演示：当前位置已刷新")}
-            >
-              <MapPin className="w-5 h-5 fill-current" />
-              <span>FIND ME</span>
-            </div>
-            
-            <div className="flex-1 relative active:scale-[0.98] transition-transform">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="搜索..." 
-                readOnly
-                onClick={() => handleInteraction("搜索功能演示：弹出搜索键盘")}
-                className="w-full pl-8 pr-3 py-1.5 bg-gray-100 rounded-full text-xs focus:outline-none text-gray-600 cursor-pointer"
-              />
-            </div>
-            
-            <div className="flex items-center gap-3 text-gray-600">
-              <button onClick={() => handleInteraction("切换夜间模式")} className="active:scale-90 transition-transform">
-                <Moon className="w-5 h-5" />
-              </button>
-              <button onClick={() => handleInteraction("查看购物车")} className="active:scale-90 transition-transform">
-                <ShoppingBag className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => {
-                  setIsLiked(!isLiked);
-                  toast(isLiked ? "已取消收藏" : "已添加到收藏");
-                }}
-                className="active:scale-90 transition-transform"
-              >
-                <Heart className={cn("w-5 h-5 transition-colors", isLiked ? "fill-red-500 text-red-500" : "")} />
-              </button>
-              <button 
-                className="flex items-center gap-0.5 text-xs active:scale-95 transition-transform"
-                onClick={() => handleInteraction("切换地图模式")}
-              >
-                <MapIcon className="w-4 h-4" />
-                <span>地图</span>
-              </button>
-            </div>
-          </div>
-          
-          {/* Location Bar */}
-          <div 
-            className="px-4 py-2 flex items-center justify-between text-sm border-t border-gray-100 active:bg-gray-50 transition-colors cursor-pointer"
-            onClick={() => handleInteraction("切换城市/区域")}
-          >
-            <div className="flex items-center gap-1 font-medium">
-              <span>全城</span>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            </div>
-            <div className="text-gray-400 text-xs flex items-center gap-1">
-              <MapPin className="w-3 h-3" />
-              <span>距离 500m</span>
-            </div>
-          </div>
+    <div className="flex flex-col h-screen bg-white text-slate-900 font-sans">
+      {/* 顶部搜索栏 - 1:1 复刻 */}
+      <div className="flex items-center px-4 py-3 bg-white border-b border-slate-100 sticky top-0 z-50">
+        <Button variant="ghost" size="icon" className="mr-2 text-slate-800 active:scale-95 transition-transform">
+          <Menu className="w-6 h-6" />
+        </Button>
+        <div 
+          className="flex-1 h-9 bg-slate-100 rounded-full flex items-center px-3 active:scale-[0.99] transition-transform cursor-pointer"
+          onClick={() => toast.info("正在搜索...")}
+        >
+          <Search className="w-4 h-4 text-slate-400 mr-2" />
+          <span className="text-sm text-slate-400">搜索...</span>
         </div>
-
-        {/* Hero Banner Background (Simulated) */}
-        <div className="h-48 w-full bg-cover bg-center relative" style={{ backgroundImage: 'url(/images/hero-banner.jpg)' }}>
-          <div className="absolute inset-0 bg-black/20"></div>
-          {/* Top Categories Overlay */}
-          <div className="absolute bottom-4 left-4 right-4 flex gap-2 overflow-x-auto scrollbar-hide">
-             <button 
-               onClick={() => handleInteraction("查看猜你喜欢列表")}
-               className="px-3 py-1.5 bg-black/40 backdrop-blur-md text-white rounded-full text-xs flex items-center gap-1 border border-white/20 active:scale-95 transition-transform"
-             >
-               <span>✨</span> 猜你喜欢 (3)
-             </button>
-             <button 
-               onClick={() => handleInteraction("查看周末去哪儿专题")}
-               className="px-3 py-1.5 bg-black/40 backdrop-blur-md text-white rounded-full text-xs flex items-center gap-1 border border-white/20 active:scale-95 transition-transform"
-             >
-               <span>🎡</span> 周末去哪儿
-             </button>
-             <button 
-               onClick={() => handleInteraction("查看深夜食堂专题")}
-               className="px-3 py-1.5 bg-black/40 backdrop-blur-md text-white rounded-full text-xs flex items-center gap-1 border border-white/20 active:scale-95 transition-transform"
-             >
-               <span>🌙</span> 深夜食堂
-             </button>
-          </div>
+        <div className="flex items-center ml-2 space-x-1">
+          <Button variant="ghost" size="icon" className="text-slate-800 w-9 h-9 active:scale-95 transition-transform" onClick={() => toast.success("已加入购物袋")}>
+            <ShoppingBag className="w-5 h-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-slate-800 w-9 h-9 active:scale-95 transition-transform" onClick={() => toast.success("已收藏")}>
+            <Heart className="w-5 h-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-slate-800 w-9 h-9 active:scale-95 transition-transform" onClick={() => toast.info("正在定位...")}>
+            <Map className="w-5 h-5" />
+          </Button>
         </div>
+      </div>
 
-        <div className="flex relative -mt-4 rounded-t-xl bg-[#f5f5f5] overflow-hidden min-h-[calc(100vh-280px)]">
-          {/* Left Sidebar (Accordion Navigation) */}
-          <div className="w-24 shrink-0 bg-white pb-20 overflow-y-auto scrollbar-hide border-r border-gray-100">
-            {categories.map((cat, i) => (
-              <div key={i} className="border-b border-gray-50 last:border-0">
-                {/* Level 1 Category */}
-                <div 
-                  onClick={() => toggleCategory(i)}
-                  className={cn(
-                    "px-2 py-4 text-center cursor-pointer transition-all relative active:bg-gray-50 flex flex-col items-center justify-center",
-                    expandedCategory === i ? "bg-gray-50" : "bg-white"
-                  )}
-                >
-                  {expandedCategory === i && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
-                  )}
-                  <span className={cn("text-sm font-bold", expandedCategory === i ? "text-red-500" : "text-gray-700")}>
-                    {cat.name}
-                  </span>
-                  <ChevronDown 
+      <div className="flex flex-1 overflow-hidden">
+        {/* 左侧分类导航 - 手风琴交互 */}
+        <ScrollArea className="w-[100px] bg-slate-50 h-full border-r border-slate-100">
+          <div className="flex flex-col py-2">
+            {/* 全城筛选 */}
+            <div className="px-3 py-4 text-sm font-bold text-slate-800 flex items-center cursor-pointer active:bg-slate-100">
+              全城 <ChevronDown className="w-3 h-3 ml-1" />
+            </div>
+
+            {CATEGORIES.map((category) => {
+              const isExpanded = expandedCategory === category.id;
+              const isActive = activeCategory === category.id;
+
+              return (
+                <div key={category.id} className="flex flex-col">
+                  {/* 一级标题 */}
+                  <div
                     className={cn(
-                      "w-3 h-3 mt-1 transition-transform duration-300", 
-                      expandedCategory === i ? "text-red-400 rotate-180" : "text-gray-300"
-                    )} 
-                  />
-                </div>
+                      "relative px-3 py-3 cursor-pointer transition-all duration-200 select-none active:bg-white/50",
+                      isActive && !isExpanded ? "bg-white" : "bg-transparent"
+                    )}
+                    onClick={() => handleCategoryClick(category.id)}
+                  >
+                    {/* 选中指示条 */}
+                    {isActive && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-[#FF4D00] rounded-r-full" />
+                    )}
+                    
+                    <div className={cn(
+                      "text-[15px] font-bold leading-tight transition-colors",
+                      isActive ? "text-[#FF4D00]" : "text-slate-700"
+                    )}>
+                      {category.name}
+                    </div>
+                    <div className={cn(
+                      "text-[10px] mt-1 transition-colors",
+                      isActive ? "text-[#FF4D00]/80" : "text-slate-400"
+                    )}>
+                      {category.subTitle}
+                    </div>
+                  </div>
 
-                {/* Level 2 Sub-categories (Accordion Content) */}
-                <AnimatePresence>
-                  {expandedCategory === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden bg-gray-50"
-                    >
-                      {cat.subs.map((sub, j) => (
-                        <div 
-                          key={j}
-                          onClick={() => setActiveSubCategory(sub)}
-                          className="px-1 py-2 flex justify-center"
-                        >
-                          <div 
-                            className={cn(
-                              "text-[10px] px-2 py-1 rounded-full transition-all w-full text-center truncate",
-                              activeSubCategory === sub 
-                                ? "bg-red-500 text-white shadow-sm" 
-                                : "text-gray-500 hover:bg-gray-200"
-                            )}
-                          >
-                            {sub}
-                          </div>
+                  {/* 二级标题 - 手风琴展开 */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="overflow-hidden bg-white"
+                      >
+                        <div className="flex flex-col py-1 space-y-1">
+                          {category.subCategories.map((sub) => {
+                            const isSubActive = activeSubCategory === sub.id;
+                            return (
+                              <div
+                                key={sub.id}
+                                className="px-2 py-1 flex justify-center"
+                                onClick={(e) => handleSubCategoryClick(sub.id, e)}
+                              >
+                                <div
+                                  className={cn(
+                                    "text-[12px] px-3 py-1.5 rounded-full transition-all duration-200 w-full text-center cursor-pointer active:scale-95",
+                                    isSubActive
+                                      ? "bg-[#FF4D00] text-white shadow-sm font-medium"
+                                      : "text-slate-500 hover:bg-slate-50"
+                                  )}
+                                >
+                                  {sub.name}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
           </div>
+        </ScrollArea>
 
-          {/* Main Content */}
-          <div className="flex-1 min-w-0 p-3 space-y-3 bg-[#f5f5f5]">
-            {/* Filters */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sticky top-0 bg-[#f5f5f5] z-10 pt-1">
-              {filters.map((filter, i) => (
-                <button 
+        {/* 右侧内容区域 */}
+        <ScrollArea className="flex-1 bg-white h-full">
+          <div className="p-3 pb-24">
+            {/* 顶部Banner与筛选 */}
+            <div className="relative mb-4 rounded-xl overflow-hidden h-32">
+              <img 
+                src="/images/hero-banner.jpg" 
+                alt="Banner" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
+                <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
+                  <div className="flex items-center space-x-1 bg-white/20 backdrop-blur-md px-2 py-1 rounded-lg text-white text-xs whitespace-nowrap border border-white/30">
+                    <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                    <span>猜你喜欢 (3)</span>
+                  </div>
+                  <div className="bg-black/30 backdrop-blur-md px-2 py-1 rounded-lg text-white text-xs whitespace-nowrap border border-white/10">
+                    周末去哪儿
+                  </div>
+                  <div className="bg-black/30 backdrop-blur-md px-2 py-1 rounded-lg text-white text-xs whitespace-nowrap border border-white/10">
+                    深夜食堂
+                  </div>
+                </div>
+              </div>
+              <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-md px-2 py-1 rounded-full text-white text-xs flex items-center">
+                <Map className="w-3 h-3 mr-1" />
+                距离 500m
+              </div>
+            </div>
+
+            {/* 筛选标签 */}
+            <div className="flex space-x-2 overflow-x-auto no-scrollbar mb-4 pb-1">
+              {["离我最近", "服务筛选", "价格不限", "好评优先"].map((filter, i) => (
+                <div 
                   key={i}
-                  onClick={() => setActiveFilter(filter)}
                   className={cn(
-                    "px-2 py-1 rounded-full text-[10px] whitespace-nowrap transition-colors border flex items-center gap-1 active:scale-95",
-                    activeFilter === filter
-                      ? "bg-orange-50 text-orange-600 border-orange-200 font-medium"
-                      : "bg-white text-gray-500 border-gray-200"
+                    "px-3 py-1.5 rounded-full text-xs whitespace-nowrap border flex items-center cursor-pointer active:scale-95 transition-transform",
+                    i === 0 
+                      ? "bg-[#FFF0E9] text-[#FF4D00] border-[#FF4D00]/20 font-medium" 
+                      : "bg-white text-slate-600 border-slate-200"
                   )}
+                  onClick={() => toast.success(`已应用筛选: ${filter}`)}
                 >
                   {filter}
-                  <ChevronDown className="w-3 h-3" />
-                </button>
+                  {i !== 0 && <ChevronDown className="w-3 h-3 ml-1 text-slate-400" />}
+                </div>
               ))}
             </div>
 
-            {/* Dynamic Content Title */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-4 w-1 bg-red-500 rounded-full"></div>
-              <h2 className="font-bold text-gray-800 text-sm">{activeSubCategory}推荐</h2>
-            </div>
+            {/* 商家列表 */}
+            <div className="space-y-3">
+              {MERCHANTS.map((merchant) => (
+                <div 
+                  key={merchant.id} 
+                  className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden active:scale-[0.99] transition-transform cursor-pointer"
+                  onClick={() => toast.info(`进入商家: ${merchant.name}`)}
+                >
+                  {/* 上半部分：图片与基本信息 */}
+                  <div className="flex p-3">
+                    <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                      <img src={merchant.image} alt={merchant.name} className="w-full h-full object-cover" />
+                      {merchant.isAd && (
+                        <div className="absolute top-0 left-0 bg-[#FF4D00] text-white text-[10px] px-1.5 py-0.5 rounded-br-lg font-medium flex items-center">
+                          <Star className="w-2 h-2 mr-0.5 fill-white" />
+                          {merchant.adTitle}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 ml-3 flex flex-col justify-between py-0.5">
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold text-slate-900 text-[15px] leading-tight">{merchant.name}</h3>
+                          <div className="flex space-x-3 text-slate-400">
+                            <Share2 className="w-4 h-4 active:text-slate-600" onClick={(e) => { e.stopPropagation(); toast.success("分享成功"); }} />
+                            <Heart className="w-4 h-4 active:text-red-500 active:fill-red-500" onClick={(e) => { e.stopPropagation(); toast.success("已收藏"); }} />
+                          </div>
+                        </div>
+                        <div className="flex items-center mt-1.5 text-xs">
+                          <span className="text-[#FF4D00] font-bold text-sm mr-1">{merchant.rating}分</span>
+                          <span className="text-slate-400 mx-1">|</span>
+                          <span className="text-slate-600">¥{merchant.price}/人</span>
+                          <span className="text-slate-400 mx-1">|</span>
+                          <span className="text-slate-400 truncate max-w-[80px]">{merchant.tags[0]}</span>
+                          <div className="flex-1" />
+                          <span className="text-slate-400">{merchant.distance}</span>
+                        </div>
+                      </div>
+                      
+                      {/* 优惠券/团购 */}
+                      {merchant.coupon && (
+                        <div className="mt-2 bg-[#FFF0E9] rounded-lg p-2 flex items-center justify-between border border-[#FF4D00]/10">
+                          <div className="flex items-center">
+                            <span className="bg-[#FF4D00] text-white text-[10px] px-1 rounded mr-2">限时</span>
+                            <span className="text-xs font-medium text-slate-800">{merchant.coupon.title}</span>
+                          </div>
+                          <div className="flex items-baseline">
+                            <span className="text-[#FF4D00] font-bold text-sm">¥{merchant.coupon.price}</span>
+                            <span className="text-slate-400 text-[10px] line-through ml-1">¥{merchant.coupon.originalPrice}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-            {/* Recommend Card (Big) */}
-            <Card 
-              className="border-none shadow-sm overflow-hidden bg-white rounded-xl cursor-pointer active:scale-[0.98] transition-transform"
-              onClick={() => handleBuy("丝路星光·旋转餐厅")}
-            >
-              <div className="relative h-32">
-                <img src="/images/category-food.jpg" alt="Restaurant" className="w-full h-full object-cover" />
-                <div className="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
-                  <Star className="w-3 h-3 fill-white" /> 猜你喜欢
+                  {/* 下半部分：更多团购 */}
+                  {merchant.deals && (
+                    <div className="px-3 pb-3 pt-0">
+                      {merchant.deals.map((deal, idx) => (
+                        <div key={idx} className="flex items-center justify-between mt-2 pl-24">
+                          <div className="flex items-center">
+                            <span className="bg-[#FF4D00]/10 text-[#FF4D00] text-[10px] px-1 rounded mr-2">团</span>
+                            <span className="text-xs text-slate-700">{deal.title}</span>
+                          </div>
+                          <div className="flex items-baseline">
+                            <span className="text-[#FF4D00] font-bold text-sm">¥{deal.price}</span>
+                            <span className="text-slate-400 text-[10px] line-through ml-1">¥{deal.originalPrice}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleInteraction("分享成功"); }}
-                    className="p-1.5 bg-white/80 backdrop-blur-sm rounded-full text-gray-600 hover:text-red-500 transition-colors active:scale-90"
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleInteraction("收藏成功"); }}
-                    className="p-1.5 bg-white/80 backdrop-blur-sm rounded-full text-gray-600 hover:text-red-500 transition-colors active:scale-90"
-                  >
-                    <Heart className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+              ))}
               
-              <div className="p-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-base text-gray-900">丝路星光·旋转餐厅</h3>
-                    <div className="flex items-center gap-2 mt-1 text-xs">
-                      <span className="text-orange-500 font-bold">4.9分</span>
-                      <span className="w-px h-3 bg-gray-300"></span>
-                      <span className="text-red-500 font-medium">¥320/人</span>
-                      <span className="w-px h-3 bg-gray-300"></span>
-                      <span className="text-gray-400">大巴扎 · 500m</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 bg-red-50 rounded-lg p-2 flex items-center justify-between border border-red-100">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-red-500 text-white text-[10px] px-1 py-0 h-4 rounded-sm font-normal">限时</Badge>
-                    <span className="text-xs font-medium text-red-800">周末浪漫抵扣券</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-red-600">¥50 <span className="text-[10px] text-gray-400 line-through font-normal">¥100</span></div>
-                      <div className="text-[8px] text-red-400">仅剩 2h</div>
-                    </div>
-                  </div>
-                </div>
+              <div className="text-center text-xs text-slate-400 py-4">
+                已经到底啦，去其他分类看看吧 ~
               </div>
-            </Card>
-
-            {/* List Item 1 */}
-            <Card 
-              className="border-none shadow-sm overflow-hidden bg-white rounded-xl p-3 cursor-pointer active:scale-[0.98] transition-transform" 
-              onClick={() => handleBuy("天山雪莲·私房菜")}
-            >
-              <div className="flex gap-3">
-                <div className="w-24 h-24 rounded-lg bg-gray-100 shrink-0 overflow-hidden relative">
-                  <img src="/images/category-food.jpg" alt="Restaurant" className="w-full h-full object-cover" />
-                  <div className="absolute top-0 left-0 bg-yellow-500 text-white text-[9px] px-1.5 py-0.5 rounded-br-lg font-medium">
-                    榜单TOP
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-bold text-sm text-gray-900 truncate">天山雪莲·私房菜</h3>
-                    <div className="flex gap-2 text-gray-400">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleInteraction("分享成功"); }}
-                        className="active:scale-90 transition-transform"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleInteraction("收藏成功"); }}
-                        className="active:scale-90 transition-transform"
-                      >
-                        <Heart className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mt-1 text-xs">
-                    <span className="text-orange-500 font-bold">4.8分</span>
-                    <span className="w-px h-3 bg-gray-300"></span>
-                    <span className="text-gray-500">¥520/人</span>
-                    <span className="w-px h-3 bg-gray-300"></span>
-                    <span className="text-gray-400">2.5km</span>
-                  </div>
-                  
-                  <div className="mt-1.5 flex items-center gap-1">
-                    <span className="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">沙依巴克区私房菜热门榜第2名</span>
-                  </div>
-                  
-                  <div className="flex gap-1 mt-1.5 flex-wrap">
-                    {["私房菜", "包间", "定制服务"].map((tag, i) => (
-                      <span key={i} className="text-[10px] px-1 py-0.5 rounded border border-gray-200 text-gray-500">
-                        {tag}
-                      </span>
-                    ))}
-                    <span className="text-[10px] px-1 py-0.5 rounded border border-green-200 text-green-600 bg-green-50">营业中</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-red-500 text-white text-[10px] px-1 py-0 h-4 rounded-sm font-normal">团</Badge>
-                  <span className="text-xs text-gray-700">520限定告白套餐</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-red-600">¥1314</span>
-                  <span className="text-xs text-gray-400 line-through">¥1999</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* List Item 2 */}
-            <Card 
-              className="border-none shadow-sm overflow-hidden bg-white rounded-xl p-3 cursor-pointer active:scale-[0.98] transition-transform" 
-              onClick={() => handleBuy("云端·全景咖啡")}
-            >
-              <div className="flex gap-3">
-                <div className="w-24 h-24 rounded-lg bg-gray-100 shrink-0 overflow-hidden relative">
-                  <img src="/images/category-coffee.jpg" alt="Cafe" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-bold text-sm text-gray-900 truncate">云端·全景咖啡</h3>
-                    <div className="flex gap-2 text-gray-400">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleInteraction("分享成功"); }}
-                        className="active:scale-90 transition-transform"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleInteraction("收藏成功"); }}
-                        className="active:scale-90 transition-transform"
-                      >
-                        <Heart className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mt-1 text-xs">
-                    <span className="text-orange-500 font-bold">4.7分</span>
-                    <span className="w-px h-3 bg-gray-300"></span>
-                    <span className="text-gray-500">¥88/人</span>
-                    <span className="w-px h-3 bg-gray-300"></span>
-                    <span className="text-gray-400">1.2km</span>
-                  </div>
-                  
-                  <div className="mt-1.5 flex items-center gap-1">
-                    <span className="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">景观餐厅好评榜第1名</span>
-                  </div>
-                  
-                  <div className="flex gap-1 mt-1.5 flex-wrap">
-                    {["下午茶", "景观位", "拍照圣地"].map((tag, i) => (
-                      <span key={i} className="text-[10px] px-1 py-0.5 rounded border border-gray-200 text-gray-500">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-red-500 text-white text-[10px] px-1 py-0 h-4 rounded-sm font-normal">团</Badge>
-                  <span className="text-xs text-gray-700">双人云端下午茶</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-red-600">¥168</span>
-                  <span className="text-xs text-gray-400 line-through">¥298</span>
-                </div>
-              </div>
-            </Card>
-            
-            <div className="text-center text-xs text-gray-400 py-6">
-              已经到底啦，去其他分类看看吧 ~
             </div>
           </div>
-        </div>
+        </ScrollArea>
       </div>
-    </Layout>
+    </div>
   );
 }
