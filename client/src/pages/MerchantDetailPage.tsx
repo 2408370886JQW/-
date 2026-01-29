@@ -178,10 +178,10 @@ export default function MerchantDetailPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* 左侧分类导航 - 手风琴交互 */}
-        <ScrollArea className="w-[100px] bg-slate-50 h-full border-r border-slate-100">
-          <div className="flex flex-col py-2">
+        <ScrollArea className="w-[100px] min-w-[100px] bg-slate-50 h-full border-r border-slate-100 flex-shrink-0">
+          <div className="flex flex-col py-2 w-full">
             {/* 全城筛选 */}
-            <div className="px-3 py-4 text-sm font-bold text-slate-800 flex items-center cursor-pointer active:bg-slate-100">
+            <div className="px-3 py-4 text-sm font-bold text-slate-800 flex items-center cursor-pointer active:bg-slate-100 whitespace-nowrap">
               全城 <ChevronDown className="w-3 h-3 ml-1" />
             </div>
 
@@ -194,7 +194,7 @@ export default function MerchantDetailPage() {
                   {/* 一级标题 */}
                   <div
                     className={cn(
-                      "relative px-3 py-3 cursor-pointer transition-all duration-200 select-none active:bg-white/50",
+                      "relative px-3 py-3 cursor-pointer transition-all duration-200 select-none active:bg-white/50 whitespace-nowrap",
                       isActive && !isExpanded ? "bg-white" : "bg-transparent"
                     )}
                     onClick={() => handleCategoryClick(category.id)}
@@ -239,7 +239,7 @@ export default function MerchantDetailPage() {
                               >
                                 <div
                                   className={cn(
-                                    "text-[12px] px-3 py-1.5 rounded-full transition-all duration-200 w-full text-center cursor-pointer active:scale-95",
+                                    "text-[12px] px-3 py-1.5 rounded-full transition-all duration-200 w-full text-center cursor-pointer active:scale-95 whitespace-nowrap",
                                     isSubActive
                                       ? "bg-[#FF4D00] text-white shadow-sm font-medium"
                                       : "text-slate-500 hover:bg-slate-50"
@@ -271,7 +271,7 @@ export default function MerchantDetailPage() {
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
-                <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
+                <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1 w-full">
                   <div className="flex items-center space-x-1 bg-white/20 backdrop-blur-md px-2 py-1 rounded-lg text-white text-xs whitespace-nowrap border border-white/30">
                     <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
                     <span>猜你喜欢 (3)</span>
@@ -291,7 +291,7 @@ export default function MerchantDetailPage() {
             </div>
 
             {/* 筛选标签 */}
-            <div className="flex space-x-2 overflow-x-auto no-scrollbar mb-4 pb-1">
+            <div className="flex space-x-2 overflow-x-auto no-scrollbar mb-4 pb-1 w-full">
               {["离我最近", "服务筛选", "价格不限", "好评优先"].map((filter, i) => (
                 <div 
                   key={i}
@@ -328,32 +328,32 @@ export default function MerchantDetailPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 ml-3 flex flex-col justify-between py-0.5">
+                    <div className="flex-1 ml-3 flex flex-col justify-between py-0.5 min-w-0">
                       <div>
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-slate-900 text-[15px] leading-tight">{merchant.name}</h3>
+                        <div className="flex justify-between items-start w-full">
+                          <h3 className="font-bold text-slate-900 text-[15px] leading-tight truncate pr-2">{merchant.name}</h3>
                           <div className="flex space-x-3 text-slate-400">
                             <Share2 className="w-4 h-4 active:text-slate-600" onClick={(e) => { e.stopPropagation(); toast.success("分享成功"); }} />
                             <Heart className="w-4 h-4 active:text-red-500 active:fill-red-500" onClick={(e) => { e.stopPropagation(); toast.success("已收藏"); }} />
                           </div>
                         </div>
-                        <div className="flex items-center mt-1.5 text-xs">
+                        <div className="flex items-center mt-1.5 text-xs flex-wrap gap-y-1">
                           <span className="text-[#FF4D00] font-bold text-sm mr-1">{merchant.rating}分</span>
                           <span className="text-slate-400 mx-1">|</span>
                           <span className="text-slate-600">¥{merchant.price}/人</span>
                           <span className="text-slate-400 mx-1">|</span>
-                          <span className="text-slate-400 truncate max-w-[80px]">{merchant.tags[0]}</span>
-                          <div className="flex-1" />
+                          <span className="text-slate-400 truncate max-w-[60px]">{merchant.tags[0]}</span>
+                          <div className="flex-1 min-w-[4px]" />
                           <span className="text-slate-400">{merchant.distance}</span>
                         </div>
                       </div>
                       
                       {/* 优惠券/团购 */}
                       {merchant.coupon && (
-                        <div className="mt-2 bg-[#FFF0E9] rounded-lg p-2 flex items-center justify-between border border-[#FF4D00]/10">
-                          <div className="flex items-center">
+                        <div className="mt-2 bg-[#FFF0E9] rounded-lg p-2 flex items-center justify-between border border-[#FF4D00]/10 flex-wrap gap-1">
+                          <div className="flex items-center min-w-0">
                             <span className="bg-[#FF4D00] text-white text-[10px] px-1 rounded mr-2">限时</span>
-                            <span className="text-xs font-medium text-slate-800">{merchant.coupon.title}</span>
+                            <span className="text-xs font-medium text-slate-800 truncate">{merchant.coupon.title}</span>
                           </div>
                           <div className="flex items-baseline">
                             <span className="text-[#FF4D00] font-bold text-sm">¥{merchant.coupon.price}</span>
@@ -368,8 +368,8 @@ export default function MerchantDetailPage() {
                   {merchant.deals && (
                     <div className="px-3 pb-3 pt-0">
                       {merchant.deals.map((deal, idx) => (
-                        <div key={idx} className="flex items-center justify-between mt-2 pl-24">
-                          <div className="flex items-center">
+                        <div key={idx} className="flex items-center justify-between mt-2 pl-24 flex-wrap gap-1">
+                          <div className="flex items-center min-w-0">
                             <span className="bg-[#FF4D00]/10 text-[#FF4D00] text-[10px] px-1 rounded mr-2">团</span>
                             <span className="text-xs text-slate-700">{deal.title}</span>
                           </div>
