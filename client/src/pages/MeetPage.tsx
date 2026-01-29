@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Map, List, Star, MapPin, Filter } from "lucide-react";
+import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 
 export default function MeetPage() {
+  const [location, setLocation] = useLocation();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [activeCategory, setActiveCategory] = useState("全部");
 
@@ -118,7 +120,11 @@ export default function MeetPage() {
         {viewMode === "list" ? (
           <div className="space-y-4">
             {merchants.map((merchant) => (
-              <Card key={merchant.id} className="border-none shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+              <Card 
+                key={merchant.id} 
+                className="border-none shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => setLocation("/meet/detail")}
+              >
                 <div className="flex h-32">
                   <div className="w-32 h-full relative shrink-0">
                     <img src={merchant.image} alt={merchant.name} className="w-full h-full object-cover" />

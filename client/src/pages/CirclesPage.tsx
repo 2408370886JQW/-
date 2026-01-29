@@ -1,10 +1,9 @@
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Heart, MessageCircle, Share2, MoreHorizontal, Plus } from "lucide-react";
+import { Search, Heart, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function CirclesPage() {
   const feeds = [
@@ -12,126 +11,139 @@ export default function CirclesPage() {
       id: 1,
       user: "Alex Chen",
       avatar: "AC",
-      content: "周末有人想一起去新的艺术展吗？听说很棒！🎨 #看展 #周末去哪儿",
+      title: "周末看展 | 798这家新展太出片了！🎨",
       image: "/images/category-exhibition.jpg",
-      likes: 24,
-      comments: 5,
-      time: "15分钟前",
-      tag: "看展"
+      likes: 124,
+      isLiked: true,
     },
     {
       id: 2,
       user: "Sarah Wu",
       avatar: "SW",
-      content: "这家咖啡店的拿铁拉花太美了，环境也超级cozy~ ☕️ 推荐大家来打卡！",
+      title: "三里屯这家咖啡店的拿铁绝了 ☕️",
       image: "/images/category-coffee.jpg",
-      likes: 42,
-      comments: 8,
-      time: "1小时前",
-      tag: "探店"
+      likes: 842,
+      isLiked: false,
     },
     {
       id: 3,
       user: "Mike Zhang",
       avatar: "MZ",
-      content: "今晚工体保龄球局，缺2人！🎳 有没有高手来带飞？",
+      title: "工体保龄球局，今晚有人来吗？🎳",
       image: "/images/category-play.jpg",
-      likes: 15,
-      comments: 12,
-      time: "2小时前",
-      tag: "玩乐"
+      likes: 56,
+      isLiked: false,
+    },
+    {
+      id: 4,
+      user: "Foodie Jane",
+      avatar: "FJ",
+      title: "必吃榜汉堡，汁水满满！🍔",
+      image: "/images/category-food.jpg",
+      likes: 230,
+      isLiked: true,
+    },
+    {
+      id: 5,
+      user: "Traveler Tom",
+      avatar: "TT",
+      title: "北京的秋天，是金色的童话 🍂",
+      image: "https://images.unsplash.com/photo-1508189860359-777d945909ef?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      likes: 1024,
+      isLiked: false,
+    },
+    {
+      id: 6,
+      user: "Art Lover",
+      avatar: "AL",
+      title: "沉浸式光影展，美哭了 ✨",
+      image: "/images/category-exhibition.jpg",
+      likes: 45,
+      isLiked: false,
     }
   ];
 
-  const topics = ["全部", "热门", "看展", "探店", "运动", "音乐", "读书"];
+  const tabs = ["关注", "发现", "北京"];
 
   return (
     <Layout>
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <h1 className="text-xl font-bold">圈子</h1>
-          <Button size="sm" className="rounded-full h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="w-4 h-4 mr-1" /> 发布
-          </Button>
-        </div>
-        
-        {/* Search */}
-        <div className="px-4 pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="搜索感兴趣的话题..." 
-              className="pl-9 bg-muted/50 border-none rounded-full h-10"
-            />
-          </div>
-        </div>
-
-        {/* Topics */}
-        <div className="px-4 pb-3 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2">
-            {topics.map((topic, index) => (
-              <button
-                key={index}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  index === 0 
-                    ? "bg-primary text-primary-foreground shadow-sm" 
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
+        {/* Top Navigation */}
+        <div className="px-4 py-2 flex items-center justify-between">
+          <div className="flex-1 flex justify-center gap-6 text-base font-medium text-muted-foreground">
+            {tabs.map((tab, index) => (
+              <button 
+                key={tab} 
+                className={cn(
+                  "relative py-2 transition-colors",
+                  index === 1 ? "text-foreground font-bold text-lg" : "hover:text-foreground"
+                )}
               >
-                {topic}
+                {tab}
+                {index === 1 && (
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-primary rounded-full" />
+                )}
               </button>
             ))}
+          </div>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <Search className="w-5 h-5 text-muted-foreground" />
           </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-6 pb-24">
-        {feeds.map((feed) => (
-          <Card key={feed.id} className="border-none shadow-sm overflow-hidden">
-            <CardContent className="p-0">
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10 border border-border">
-                    <AvatarFallback className="bg-primary/10 text-primary font-medium">{feed.avatar}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h4 className="font-bold text-sm">{feed.user}</h4>
-                    <span className="text-xs text-muted-foreground">{feed.time}</span>
+      {/* Waterfall Layout */}
+      <div className="p-2 pb-24">
+        <div className="columns-2 gap-2 space-y-2">
+          {feeds.map((feed) => (
+            <div key={feed.id} className="break-inside-avoid mb-2">
+              <Card className="border-none shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-shadow">
+                <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+                  <img 
+                    src={feed.image} 
+                    alt={feed.title} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+                <CardContent className="p-3 space-y-2">
+                  <h3 className="font-medium text-sm leading-snug line-clamp-2 text-foreground/90">
+                    {feed.title}
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Avatar className="w-5 h-5 border border-border/50">
+                        <AvatarFallback className="text-[8px] bg-muted text-muted-foreground">
+                          {feed.avatar}
+                        </AvatarFallback>
+                        {/* <AvatarImage src={feed.userAvatar} /> */}
+                      </Avatar>
+                      <span className="text-[10px] text-muted-foreground truncate max-w-[60px]">
+                        {feed.user}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Heart 
+                        className={cn(
+                          "w-3.5 h-3.5 transition-colors",
+                          feed.isLiked ? "fill-red-500 text-red-500" : "text-muted-foreground"
+                        )} 
+                      />
+                      <span className="text-[10px]">{feed.likes}</span>
+                    </div>
                   </div>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              <div className="px-4 pb-3">
-                <p className="text-sm leading-relaxed mb-3 whitespace-pre-wrap">{feed.content}</p>
-              </div>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+      </div>
 
-              {feed.image && (
-                <div className="w-full aspect-[4/3] bg-muted overflow-hidden">
-                  <img src={feed.image} alt="Feed content" className="w-full h-full object-cover" />
-                </div>
-              )}
-
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <button className="flex items-center gap-1.5 text-muted-foreground hover:text-red-500 transition-colors group">
-                    <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-medium">{feed.likes}</span>
-                  </button>
-                  <button className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors group">
-                    <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-medium">{feed.comments}</span>
-                  </button>
-                  <button className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors group">
-                    <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Floating Action Button */}
+      <div className="fixed bottom-24 right-4 z-50">
+        <button className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform active:scale-95">
+          <Plus className="w-6 h-6" />
+        </button>
       </div>
     </Layout>
   );

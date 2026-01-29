@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import { MapView } from "@/components/Map";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, User, Zap } from "lucide-react";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // 模拟数据类型
@@ -16,6 +16,7 @@ interface MapMarker {
   type: MarkerType;
   title: string;
   avatar?: string;
+  image?: string;
 }
 
 export default function MapPage() {
@@ -75,28 +76,19 @@ export default function MapPage() {
     });
 
     filteredData.forEach(item => {
-      // 创建自定义 Marker 内容
-      const content = document.createElement("div");
-      content.className = cn(
-        "flex items-center justify-center w-10 h-10 rounded-full border-2 shadow-lg transform transition-transform hover:scale-110",
-        item.type === "user" 
-          ? "bg-white border-primary text-primary" 
-          : "bg-white border-purple-500 text-purple-500"
-      );
-      content.innerHTML = `<div class="font-bold text-sm">${item.avatar}</div>`;
-
-      // 使用 AdvancedMarkerElement (如果可用) 或者普通 Marker
-      // 这里为了兼容性使用普通 Marker 并配合 OverlayView 或者简单的 Icon
-      // 由于 Google Maps JS API 的限制，简单的 Icon 更容易实现，或者使用 svg
-      
+      // 使用 svg path 绘制更复杂的 marker
+      // 圆形底座 + 头像文字
       const svgColor = item.type === "user" ? "#FF6B6B" : "#9F7AEA";
+      
+      // 简单的圆形 Marker，带边框
       const svgIcon = {
         path: google.maps.SymbolPath.CIRCLE,
         fillColor: svgColor,
         fillOpacity: 1,
         strokeWeight: 2,
         strokeColor: "#FFFFFF",
-        scale: 10,
+        scale: 12, // 稍微大一点
+        labelOrigin: new google.maps.Point(0, 0),
       };
 
       const marker = new google.maps.Marker({
@@ -104,6 +96,12 @@ export default function MapPage() {
         map: mapInstance,
         title: item.title,
         icon: svgIcon,
+        label: {
+          text: item.avatar || "",
+          color: "white",
+          fontSize: "10px",
+          fontWeight: "bold",
+        },
         animation: google.maps.Animation.DROP,
       });
 
@@ -111,6 +109,16 @@ export default function MapPage() {
       marker.addListener("click", () => {
         // 这里可以添加点击 Marker 后的逻辑，比如弹出详情
         console.log("Clicked:", item.title);
+        // 简单的 InfoWindow
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="padding: 8px; text-align: center;">
+              <div style="font-weight: bold; margin-bottom: 4px;">${item.title}</div>
+              <div style="font-size: 12px; color: #666;">${item.type === 'user' ? '刚刚活跃' : '发布了动态'}</div>
+            </div>
+          `,
+        });
+        infoWindow.open(mapInstance, marker);
       });
 
       newMarkers.push(marker);
@@ -124,9 +132,9 @@ export default function MapPage() {
     <Layout>
       <div className="relative h-screen w-full">
         {/* 顶部悬浮区域 */}
-        <div className="absolute top-0 left-0 right-0 z-10 p-4 space-y-3 bg-gradient-to-b from-white/90 to-transparent pb-8">
+        <div className="absolute top-0 left-0 right-0 z-10 p-4 space-y-3 bg-gradient-to-b from-white/90 to-transparent pb-8 pointer-events-none">
           {/* 搜索框 */}
-          <div className="relative shadow-sm">
+          <div className="relative shadow-sm pointer-events-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               placeholder="搜索用户、动态..." 
@@ -137,7 +145,7 @@ export default function MapPage() {
           </div>
 
           {/* Segment 标签栏 */}
-          <div className="flex justify-center">
+          <div className="flex justify-center pointer-events-auto">
             <div className="flex bg-white/90 backdrop-blur-md rounded-full p-1 shadow-sm border border-white/20">
               <button
                 onClick={() => setActiveSegment("encounter")}
@@ -182,12 +190,12 @@ export default function MapPage() {
         </div>
 
         {/* 底部图例/说明 (可选) */}
-        <div className="absolute bottom-24 right-4 z-10 flex flex-col gap-2">
-          <Badge variant="outline" className="bg-white/90 backdrop-blur shadow-sm gap-1">
+        <div className="absolute bottom-24 right-4 z-10 flex flex-col gap-2 pointer-events-none">
+          <Badge variant="outline" className="bg-white/90 backdrop-blur shadow-sm gap-1 pointer-events-auto">
             <div className="w-2 h-2 rounded-full bg-primary"></div>
             <span className="text-xs">用户</span>
           </Badge>
-          <Badge variant="outline" className="bg-white/90 backdrop-blur shadow-sm gap-1">
+          <Badge variant="outline" className="bg-white/90 backdrop-blur shadow-sm gap-1 pointer-events-auto">
             <div className="w-2 h-2 rounded-full bg-purple-500"></div>
             <span className="text-xs">动态</span>
           </Badge>
