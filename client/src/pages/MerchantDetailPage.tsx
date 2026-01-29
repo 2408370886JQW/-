@@ -2,26 +2,41 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Star, Heart, Share2, Moon, ShoppingBag, Map as MapIcon, ChevronDown } from "lucide-react";
+import { Search, MapPin, Star, Heart, Share2, Moon, ShoppingBag, Map as MapIcon, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function MerchantDetailPage() {
-  const [activeCategory, setActiveCategory] = useState(0);
-  const [activeSubCategory, setActiveSubCategory] = useState(1); // 默认选中"浪漫晚餐"
+  // 状态管理
+  const [expandedCategory, setExpandedCategory] = useState<number | null>(0); // 默认展开第一个
+  const [activeSubCategory, setActiveSubCategory] = useState<string>("约会首选"); // 默认选中子分类
   const [activeFilter, setActiveFilter] = useState("离我最近");
   const [isLiked, setIsLiked] = useState(false);
 
+  // 数据结构：一级分类 -> 二级分类
   const categories = [
-    { name: "情侣套餐", sub: "约会首选" },
-    { name: "闺蜜套餐", sub: "出片圣地" },
-    { name: "兄弟套餐", sub: "聚会必去" },
-    { name: "情趣套餐", sub: "人气推荐" }
-  ];
-
-  const subCategories = [
-    "情侣套餐", "约会首选", "浪漫晚餐", "轻松休闲", "互动体验", "景观餐厅"
+    { 
+      name: "情侣套餐", 
+      subs: ["约会首选", "浪漫晚餐", "纪念日", "求婚策划"] 
+    },
+    { 
+      name: "闺蜜套餐", 
+      subs: ["出片圣地", "下午茶", "美甲SPA", "逛街歇脚"] 
+    },
+    { 
+      name: "兄弟套餐", 
+      subs: ["聚会必去", "烧烤撸串", "电竞网咖", "运动看球"] 
+    },
+    { 
+      name: "情趣套餐", 
+      subs: ["人气推荐", "主题酒店", "私密SPA", "情趣用品"] 
+    },
+    { 
+      name: "周末去哪", 
+      subs: ["周边游", "露营野餐", "爬山徒步", "亲子乐园"] 
+    }
   ];
 
   const filters = [
@@ -40,6 +55,18 @@ export default function MerchantDetailPage() {
       description: "正在跳转支付页面...",
       duration: 2000,
     });
+  };
+
+  const toggleCategory = (index: number) => {
+    if (expandedCategory === index) {
+      setExpandedCategory(null); // 收起
+    } else {
+      setExpandedCategory(index); // 展开
+      // 默认选中第一个子分类
+      if (categories[index].subs.length > 0) {
+        setActiveSubCategory(categories[index].subs[0]);
+      }
+    }
   };
 
   return (
@@ -135,55 +162,72 @@ export default function MerchantDetailPage() {
           </div>
         </div>
 
-        <div className="flex relative -mt-4 rounded-t-xl bg-[#f5f5f5] overflow-hidden">
-          {/* Left Sidebar (Categories) */}
-          <div className="w-20 shrink-0 bg-white min-h-[calc(100vh-280px)] pb-20">
+        <div className="flex relative -mt-4 rounded-t-xl bg-[#f5f5f5] overflow-hidden min-h-[calc(100vh-280px)]">
+          {/* Left Sidebar (Accordion Navigation) */}
+          <div className="w-24 shrink-0 bg-white pb-20 overflow-y-auto scrollbar-hide border-r border-gray-100">
             {categories.map((cat, i) => (
-              <div 
-                key={i}
-                onClick={() => setActiveCategory(i)}
-                className={cn(
-                  "px-2 py-4 text-center cursor-pointer transition-all relative active:bg-gray-100",
-                  activeCategory === i 
-                    ? "bg-[#f5f5f5]" 
-                    : "bg-white hover:bg-gray-50"
-                )}
-              >
-                {activeCategory === i && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-red-500 rounded-r-full"></div>
-                )}
-                <div className={cn("text-sm font-bold mb-1", activeCategory === i ? "text-red-500" : "text-gray-700")}>
-                  {cat.name}
+              <div key={i} className="border-b border-gray-50 last:border-0">
+                {/* Level 1 Category */}
+                <div 
+                  onClick={() => toggleCategory(i)}
+                  className={cn(
+                    "px-2 py-4 text-center cursor-pointer transition-all relative active:bg-gray-50 flex flex-col items-center justify-center",
+                    expandedCategory === i ? "bg-gray-50" : "bg-white"
+                  )}
+                >
+                  {expandedCategory === i && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
+                  )}
+                  <span className={cn("text-sm font-bold", expandedCategory === i ? "text-red-500" : "text-gray-700")}>
+                    {cat.name}
+                  </span>
+                  <ChevronDown 
+                    className={cn(
+                      "w-3 h-3 mt-1 transition-transform duration-300", 
+                      expandedCategory === i ? "text-red-400 rotate-180" : "text-gray-300"
+                    )} 
+                  />
                 </div>
-                <div className={cn("text-[10px] leading-tight mt-0.5", activeCategory === i ? "text-red-400" : "text-gray-400")}>
-                  {cat.sub}
-                </div>
+
+                {/* Level 2 Sub-categories (Accordion Content) */}
+                <AnimatePresence>
+                  {expandedCategory === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden bg-gray-50"
+                    >
+                      {cat.subs.map((sub, j) => (
+                        <div 
+                          key={j}
+                          onClick={() => setActiveSubCategory(sub)}
+                          className="px-1 py-2 flex justify-center"
+                        >
+                          <div 
+                            className={cn(
+                              "text-[10px] px-2 py-1 rounded-full transition-all w-full text-center truncate",
+                              activeSubCategory === sub 
+                                ? "bg-red-500 text-white shadow-sm" 
+                                : "text-gray-500 hover:bg-gray-200"
+                            )}
+                          >
+                            {sub}
+                          </div>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 min-w-0 p-3 space-y-3">
-            {/* Sub Categories */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-              {subCategories.map((cat, i) => (
-                <button 
-                  key={i}
-                  onClick={() => setActiveSubCategory(i)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all active:scale-95",
-                    activeSubCategory === i 
-                      ? "bg-red-500 text-white shadow-sm" 
-                      : "bg-white text-gray-600 border border-gray-100"
-                  )}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
+          <div className="flex-1 min-w-0 p-3 space-y-3 bg-[#f5f5f5]">
             {/* Filters */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 sticky top-0 bg-[#f5f5f5] z-10 pt-1">
               {filters.map((filter, i) => (
                 <button 
                   key={i}
@@ -199,6 +243,12 @@ export default function MerchantDetailPage() {
                   <ChevronDown className="w-3 h-3" />
                 </button>
               ))}
+            </div>
+
+            {/* Dynamic Content Title */}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-4 w-1 bg-red-500 rounded-full"></div>
+              <h2 className="font-bold text-gray-800 text-sm">{activeSubCategory}推荐</h2>
             </div>
 
             {/* Recommend Card (Big) */}
