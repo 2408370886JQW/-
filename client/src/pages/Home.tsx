@@ -1,197 +1,174 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, Users, Zap, Store, ArrowRight, Heart, MessageCircle } from "lucide-react";
-import { Link } from "wouter";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag } from "lucide-react";
+import { cn } from "@/lib/utils";
+import MapView from "@/components/Map";
+
+// Mock data for map markers
+const MOCK_MARKERS = {
+  encounter: [
+    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile },
+    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile },
+  ],
+  friends: [
+    { id: 3, lat: 39.908, lng: 116.397, type: "friend", icon: User },
+    { id: 4, lat: 39.912, lng: 116.415, type: "friend", icon: User },
+  ],
+  moments: [
+    { id: 5, lat: 39.902, lng: 116.395, type: "moment", icon: ImageIcon },
+    { id: 6, lat: 39.918, lng: 116.408, type: "moment", icon: ImageIcon },
+  ],
+  merchants: [
+    { id: 7, lat: 39.906, lng: 116.412, type: "merchant", icon: ShoppingBag },
+    { id: 8, lat: 39.910, lng: 116.402, type: "merchant", icon: ShoppingBag },
+  ],
+};
+
+type TabType = "encounter" | "friends" | "moments" | "merchants";
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<TabType>("encounter");
   const [searchQuery, setSearchQuery] = useState("");
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
 
-  const features = [
-    { icon: Users, label: "找搭子", color: "bg-orange-100 text-orange-600" },
-    { icon: Zap, label: "进圈子", color: "bg-purple-100 text-purple-600" },
-    { icon: Store, label: "去相见", color: "bg-teal-100 text-teal-600", link: "/meet" },
-    { icon: MessageCircle, label: "发动态", color: "bg-blue-100 text-blue-600" },
+  const tabs: { id: TabType; label: string }[] = [
+    { id: "encounter", label: "偶遇" },
+    { id: "friends", label: "好友" },
+    { id: "moments", label: "动态" },
+    { id: "merchants", label: "商家" },
   ];
 
-  const feeds = [
-    {
-      id: 1,
-      user: "Alex Chen",
-      avatar: "AC",
-      content: "周末有人想一起去新的艺术展吗？听说很棒！🎨",
-      image: "/images/category-exhibition.jpg",
-      likes: 24,
-      comments: 5,
-      time: "15分钟前",
-      tag: "看展"
-    },
-    {
-      id: 2,
-      user: "Sarah Wu",
-      avatar: "SW",
-      content: "这家咖啡店的拿铁拉花太美了，环境也超级cozy~ ☕️",
-      image: "/images/category-coffee.jpg",
-      likes: 42,
-      comments: 8,
-      time: "1小时前",
-      tag: "探店"
+  // Update markers when tab changes
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    // Clear existing markers
+    markers.forEach(marker => marker.setMap(null));
+
+    // Add new markers based on active tab
+    const newMarkers = MOCK_MARKERS[activeTab].map(item => {
+      // Create custom marker element
+      const el = document.createElement('div');
+      el.className = 'custom-marker';
+      el.innerHTML = `
+        <div class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-slate-800 transform transition-transform hover:scale-110">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            ${getIconPath(item.type)}
+          </svg>
+        </div>
+      `;
+
+      // Note: Since we're using standard Google Maps Marker, we can't easily use custom HTML elements 
+      // without AdvancedMarkerElement (which might need map ID). 
+      // For simplicity in this prototype, we'll use standard markers with labels or simple icons if possible,
+      // or just rely on the default marker for now and simulate the visual with overlays if needed.
+      // However, to match the wireframe better, let's try to use standard markers with different colors/labels first.
+      
+      return new google.maps.Marker({
+        position: { lat: item.lat, lng: item.lng },
+        map: mapInstance,
+        title: item.type,
+        animation: google.maps.Animation.DROP,
+      });
+    });
+
+    setMarkers(newMarkers);
+  }, [activeTab, mapInstance]);
+
+  // Helper to get SVG path for different types (for reference/future custom overlay implementation)
+  const getIconPath = (type: string) => {
+    switch(type) {
+      case 'encounter': return '<circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line>'; // Smile
+      case 'friend': return '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>'; // User
+      case 'moment': return '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'; // Image
+      case 'merchant': return '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path>'; // ShoppingBag
+      default: return '';
     }
-  ];
-
-  const merchants = [
-    {
-      id: 1,
-      name: "Gather & Brew",
-      category: "咖啡厅",
-      rating: 4.8,
-      image: "/images/category-coffee.jpg",
-      distance: "0.5km"
-    },
-    {
-      id: 2,
-      name: "Fun Lounge",
-      category: "娱乐",
-      rating: 4.6,
-      image: "/images/category-play.jpg",
-      distance: "1.2km"
-    }
-  ];
+  };
 
   return (
-    <Layout>
-      {/* Header / Search */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm px-4 py-3 border-b border-border/50">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex items-center text-sm font-medium text-foreground/80">
-            <MapPin className="w-4 h-4 mr-1 text-primary" />
-            <span>朝阳区, 北京</span>
-          </div>
-        </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="搜索用户、动态或兴趣..." 
-            className="pl-9 bg-muted/50 border-none rounded-full h-10 focus-visible:ring-1 focus-visible:ring-primary"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+    <Layout showNav={true}>
+      <div className="relative h-screen w-full flex flex-col">
+        {/* Top Search & Tabs Area - Floating over map */}
+        <div className="absolute top-0 left-0 right-0 z-10 bg-white/90 backdrop-blur-md shadow-sm pt-safe">
+          <div className="px-4 py-2">
+            {/* Search Bar */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input 
+                placeholder="搜索" 
+                className="pl-9 bg-slate-100 border-none rounded-full h-9 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
 
-      <div className="p-4 space-y-6">
-        {/* Hero Banner */}
-        <div className="relative rounded-2xl overflow-hidden aspect-[2/1] shadow-sm">
-          <img 
-            src="/images/hero-banner.jpg" 
-            alt="Social Life" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-            <div className="text-white">
-              <h2 className="font-bold text-lg">发现身边的精彩</h2>
-              <p className="text-xs opacity-90">结识新朋友，探索好去处</p>
+            {/* Tabs */}
+            <div className="flex items-center justify-between px-2">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "relative px-4 py-2 text-sm font-medium transition-colors",
+                    activeTab === tab.id ? "text-slate-900" : "text-slate-500"
+                  )}
+                >
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-slate-800 rounded-full" />
+                  )}
+                  {/* Triangle indicator for active tab (visual match to wireframe) */}
+                  {activeTab === tab.id && (
+                    <div className="absolute -bottom-[9px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-800" />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Feature Grid */}
-        <div className="grid grid-cols-4 gap-3">
-          {features.map((feature, index) => (
-            <Link key={index} href={feature.link || "#"}>
-              <div className="flex flex-col items-center gap-2 cursor-pointer group">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-active:scale-95 ${feature.color}`}>
-                  <feature.icon className="w-6 h-6" />
-                </div>
-                <span className="text-xs font-medium text-foreground/80">{feature.label}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Featured Merchants */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-lg">精选好去处</h3>
-            <Link href="/meet">
-              <span className="text-xs text-primary flex items-center cursor-pointer">
-                更多 <ArrowRight className="w-3 h-3 ml-1" />
-              </span>
-            </Link>
+        {/* Map Background */}
+        <div className="flex-1 w-full h-full bg-slate-50 relative">
+          <MapView 
+            className="w-full h-full"
+            onMapReady={(map) => {
+              setMapInstance(map);
+              map.setCenter({ lat: 39.9042, lng: 116.4074 });
+              map.setZoom(14);
+              
+              // Remove default UI controls to match wireframe clean look
+              map.setOptions({
+                disableDefaultUI: true,
+                zoomControl: false,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+              });
+            }}
+          />
+          
+          {/* Center "MAP" Label Placeholder (Visual match to wireframe) */}
+          {/* In a real app this would be the actual map content. 
+              Adding a visual cue here to mimic the wireframe's "MAP" box if map fails to load 
+              or just as a center anchor point */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0">
+            <div className="bg-white/80 backdrop-blur px-6 py-3 rounded-xl border border-slate-200 shadow-sm">
+              <span className="text-lg font-bold text-slate-400 tracking-widest">MAP</span>
+            </div>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-            {merchants.map((merchant) => (
-              <Link key={merchant.id} href="/meet">
-                <Card className="min-w-[200px] border-none shadow-sm cursor-pointer hover:shadow-md transition-shadow">
-                  <div className="h-24 overflow-hidden rounded-t-xl relative">
-                    <img src={merchant.image} alt={merchant.name} className="w-full h-full object-cover" />
-                    <Badge className="absolute top-2 right-2 bg-white/90 text-foreground hover:bg-white text-[10px] px-1.5 py-0.5 h-5">
-                      {merchant.distance}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-3">
-                    <h4 className="font-bold text-sm truncate">{merchant.name}</h4>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-xs text-muted-foreground">{merchant.category}</span>
-                      <div className="flex items-center text-xs font-medium text-orange-500">
-                        <span>★ {merchant.rating}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
 
-        {/* Feed Stream */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-lg">推荐动态</h3>
-          <div className="space-y-4">
-            {feeds.map((feed) => (
-              <Card key={feed.id} className="border-none shadow-sm overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="p-3 flex items-center gap-3">
-                    <Avatar className="w-8 h-8 border border-border">
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">{feed.avatar}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-sm">{feed.user}</h4>
-                        <span className="text-[10px] text-muted-foreground">{feed.time}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="px-3 pb-2">
-                    <p className="text-sm leading-relaxed mb-2">{feed.content}</p>
-                    <Badge variant="secondary" className="text-[10px] font-normal mb-2">#{feed.tag}</Badge>
-                  </div>
-
-                  {feed.image && (
-                    <div className="aspect-video w-full overflow-hidden bg-muted">
-                      <img src={feed.image} alt="Feed content" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-
-                  <div className="p-3 flex items-center gap-4 text-muted-foreground">
-                    <button className="flex items-center gap-1 text-xs hover:text-primary transition-colors">
-                      <Heart className="w-4 h-4" />
-                      <span>{feed.likes}</span>
-                    </button>
-                    <button className="flex items-center gap-1 text-xs hover:text-primary transition-colors">
-                      <MessageCircle className="w-4 h-4" />
-                      <span>{feed.comments}</span>
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Wireframe-style connection lines (Visual decoration) */}
+          {/* These are just static SVG overlays to mimic the wireframe look, 
+              in a real app these would be dynamic connections between users */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" style={{ zIndex: 0 }}>
+            <line x1="50%" y1="50%" x2="20%" y2="30%" stroke="currentColor" strokeWidth="1" />
+            <line x1="50%" y1="50%" x2="80%" y2="30%" stroke="currentColor" strokeWidth="1" />
+            <line x1="50%" y1="50%" x2="20%" y2="70%" stroke="currentColor" strokeWidth="1" />
+            <line x1="50%" y1="50%" x2="80%" y2="70%" stroke="currentColor" strokeWidth="1" />
+          </svg>
         </div>
       </div>
     </Layout>
