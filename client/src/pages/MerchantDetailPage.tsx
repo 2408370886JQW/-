@@ -23,13 +23,11 @@ export default function MerchantDetailPage() {
 
   return (
     <Layout showNav={false}>
-      <div className="min-h-screen bg-background pb-20">
+      <div className="min-h-screen bg-background pb-28">
         {/* Header */}
         <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
           <div className="px-4 py-3 flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="-ml-2" onClick={() => setLocation("/meet")}>
-              <ChevronLeft className="w-6 h-6" />
-            </Button>
+            {/* Back button removed for Tab view */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input 
