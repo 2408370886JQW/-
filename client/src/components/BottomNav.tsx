@@ -12,7 +12,7 @@ export default function BottomNav() {
     { path: "/circles", icon: Users, label: "圈子" },
     { path: "/publish", icon: Plus, label: "发布", isSpecial: true },
     { path: "/chat", icon: MessageSquare, label: "聊天" }, // New route placeholder
-    { path: "/profile", icon: User, label: "好友" }, // "Friends" label as per wireframe
+    { path: "/profile", icon: User, label: "我的" },
   ];
 
   return (
