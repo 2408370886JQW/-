@@ -1,13 +1,11 @@
 # Todo List
 
-## Phase 11: 底部导航悬浮化与相见页路由调整
-- [ ] 修改 BottomNav.tsx，将其样式改为悬浮式（Floating Dock）
-- [ ] 调整 Layout.tsx，确保页面内容不被悬浮导航遮挡（或有意遮挡以实现沉浸感）
-- [ ] 修改 App.tsx 路由，将 `/meet` 路由直接指向 `MerchantDetailPage` 组件
-- [ ] 移除旧的 `MeetPage.tsx` 或将其作为备用
-- [ ] 调整 `MerchantDetailPage.tsx`，移除返回按钮（因为现在是主 Tab 页），并适配底部悬浮导航的间距
-
-## Phase 12: 最终样式微调与交付
-- [ ] 检查所有页面在悬浮导航下的显示效果
-- [ ] 确保地图页的全屏体验
-- [ ] 最终测试
+## Phase 12: 增强相见页交互与最终交付
+- [ ] 增强 MerchantDetailPage.tsx 交互
+  - [ ] 实现左侧分类导航的点击切换状态
+  - [ ] 实现顶部子分类的点击切换状态
+  - [ ] 实现筛选按钮的点击切换状态
+  - [ ] 添加点击“抢购”按钮的反馈（如 Toast 提示）
+  - [ ] 添加收藏按钮的点击切换状态
+- [ ] 确保所有可点击元素都有 cursor-pointer 和 hover/active 效果
+- [ ] 最终测试所有交互流程

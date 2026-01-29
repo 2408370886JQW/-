@@ -1,13 +1,17 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, Search, MapPin, Star, Clock, Share2, Heart, MoreHorizontal } from "lucide-react";
-import { Link, useLocation } from "wouter";
+import { Search, MapPin, Star, Heart } from "lucide-react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function MerchantDetailPage() {
-  const [location, setLocation] = useLocation();
+  const [activeCategory, setActiveCategory] = useState(0);
+  const [activeSubCategory, setActiveSubCategory] = useState(0);
+  const [activeFilter, setActiveFilter] = useState("离我最近");
+  const [isLiked, setIsLiked] = useState(false);
 
   const categories = [
     "情侣套餐", "闺蜜套餐", "兄弟套餐", "情趣套餐"
@@ -21,6 +25,12 @@ export default function MerchantDetailPage() {
     "离我最近", "服务筛选", "价格不限", "好评优先", "人均排序"
   ];
 
+  const handleBuy = (itemName: string) => {
+    toast.success(`已选择：${itemName}`, {
+      description: "正在跳转支付页面...",
+    });
+  };
+
   return (
     <Layout showNav={false}>
       <div className="min-h-screen bg-background pb-28">
@@ -33,12 +43,22 @@ export default function MerchantDetailPage() {
               <input 
                 type="text" 
                 placeholder="搜索..." 
-                className="w-full pl-9 pr-4 py-2 bg-muted/50 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full pl-9 pr-4 py-2 bg-muted/50 rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-primary transition-all"
               />
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Heart className="w-5 h-5" />
-              <MapPin className="w-5 h-5" />
+              <button 
+                onClick={() => {
+                  setIsLiked(!isLiked);
+                  toast(isLiked ? "已取消收藏" : "已添加到收藏");
+                }}
+                className="p-1 hover:bg-muted rounded-full transition-colors"
+              >
+                <Heart className={cn("w-6 h-6 transition-colors", isLiked ? "fill-red-500 text-red-500" : "")} />
+              </button>
+              <button className="p-1 hover:bg-muted rounded-full transition-colors">
+                <MapPin className="w-6 h-6" />
+              </button>
             </div>
           </div>
 
@@ -48,9 +68,12 @@ export default function MerchantDetailPage() {
               {subCategories.map((cat, i) => (
                 <button 
                   key={i}
+                  onClick={() => setActiveSubCategory(i)}
                   className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
-                    i === 0 ? "bg-orange-100 text-orange-600" : "bg-muted/50 text-muted-foreground"
+                    "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all active:scale-95",
+                    activeSubCategory === i 
+                      ? "bg-orange-100 text-orange-600 shadow-sm" 
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
                   )}
                 >
                   {cat}
@@ -66,15 +89,16 @@ export default function MerchantDetailPage() {
             {categories.map((cat, i) => (
               <div 
                 key={i}
+                onClick={() => setActiveCategory(i)}
                 className={cn(
-                  "px-2 py-4 text-xs font-medium text-center cursor-pointer transition-colors border-l-4",
-                  i === 0 
-                    ? "bg-background text-orange-600 border-orange-500" 
+                  "px-2 py-4 text-xs font-medium text-center cursor-pointer transition-all border-l-4 select-none",
+                  activeCategory === i 
+                    ? "bg-background text-orange-600 border-orange-500 shadow-sm" 
                     : "text-muted-foreground border-transparent hover:bg-muted/50"
                 )}
               >
                 {cat}
-                {i === 0 && <div className="mt-1 text-[10px] text-orange-400 font-normal">约会首选</div>}
+                {activeCategory === i && <div className="mt-1 text-[10px] text-orange-400 font-normal animate-in fade-in zoom-in duration-300">约会首选</div>}
               </div>
             ))}
           </div>
@@ -86,7 +110,13 @@ export default function MerchantDetailPage() {
               {filters.map((filter, i) => (
                 <button 
                   key={i}
-                  className="px-2 py-1 rounded text-[10px] bg-muted/50 text-muted-foreground whitespace-nowrap"
+                  onClick={() => setActiveFilter(filter)}
+                  className={cn(
+                    "px-2 py-1 rounded text-[10px] whitespace-nowrap transition-colors border",
+                    activeFilter === filter
+                      ? "bg-orange-50 text-orange-600 border-orange-200 font-medium"
+                      : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted"
+                  )}
                 >
                   {filter}
                 </button>
@@ -94,13 +124,16 @@ export default function MerchantDetailPage() {
             </div>
 
             {/* Recommend Card */}
-            <div className="space-y-2">
+            <div className="space-y-2 animate-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center gap-1 text-orange-500 font-bold text-sm">
                 <Star className="w-3 h-3 fill-current" />
                 <span>猜你喜欢 (3)</span>
               </div>
               
-              <Card className="border-none shadow-sm overflow-hidden bg-orange-50/50">
+              <Card 
+                className="border-none shadow-sm overflow-hidden bg-orange-50/50 active:scale-[0.98] transition-transform cursor-pointer"
+                onClick={() => handleBuy("丝路星光·旋转餐厅")}
+              >
                 <div className="flex p-3 gap-3">
                   <div className="w-24 h-24 rounded-lg bg-muted shrink-0 overflow-hidden">
                     <img src="/images/category-food.jpg" alt="Restaurant" className="w-full h-full object-cover" />
@@ -132,15 +165,15 @@ export default function MerchantDetailPage() {
             </div>
 
             {/* Top List */}
-            <div className="space-y-2">
+            <div className="space-y-2 animate-in slide-in-from-bottom-4 duration-500 delay-100">
               <div className="flex items-center gap-1 text-yellow-600 font-bold text-sm">
                 <Badge className="bg-yellow-500 text-white text-[10px] px-1.5 py-0.5 mr-1">榜单TOP</Badge>
                 <span>人气推荐</span>
               </div>
 
-              <Card className="border-none shadow-sm overflow-hidden">
+              <Card className="border-none shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 <div className="p-3 space-y-3">
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 cursor-pointer" onClick={() => handleBuy("天山雪莲·私房菜")}>
                     <div className="w-20 h-20 rounded-lg bg-muted shrink-0 overflow-hidden">
                       <img src="/images/category-food.jpg" alt="Restaurant" className="w-full h-full object-cover" />
                     </div>
@@ -175,15 +208,21 @@ export default function MerchantDetailPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-red-500">¥1314</span>
                       <span className="text-xs text-muted-foreground line-through">¥1999</span>
-                      <Button size="sm" className="h-6 px-2 text-xs bg-red-500 hover:bg-red-600 rounded-full">抢购</Button>
+                      <Button 
+                        size="sm" 
+                        className="h-6 px-2 text-xs bg-red-500 hover:bg-red-600 rounded-full active:scale-95 transition-transform"
+                        onClick={() => handleBuy("520限定告白套餐")}
+                      >
+                        抢购
+                      </Button>
                     </div>
                   </div>
                 </div>
               </Card>
 
-              <Card className="border-none shadow-sm overflow-hidden">
+              <Card className="border-none shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 <div className="p-3 space-y-3">
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 cursor-pointer" onClick={() => handleBuy("云端·全景咖啡")}>
                     <div className="w-20 h-20 rounded-lg bg-muted shrink-0 overflow-hidden">
                       <img src="/images/category-coffee.jpg" alt="Cafe" className="w-full h-full object-cover" />
                     </div>
@@ -215,7 +254,13 @@ export default function MerchantDetailPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-red-500">¥168</span>
                       <span className="text-xs text-muted-foreground line-through">¥298</span>
-                      <Button size="sm" className="h-6 px-2 text-xs bg-red-500 hover:bg-red-600 rounded-full">抢购</Button>
+                      <Button 
+                        size="sm" 
+                        className="h-6 px-2 text-xs bg-red-500 hover:bg-red-600 rounded-full active:scale-95 transition-transform"
+                        onClick={() => handleBuy("双人云端下午茶")}
+                      >
+                        抢购
+                      </Button>
                     </div>
                   </div>
                 </div>
