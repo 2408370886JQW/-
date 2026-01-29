@@ -47,7 +47,7 @@ export default function MerchantDetailPage() {
       <div className="min-h-screen bg-[#f5f5f5] pb-28 font-sans">
         {/* Header */}
         <div className="sticky top-0 z-50 bg-white shadow-sm">
-          <div className="px-4 py-3 flex items-center gap-3">
+          <div className="px-3 py-3 flex items-center gap-2">
             <div 
               className="flex items-center gap-1 text-red-500 font-bold text-lg shrink-0 active:scale-95 transition-transform cursor-pointer"
               onClick={() => handleInteraction("定位功能演示：当前位置已刷新")}
@@ -57,13 +57,13 @@ export default function MerchantDetailPage() {
             </div>
             
             <div className="flex-1 relative active:scale-[0.98] transition-transform">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
               <input 
                 type="text" 
                 placeholder="搜索..." 
                 readOnly
                 onClick={() => handleInteraction("搜索功能演示：弹出搜索键盘")}
-                className="w-full pl-9 pr-4 py-1.5 bg-gray-100 rounded-full text-sm focus:outline-none text-gray-600 cursor-pointer"
+                className="w-full pl-8 pr-3 py-1.5 bg-gray-100 rounded-full text-xs focus:outline-none text-gray-600 cursor-pointer"
               />
             </div>
             
@@ -137,7 +137,7 @@ export default function MerchantDetailPage() {
 
         <div className="flex relative -mt-4 rounded-t-xl bg-[#f5f5f5] overflow-hidden">
           {/* Left Sidebar (Categories) */}
-          <div className="w-24 shrink-0 bg-white min-h-[calc(100vh-280px)] pb-20">
+          <div className="w-20 shrink-0 bg-white min-h-[calc(100vh-280px)] pb-20">
             {categories.map((cat, i) => (
               <div 
                 key={i}
@@ -155,7 +155,7 @@ export default function MerchantDetailPage() {
                 <div className={cn("text-sm font-bold mb-1", activeCategory === i ? "text-red-500" : "text-gray-700")}>
                   {cat.name}
                 </div>
-                <div className={cn("text-[10px]", activeCategory === i ? "text-red-400" : "text-gray-400")}>
+                <div className={cn("text-[10px] leading-tight mt-0.5", activeCategory === i ? "text-red-400" : "text-gray-400")}>
                   {cat.sub}
                 </div>
               </div>
@@ -163,7 +163,7 @@ export default function MerchantDetailPage() {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 p-3 space-y-3">
+          <div className="flex-1 min-w-0 p-3 space-y-3">
             {/* Sub Categories */}
             <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
               {subCategories.map((cat, i) => (
