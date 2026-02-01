@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -34,6 +34,8 @@ const SCENARIOS = [
   { id: "date", label: "约会", icon: Heart, color: "text-pink-500", bg: "bg-pink-50" },
   { id: "bestie", label: "闺蜜", icon: Camera, color: "text-purple-500", bg: "bg-purple-50" },
   { id: "bros", label: "兄弟", icon: Beer, color: "text-blue-500", bg: "bg-blue-50" },
+  { id: "birthday", label: "生日", icon: Cake, color: "text-red-500", bg: "bg-red-50" },
+  { id: "business", label: "商务", icon: Briefcase, color: "text-slate-600", bg: "bg-slate-100" },
   { id: "chill", label: "坐坐", icon: Coffee, color: "text-amber-500", bg: "bg-amber-50" },
   { id: "night", label: "深夜", icon: Moon, color: "text-indigo-500", bg: "bg-indigo-50" },
 ];
@@ -88,6 +90,32 @@ const PLANS = {
         { icon: "🎮", label: "网咖", desc: "开黑一把" }
       ],
       image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop"
+    }
+  ],
+  birthday: [
+    {
+      id: "birthday-party",
+      title: "难忘生日趴",
+      tags: ["#狂欢", "#仪式感", "#多人"],
+      steps: [
+        { icon: "🍽", label: "大餐", desc: "聚会首选" },
+        { icon: "🎤", label: "KTV", desc: "嗨唱整晚" },
+        { icon: "🎂", label: "许愿", desc: "切蛋糕" }
+      ],
+      image: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=400&h=200&fit=crop"
+    }
+  ],
+  business: [
+    {
+      id: "business-banquet",
+      title: "高端商务局",
+      tags: ["#私密", "#排面", "#谈事"],
+      steps: [
+        { icon: "🍵", label: "茶室", desc: "静心叙旧" },
+        { icon: "🥢", label: "私房菜", desc: "精致位上" },
+        { icon: "🥃", label: "Lounge", desc: "雪茄威士忌" }
+      ],
+      image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=200&fit=crop"
     }
   ],
   chill: [],
@@ -242,8 +270,8 @@ export default function Home() {
 
                 {PLANS[activeScenario as keyof typeof PLANS]?.length > 0 ? (
                   PLANS[activeScenario as keyof typeof PLANS].map((plan) => (
+                    <Link key={plan.id} href={`/plan/${plan.id}`}>
                     <motion.div
-                      key={plan.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden active:scale-[0.98] transition-transform"
@@ -290,6 +318,7 @@ export default function Home() {
                         </div>
                       </div>
                     </motion.div>
+                  </Link>
                   ))
                 ) : (
                   <div className="text-center py-10 text-slate-400">

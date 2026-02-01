@@ -10,6 +10,7 @@ import MeetPage from "./pages/MeetPage";
 import CirclesPage from "./pages/CirclesPage";
 import { PublishPage, ProfilePage } from "./pages/PlaceholderPages";
 import MerchantDetailPage from "./pages/MerchantDetailPage";
+import PlanDetailPage from "./pages/PlanDetailPage";
 
 
 function Router() {
@@ -18,6 +19,8 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/map"} component={MapPage} />
       <Route path={"/meet"} component={MerchantDetailPage} />
+      <Route path={"/merchant/:id"} component={MerchantDetailPage} />
+      <Route path={"/plan/:id"} component={PlanDetailPage} />
       <Route path={"/circles"} component={CirclesPage} />
       <Route path={"/publish"} component={PublishPage} />
       <Route path={"/profile"} component={ProfilePage} />
