@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Mock data for map markers
-const MOCK_MARKERS = {
+const INITIAL_MARKERS = {
   encounter: [
     { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile },
     { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile },
@@ -129,6 +129,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const [markerData, setMarkerData] = useState(INITIAL_MARKERS);
   
   // New state for Meet page
   const [activeScenario, setActiveScenario] = useState("date");
@@ -140,7 +141,34 @@ export default function Home() {
     { id: "meet", label: "相见" },
   ];
 
-  // Update markers when tab changes
+  // Listen for new moment posts
+  useEffect(() => {
+    const handleNewMoment = (event: CustomEvent) => {
+      const newMoment = event.detail;
+      // Add new moment to marker data
+      setMarkerData(prev => ({
+        ...prev,
+        moments: [
+          ...prev.moments,
+          {
+            id: Date.now(),
+            lat: 39.9042 + (Math.random() - 0.5) * 0.01, // Random location near center
+            lng: 116.4074 + (Math.random() - 0.5) * 0.01,
+            type: "moment",
+            icon: ImageIcon
+          }
+        ]
+      }));
+      
+      // Switch to moments tab to show the new post
+      setActiveTab("moments");
+    };
+
+    window.addEventListener('new-moment-posted', handleNewMoment as EventListener);
+    return () => window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
+  }, []);
+
+  // Update markers when tab changes or marker data updates
   useEffect(() => {
     if (!mapInstance) return;
 
@@ -148,7 +176,7 @@ export default function Home() {
     markers.forEach(marker => marker.setMap(null));
 
     // Add new markers based on active tab
-    const currentMarkers = MOCK_MARKERS[activeTab] || [];
+    const currentMarkers = markerData[activeTab] || [];
     const newMarkers = currentMarkers.map(item => {
       return new google.maps.Marker({
         position: { lat: item.lat, lng: item.lng },
@@ -159,7 +187,7 @@ export default function Home() {
     });
 
     setMarkers(newMarkers);
-  }, [activeTab, mapInstance]);
+  }, [activeTab, mapInstance, markerData]);
 
   return (
     <Layout showNav={true}>
@@ -283,8 +311,8 @@ export default function Home() {
                           <div>
                             <h4 className="text-white font-bold text-lg">{plan.title}</h4>
                             <div className="flex gap-2 mt-1">
-                              {plan.tags.map(tag => (
-                                <span key={tag} className="text-[10px] text-white/90 bg-white/20 px-1.5 py-0.5 rounded backdrop-blur-sm">
+                              {plan.tags.map((tag) => (
+                                <span key={tag} className="text-[10px] bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">
                                   {tag}
                                 </span>
                               ))}
@@ -292,51 +320,41 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-
-                      {/* Steps Flow */}
-                      <div className="p-4">
-                        <div className="flex items-center justify-between relative">
-                          {/* Connecting Line */}
-                          <div className="absolute top-1/2 left-4 right-4 h-[1px] bg-slate-100 -z-10" />
-                          
-                          {plan.steps.map((step, idx) => (
-                            <div key={idx} className="flex flex-col items-center gap-1 bg-white px-2 z-0">
-                              <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-sm shadow-sm">
-                                {step.icon}
+                      
+                      {/* Steps Preview */}
+                      <div className="p-4 bg-slate-50/50">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {plan.steps.map((step, index) => (
+                              <div key={index} className="flex items-center">
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="text-lg">{step.icon}</span>
+                                  <span className="text-[10px] text-slate-500">{step.label}</span>
+                                </div>
+                                {index < plan.steps.length - 1 && (
+                                  <div className="w-4 h-[1px] bg-slate-300 mx-2" />
+                                )}
                               </div>
-                              <span className="text-xs font-medium text-slate-700">{step.label}</span>
-                              <span className="text-[10px] text-slate-400">{step.desc}</span>
-                            </div>
-                          ))}
-                          
-                          <div className="flex flex-col items-center justify-center">
-                             <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shadow-sm">
-                                <ChevronRight className="w-4 h-4 text-white" />
-                             </div>
-                             <span className="text-xs font-medium text-slate-900 mt-1">去安排</span>
+                            ))}
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shadow-sm">
+                            <ChevronRight className="w-4 h-4 text-white" />
                           </div>
                         </div>
                       </div>
                     </motion.div>
-                  </Link>
+                    </Link>
                   ))
                 ) : (
-                  <div className="text-center py-10 text-slate-400">
-                    <p>暂无推荐流程，试试其他场景吧</p>
+                  <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3">
+                      <ShoppingBag className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <p className="text-sm">该场景暂无推荐流程</p>
                   </div>
                 )}
               </div>
             </div>
-          )}
-
-          {/* Wireframe-style connection lines (Visual decoration - only for encounter/friends) */}
-          {(activeTab === "encounter" || activeTab === "friends") && (
-            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20" style={{ zIndex: 0 }}>
-              <line x1="50%" y1="50%" x2="20%" y2="30%" stroke="currentColor" strokeWidth="1" />
-              <line x1="50%" y1="50%" x2="80%" y2="30%" stroke="currentColor" strokeWidth="1" />
-              <line x1="50%" y1="50%" x2="20%" y2="70%" stroke="currentColor" strokeWidth="1" />
-              <line x1="50%" y1="50%" x2="80%" y2="70%" stroke="currentColor" strokeWidth="1" />
-            </svg>
           )}
         </div>
       </div>
