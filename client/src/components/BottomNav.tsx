@@ -1,9 +1,10 @@
 import { Link, useLocation } from "wouter";
-import { MapPin, Users, Plus, MessageSquare, User, X, Heart, Camera, Coffee } from "lucide-react";
+import { MapPin, Users, Plus, MessageSquare, User, X, Image as ImageIcon, Video, Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function BottomNav() {
   const [location] = useLocation();
@@ -13,7 +14,7 @@ export default function BottomNav() {
   const navItems = [
     { path: "/", icon: MapPin, label: "地图", isMap: true },
     { path: "/circles", icon: Users, label: "圈子" },
-    { path: "/publish", icon: Plus, label: "发布", isSpecial: true },
+    { path: "/publish", icon: Plus, label: "发动态", isSpecial: true },
     { path: "/chat", icon: MessageSquare, label: "聊天" },
     { path: "/profile", icon: User, label: "我的" },
   ];
@@ -25,7 +26,7 @@ export default function BottomNav() {
 
   return (
     <>
-      {/* Publish Popup Overlay */}
+      {/* Publish Popup Overlay - Post Moment Interface */}
       <AnimatePresence>
         {isPublishOpen && (
           <div className="fixed inset-0 z-[60] flex flex-col justify-end">
@@ -44,46 +45,53 @@ export default function BottomNav() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative bg-white rounded-t-3xl p-6 pb-safe z-10"
+              className="relative bg-white rounded-t-3xl p-6 pb-safe z-10 h-[80vh] flex flex-col"
             >
+              {/* Header */}
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-slate-900">创建一次见面</h3>
-                <button onClick={() => setIsPublishOpen(false)} className="p-2 bg-slate-100 rounded-full">
-                  <X className="w-5 h-5 text-slate-500" />
+                <button onClick={() => setIsPublishOpen(false)} className="text-slate-500 font-medium">
+                  取消
                 </button>
+                <h3 className="text-lg font-bold text-slate-900">发布动态</h3>
+                <Button className="bg-blue-600 text-white rounded-full px-6 h-8 text-sm">
+                  发布
+                </Button>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <button className="flex flex-col items-center gap-3 group">
-                  <div className="w-16 h-16 rounded-2xl bg-pink-50 flex items-center justify-center group-active:scale-95 transition-transform">
-                    <Heart className="w-8 h-8 text-pink-500" />
+              {/* Content Input */}
+              <div className="flex-1 flex flex-col gap-4">
+                <Textarea 
+                  placeholder="分享此刻的想法..." 
+                  className="min-h-[150px] border-none resize-none text-base p-0 focus-visible:ring-0 placeholder:text-slate-400"
+                />
+                
+                {/* Media Upload Placeholder */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="aspect-square bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 gap-2 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <Plus className="w-8 h-8" />
+                    <span className="text-xs font-medium">添加图片/视频</span>
                   </div>
-                  <span className="text-sm font-medium text-slate-700">约会</span>
-                </button>
-                <button className="flex flex-col items-center gap-3 group">
-                  <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center group-active:scale-95 transition-transform">
-                    <Camera className="w-8 h-8 text-purple-500" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">聚会</span>
-                </button>
-                <button className="flex flex-col items-center gap-3 group">
-                  <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center group-active:scale-95 transition-transform">
-                    <Coffee className="w-8 h-8 text-amber-500" />
-                  </div>
-                  <span className="text-sm font-medium text-slate-700">搭子</span>
-                </button>
+                </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-bold text-slate-900">智能生成流程</span>
-                    <span className="text-xs text-slate-400">AI 帮你安排</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mb-3">输入你的想法，例如：“想和女朋友去安静的地方吃日料然后看电影”</p>
-                  <Button className="w-full bg-slate-900 text-white h-10 rounded-lg text-sm">
-                    一键生成
-                  </Button>
+              {/* Toolbar */}
+              <div className="border-t border-slate-100 pt-4 mt-4">
+                <div className="flex items-center gap-6">
+                  <button className="flex items-center gap-2 text-slate-600">
+                    <ImageIcon className="w-6 h-6 text-green-500" />
+                    <span className="text-sm font-medium">图片</span>
+                  </button>
+                  <button className="flex items-center gap-2 text-slate-600">
+                    <Video className="w-6 h-6 text-red-500" />
+                    <span className="text-sm font-medium">视频</span>
+                  </button>
+                  <button className="flex items-center gap-2 text-slate-600">
+                    <MapPin className="w-6 h-6 text-blue-500" />
+                    <span className="text-sm font-medium">所在位置</span>
+                  </button>
+                  <button className="flex items-center gap-2 text-slate-600 ml-auto">
+                    <Smile className="w-6 h-6 text-amber-500" />
+                  </button>
                 </div>
               </div>
             </motion.div>
