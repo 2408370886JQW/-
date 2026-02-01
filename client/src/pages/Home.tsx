@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Mock data for map markers
 const MOCK_MARKERS = {
@@ -20,47 +21,78 @@ const MOCK_MARKERS = {
     { id: 5, lat: 39.902, lng: 116.395, type: "moment", icon: ImageIcon },
     { id: 6, lat: 39.918, lng: 116.408, type: "moment", icon: ImageIcon },
   ],
-  meet: [ // Renamed from merchants
+  meet: [ 
     { id: 7, lat: 39.906, lng: 116.412, type: "meet", icon: ShoppingBag },
     { id: 8, lat: 39.910, lng: 116.402, type: "meet", icon: ShoppingBag },
   ],
 };
 
-// Mock data for Group Buy / Price Comparison (Meet tab)
-const GROUP_BUY_DEALS = [
-  {
-    id: 1,
-    name: "星巴克 (三里屯店)",
-    distance: "500m",
-    rating: 4.8,
-    deals: [
-      { title: "双人下午茶套餐", price: "¥68", originalPrice: "¥98", discount: "7折" },
-      { title: "大杯拿铁兑换券", price: "¥28", originalPrice: "¥35", discount: "8折" }
-    ],
-    image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop"
-  },
-  {
-    id: 2,
-    name: "海底捞火锅 (王府井店)",
-    distance: "1.2km",
-    rating: 4.9,
-    deals: [
-      { title: "工作日午市双人餐", price: "¥198", originalPrice: "¥268", discount: "7.4折" },
-      { title: "100元代金券", price: "¥88", originalPrice: "¥100", discount: "8.8折" }
-    ],
-    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&h=200&fit=crop"
-  },
-  {
-    id: 3,
-    name: "Blue Frog 蓝蛙",
-    distance: "800m",
-    rating: 4.6,
-    deals: [
-      { title: "汉堡啤酒套餐", price: "¥88", originalPrice: "¥128", discount: "6.9折" }
-    ],
-    image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=200&h=200&fit=crop"
-  }
+// --- NEW DATA STRUCTURES FOR SCENARIO-BASED MEET PAGE ---
+
+// 1. Scenarios (Entry Level)
+const SCENARIOS = [
+  { id: "date", label: "约会", icon: Heart, color: "text-pink-500", bg: "bg-pink-50" },
+  { id: "bestie", label: "闺蜜", icon: Camera, color: "text-purple-500", bg: "bg-purple-50" },
+  { id: "bros", label: "兄弟", icon: Beer, color: "text-blue-500", bg: "bg-blue-50" },
+  { id: "chill", label: "坐坐", icon: Coffee, color: "text-amber-500", bg: "bg-amber-50" },
+  { id: "night", label: "深夜", icon: Moon, color: "text-indigo-500", bg: "bg-indigo-50" },
 ];
+
+// 2. Plans (Solution Level)
+const PLANS = {
+  date: [
+    {
+      id: "date-first",
+      title: "第一次约会标准流程",
+      tags: ["#不尴尬", "#氛围感", "#高成功率"],
+      steps: [
+        { icon: "🍽", label: "吃饭", desc: "安静适合聊天" },
+        { icon: "🎬", label: "看电影", desc: "拉近距离" },
+        { icon: "☕️", label: "咖啡", desc: "意犹未尽" }
+      ],
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=200&fit=crop"
+    },
+    {
+      id: "date-anniversary",
+      title: "纪念日浪漫之夜",
+      tags: ["#仪式感", "#高端", "#难忘"],
+      steps: [
+        { icon: "🌹", label: "送花", desc: "惊喜开场" },
+        { icon: "🍽", label: "法餐", desc: "烛光晚餐" },
+        { icon: "🌃", label: "江景", desc: "浪漫散步" }
+      ],
+      image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=200&fit=crop"
+    }
+  ],
+  bestie: [
+    {
+      id: "bestie-photo",
+      title: "闺蜜出片一日游",
+      tags: ["#超好拍", "#网红店", "#精致"],
+      steps: [
+        { icon: "🍰", label: "下午茶", desc: "高颜值甜点" },
+        { icon: "📸", label: "拍照", desc: "艺术展/公园" },
+        { icon: "🍸", label: "小酌", desc: "微醺时刻" }
+      ],
+      image: "https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=400&h=200&fit=crop"
+    }
+  ],
+  bros: [
+    {
+      id: "bros-hangout",
+      title: "兄弟聚一聚",
+      tags: ["#放松", "#畅聊", "#解压"],
+      steps: [
+        { icon: "🍺", label: "烧烤", desc: "大口吃肉" },
+        { icon: "🎱", label: "台球", desc: "切磋球技" },
+        { icon: "🎮", label: "网咖", desc: "开黑一把" }
+      ],
+      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop"
+    }
+  ],
+  chill: [],
+  night: []
+};
 
 type TabType = "encounter" | "friends" | "moments" | "meet";
 
@@ -69,12 +101,15 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  
+  // New state for Meet page
+  const [activeScenario, setActiveScenario] = useState("date");
 
   const tabs: { id: TabType; label: string }[] = [
     { id: "encounter", label: "偶遇" },
     { id: "friends", label: "好友" },
     { id: "moments", label: "动态" },
-    { id: "meet", label: "相见" }, // Renamed from 商家 to 相见
+    { id: "meet", label: "相见" },
   ];
 
   // Update markers when tab changes
@@ -160,48 +195,108 @@ export default function Home() {
             }}
           />
           
-          {/* Group Buy / Price Comparison List Overlay (Only for 'Meet' tab) */}
+          {/* --- SCENARIO-BASED MEET PAGE OVERLAY --- */}
           {activeTab === "meet" && (
-            <div className="absolute bottom-20 left-0 right-0 px-4 pb-4 z-10 max-h-[50%] overflow-y-auto no-scrollbar space-y-3">
-              {GROUP_BUY_DEALS.map((deal) => (
-                <Link key={deal.id} href={`/merchant/${deal.id}`}>
-                  <div className="bg-white rounded-xl shadow-lg p-3 mb-3 flex gap-3 active:scale-98 transition-transform cursor-pointer">
-                    {/* Merchant Image */}
-                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
-                      <img src={deal.image} alt={deal.name} className="w-full h-full object-cover" />
-                    </div>
-                    
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-bold text-slate-900 truncate">{deal.name}</h3>
-                        <span className="text-xs text-slate-500">{deal.distance}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1 mt-1 mb-2">
-                        <Star className="w-3 h-3 fill-orange-400 text-orange-400" />
-                        <span className="text-xs font-medium text-orange-400">{deal.rating}</span>
-                      </div>
+            <div className="absolute inset-0 z-20 bg-slate-50/95 backdrop-blur-sm flex flex-col pt-[120px] pb-24 overflow-hidden">
+              
+              {/* 1. Scenario Selector (Entry Level) */}
+              <div className="px-4 mb-6">
+                <h2 className="text-lg font-bold text-slate-900 mb-3">这次见面怎么安排？</h2>
+                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                  {SCENARIOS.map((scenario) => {
+                    const Icon = scenario.icon;
+                    const isActive = activeScenario === scenario.id;
+                    return (
+                      <button
+                        key={scenario.id}
+                        onClick={() => setActiveScenario(scenario.id)}
+                        className={cn(
+                          "flex flex-col items-center gap-2 min-w-[64px] transition-all",
+                          isActive ? "opacity-100 scale-105" : "opacity-60 hover:opacity-80"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors",
+                          isActive ? scenario.bg : "bg-white border border-slate-100"
+                        )}>
+                          <Icon className={cn("w-6 h-6", scenario.color)} />
+                        </div>
+                        <span className={cn(
+                          "text-xs font-medium",
+                          isActive ? "text-slate-900" : "text-slate-500"
+                        )}>
+                          {scenario.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-                      {/* Deals List */}
-                      <div className="space-y-1.5">
-                        {deal.deals.map((item, idx) => (
-                          <div key={idx} className="flex items-center justify-between bg-orange-50/50 rounded-md p-1.5">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <Tag className="w-3 h-3 text-orange-500 flex-shrink-0" />
-                              <span className="text-xs text-slate-700 truncate">{item.title}</span>
-                            </div>
-                            <div className="flex items-baseline gap-1 pl-2 flex-shrink-0">
-                              <span className="text-sm font-bold text-orange-600">{item.price}</span>
-                              <span className="text-[10px] text-slate-400 line-through">{item.originalPrice}</span>
+              {/* 2. Plan List (Solution Level) */}
+              <div className="flex-1 overflow-y-auto px-4 space-y-4 no-scrollbar">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-slate-800">推荐流程</h3>
+                  <span className="text-xs text-slate-400">基于你的选择</span>
+                </div>
+
+                {PLANS[activeScenario as keyof typeof PLANS]?.length > 0 ? (
+                  PLANS[activeScenario as keyof typeof PLANS].map((plan) => (
+                    <motion.div
+                      key={plan.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden active:scale-[0.98] transition-transform"
+                    >
+                      {/* Cover Image */}
+                      <div className="h-32 w-full relative">
+                        <img src={plan.image} alt={plan.title} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                          <div>
+                            <h4 className="text-white font-bold text-lg">{plan.title}</h4>
+                            <div className="flex gap-2 mt-1">
+                              {plan.tags.map(tag => (
+                                <span key={tag} className="text-[10px] text-white/90 bg-white/20 px-1.5 py-0.5 rounded backdrop-blur-sm">
+                                  {tag}
+                                </span>
+                              ))}
                             </div>
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </div>
+
+                      {/* Steps Flow */}
+                      <div className="p-4">
+                        <div className="flex items-center justify-between relative">
+                          {/* Connecting Line */}
+                          <div className="absolute top-1/2 left-4 right-4 h-[1px] bg-slate-100 -z-10" />
+                          
+                          {plan.steps.map((step, idx) => (
+                            <div key={idx} className="flex flex-col items-center gap-1 bg-white px-2 z-0">
+                              <div className="w-8 h-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-sm shadow-sm">
+                                {step.icon}
+                              </div>
+                              <span className="text-xs font-medium text-slate-700">{step.label}</span>
+                              <span className="text-[10px] text-slate-400">{step.desc}</span>
+                            </div>
+                          ))}
+                          
+                          <div className="flex flex-col items-center justify-center">
+                             <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shadow-sm">
+                                <ChevronRight className="w-4 h-4 text-white" />
+                             </div>
+                             <span className="text-xs font-medium text-slate-900 mt-1">去安排</span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="text-center py-10 text-slate-400">
+                    <p>暂无推荐流程，试试其他场景吧</p>
                   </div>
-                </Link>
-              ))}
+                )}
+              </div>
             </div>
           )}
 
