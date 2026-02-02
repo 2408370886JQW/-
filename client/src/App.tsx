@@ -26,16 +26,16 @@ function Router() {
       <Route path="/search" component={SearchResults} />
       <Route path="/meet" component={MeetPage} />
       <Route path="/appointment/:id" component={AppointmentDetailPage} />
-      <Route path={"/merchant/:id"} component={MerchantDetailPage} />
-      <Route path={"/plan/:id"} component={PlanDetailPage} />
-      <Route path={"/circles"} component={CirclesPage} />
-      <Route path={"/chat"} component={ChatPage} />
-      <Route path={"/publish"} component={PublishPage} />
+      <Route path="/merchant/:id" component={MerchantDetailPage} />
+      <Route path="/plan/:id" component={PlanDetailPage} />
+      <Route path="/circles" component={CirclesPage} />
+      <Route path="/chat" component={ChatPage} />
+      <Route path="/publish" component={PublishPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route path="/relations/:type" component={RelationshipPage} />
       <Route path="/notifications" component={NotificationPage} />
-      <Route path={"/friends"} component={FriendsPage} />
-      <Route path={"/404"} component={NotFound} />
+      <Route path="/friends" component={FriendsPage} />
+      <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

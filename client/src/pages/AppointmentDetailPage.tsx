@@ -34,8 +34,8 @@ const APPOINTMENTS = [
     status: "pending",
     description: "好久没玩狼人杀了，这周五晚上组个局，大概6-8人，新手友好。",
     participants: [
-      { id: 4, name: "David", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100&h=100&fit=crop" },
-      { id: 888888, name: "我", avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop" }
+      { id: 4, name: "David", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100&h=100&fit=crop", status: "pending" },
+      { id: 888888, name: "我", avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop", status: "pending" }
     ]
   },
 ];
