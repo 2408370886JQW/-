@@ -36,13 +36,47 @@ const CONVERSATIONS = [
   },
 ];
 
+// Helper to generate timestamps for mock data
+const now = new Date();
+const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
 const MOCK_MESSAGES = [
-  { id: 1, type: "text", content: "Hi Alice! 👋", isMe: true, time: "10:00" },
-  { id: 2, type: "text", content: "周末有空吗？想去探店", isMe: false, time: "10:01" },
-  { id: 3, type: "text", content: "有啊，想去哪？", isMe: true, time: "10:02" },
-  { id: 4, type: "location", content: "三里屯太古里", address: "朝阳区三里屯路19号", isMe: false, time: "10:05" },
-  { id: 5, type: "text", content: "这家新开的咖啡店不错", isMe: false, time: "10:05" },
+  { id: 1, type: "text", content: "Hi Alice! 👋", isMe: true, timestamp: lastWeek.getTime() },
+  { id: 2, type: "text", content: "周末有空吗？想去探店", isMe: false, timestamp: yesterday.getTime() },
+  { id: 3, type: "text", content: "有啊，想去哪？", isMe: true, timestamp: fiveMinutesAgo.getTime() },
+  { id: 4, type: "location", content: "三里屯太古里", address: "朝阳区三里屯路19号", isMe: false, timestamp: now.getTime() },
+  { id: 5, type: "text", content: "这家新开的咖啡店不错", isMe: false, timestamp: now.getTime() + 60 * 1000 }, // 1 minute later
 ];
+
+// Time formatting utility
+const formatMessageTime = (timestamp: number, prevTimestamp?: number) => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diff = now.getTime() - timestamp;
+  const isSameDay = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  const isYesterday = new Date(now.getTime() - 86400000).getDate() === date.getDate();
+  const isWithinWeek = diff < 7 * 86400000;
+
+  // Check if we should show time based on interval (5 minutes)
+  if (prevTimestamp && timestamp - prevTimestamp < 5 * 60 * 1000) {
+    return null;
+  }
+
+  const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  if (isSameDay) {
+    return timeStr;
+  } else if (isYesterday) {
+    return `昨天 ${timeStr}`;
+  } else if (isWithinWeek) {
+    const weekDays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    return `${weekDays[date.getDay()]} ${timeStr}`;
+  } else {
+    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${timeStr}`;
+  }
+};
 
 export default function ChatPage() {
   const [activeConversation, setActiveConversation] = useState<number | null>(null);
@@ -57,7 +91,7 @@ export default function ChatPage() {
       type: "text",
       content: messageText,
       isMe: true,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: Date.now()
     };
     
     setMessages([...messages, newMessage]);
@@ -71,7 +105,7 @@ export default function ChatPage() {
       content: "我的位置",
       address: "北京市朝阳区建国路88号",
       isMe: true,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: Date.now()
     };
     setMessages([...messages, newMessage]);
   };
@@ -173,51 +207,60 @@ export default function ChatPage() {
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map(msg => (
-                  <div 
-                    key={msg.id} 
-                    className={cn(
-                      "flex gap-2 max-w-[80%]",
-                      msg.isMe ? "ml-auto flex-row-reverse" : ""
-                    )}
-                  >
-                    {!msg.isMe && (
-                      <img 
-                        src={CONVERSATIONS.find(c => c.id === activeConversation)?.avatar} 
-                        className="w-8 h-8 rounded-full object-cover self-end mb-1" 
-                      />
-                    )}
-                    
-                    <div className={cn(
-                      "rounded-2xl p-3 shadow-sm",
-                      msg.isMe ? "bg-blue-500 text-white rounded-br-none" : "bg-white text-slate-900 rounded-bl-none"
-                    )}>
-                      {msg.type === "text" && (
-                        <p className="text-sm leading-relaxed">{msg.content}</p>
-                      )}
-                      
-                      {msg.type === "location" && (
-                        <div className="flex items-start gap-3 min-w-[200px]">
-                          <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                            <MapPin className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm mb-0.5">{msg.content}</div>
-                            <div className="text-xs opacity-80">{msg.address}</div>
-                          </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                {messages.map((msg, index) => {
+                  const prevMsg = messages[index - 1];
+                  const timeDisplay = formatMessageTime(msg.timestamp, prevMsg?.timestamp);
+
+                  return (
+                    <div key={msg.id} className="space-y-4">
+                      {/* Time Separator */}
+                      {timeDisplay && (
+                        <div className="flex justify-center">
+                          <span className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-full">
+                            {timeDisplay}
+                          </span>
                         </div>
                       )}
-                      
-                      <div className={cn(
-                        "text-[10px] mt-1 text-right",
-                        msg.isMe ? "text-blue-100" : "text-slate-400"
-                      )}>
-                        {msg.time}
+
+                      {/* Message Bubble */}
+                      <div 
+                        className={cn(
+                          "flex gap-2 max-w-[80%]",
+                          msg.isMe ? "ml-auto flex-row-reverse" : ""
+                        )}
+                      >
+                        {!msg.isMe && (
+                          <img 
+                            src={CONVERSATIONS.find(c => c.id === activeConversation)?.avatar} 
+                            className="w-8 h-8 rounded-full object-cover self-end mb-1" 
+                          />
+                        )}
+                        
+                        <div className={cn(
+                          "rounded-2xl p-3 shadow-sm",
+                          msg.isMe ? "bg-blue-500 text-white rounded-br-none" : "bg-white text-slate-900 rounded-bl-none"
+                        )}>
+                          {msg.type === "text" && (
+                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                          )}
+                          
+                          {msg.type === "location" && (
+                            <div className="flex items-start gap-3 min-w-[200px]">
+                              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                                <MapPin className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-sm mb-0.5">{msg.content}</div>
+                                <div className="text-xs opacity-80">{msg.address}</div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Input Area */}

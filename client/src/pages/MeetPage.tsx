@@ -1,184 +1,120 @@
 import { useState } from "react";
-import Layout from "@/components/Layout";
-import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+import { MapPin, Heart, MessageCircle, Filter, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Search, Map, List, Star, MapPin, Filter } from "lucide-react";
-import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import Layout from "@/components/Layout";
+
+// Mock data for nearby people
+const NEARBY_PEOPLE = [
+  { id: 1, name: "Jessica", age: 24, distance: "200m", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop", tags: ["咖啡", "摄影", "旅行"], bio: "周末想去探店，有人一起吗？" },
+  { id: 2, name: "Michael", age: 27, distance: "500m", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop", tags: ["健身", "篮球", "电影"], bio: "寻找健身搭子，坐标朝阳公园。" },
+  { id: 3, name: "Sarah", age: 22, distance: "800m", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop", tags: ["美食", "猫咪", "音乐"], bio: "刚搬来附近，求推荐好吃的！" },
+  { id: 4, name: "David", age: 29, distance: "1.2km", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop", tags: ["创业", "科技", "滑雪"], bio: "聊聊互联网创业那些事儿。" },
+];
 
 export default function MeetPage() {
-  const [location, setLocation] = useLocation();
-  const [viewMode, setViewMode] = useState<"list" | "map">("list");
-  const [activeCategory, setActiveCategory] = useState("全部");
-
-  const categories = [
-    { id: "all", label: "全部" },
-    { id: "food", label: "吃美食" },
-    { id: "play", label: "玩乐" },
-    { id: "exhibition", label: "看展" },
-    { id: "coffee", label: "喝咖啡" },
-  ];
-
-  const merchants = [
-    {
-      id: 1,
-      name: "Gather & Brew",
-      category: "咖啡厅",
-      rating: 4.8,
-      reviews: 128,
-      price: "¥45/人",
-      distance: "0.5km",
-      image: "/images/category-coffee.jpg",
-      tags: ["环境好", "适合办公", "宠物友好"],
-      address: "朝阳区三里屯西五街5号"
-    },
-    {
-      id: 2,
-      name: "Fun Lounge",
-      category: "娱乐",
-      rating: 4.6,
-      reviews: 85,
-      price: "¥120/人",
-      distance: "1.2km",
-      image: "/images/category-play.jpg",
-      tags: ["聚会首选", "有包间", "桌游"],
-      address: "朝阳区工体北路8号"
-    },
-    {
-      id: 3,
-      name: "Modern Art Space",
-      category: "看展",
-      rating: 4.9,
-      reviews: 342,
-      price: "¥80/人",
-      distance: "2.5km",
-      image: "/images/category-exhibition.jpg",
-      tags: ["拍照出片", "沉浸式", "限时"],
-      address: "朝阳区798艺术区"
-    },
-    {
-      id: 4,
-      name: "Burger & Bistro",
-      category: "美食",
-      rating: 4.5,
-      reviews: 210,
-      price: "¥90/人",
-      distance: "0.8km",
-      image: "/images/category-food.jpg",
-      tags: ["美式汉堡", "精酿啤酒", "露台"],
-      address: "朝阳区新源里西20号"
-    }
-  ];
+  const [activeFilter, setActiveFilter] = useState<"all" | "male" | "female">("all");
 
   return (
-    <Layout>
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50">
-        {/* Search Header */}
-        <div className="px-4 py-3 flex gap-3 items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="搜索商家、地点..." 
-              className="pl-9 bg-muted/50 border-none rounded-full h-10"
-            />
+    <Layout showNav={true}>
+      <div className="min-h-screen bg-slate-50 pb-24">
+        {/* Header */}
+        <div className="bg-white sticky top-0 z-10 px-4 pt-safe pb-2 shadow-sm">
+          <div className="flex items-center justify-between mb-4 mt-2">
+            <h1 className="text-2xl font-bold text-slate-900">相见</h1>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <Filter className="w-6 h-6 text-slate-900" />
+            </Button>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full w-10 h-10 bg-muted/50 hover:bg-muted"
-            onClick={() => setViewMode(viewMode === "list" ? "map" : "list")}
-          >
-            {viewMode === "list" ? <Map className="w-5 h-5" /> : <List className="w-5 h-5" />}
+
+          {/* Filter Tabs */}
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            <button
+              onClick={() => setActiveFilter("all")}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
+                activeFilter === "all" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
+              )}
+            >
+              全部
+            </button>
+            <button
+              onClick={() => setActiveFilter("female")}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
+                activeFilter === "female" ? "bg-pink-500 text-white" : "bg-slate-100 text-slate-600"
+              )}
+            >
+              只看女生
+            </button>
+            <button
+              onClick={() => setActiveFilter("male")}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
+                activeFilter === "male" ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-600"
+              )}
+            >
+              只看男生
+            </button>
+          </div>
+        </div>
+
+        {/* Content - Card Stack Style */}
+        <div className="px-4 py-4 space-y-4">
+          {NEARBY_PEOPLE.map((person) => (
+            <motion.div
+              key={person.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl overflow-hidden shadow-sm"
+            >
+              <div className="relative h-64">
+                <img src={person.avatar} className="w-full h-full object-cover" />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                  <div className="flex items-end justify-between text-white">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-bold">{person.name}</h3>
+                        <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs backdrop-blur-sm">
+                          {person.age}岁
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-white/80 mt-1">
+                        <MapPin className="w-3 h-3" />
+                        {person.distance}
+                      </div>
+                    </div>
+                    <Button size="icon" className="rounded-full bg-white text-red-500 hover:bg-white/90 h-10 w-10">
+                      <Heart className="w-5 h-5 fill-current" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4">
+                <p className="text-slate-600 text-sm mb-3 line-clamp-2">{person.bio}</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {person.tags.map(tag => (
+                    <span key={tag} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-md">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+                <Button className="w-full rounded-xl bg-slate-900 text-white font-bold h-11">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  打招呼
+                </Button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        
+        {/* Floating Action Button for Creating a Meetup */}
+        <div className="fixed bottom-24 right-4">
+          <Button className="h-14 w-14 rounded-full bg-blue-600 shadow-lg hover:bg-blue-700 p-0 flex items-center justify-center">
+            <Users className="w-6 h-6 text-white" />
           </Button>
         </div>
-
-        {/* Category Filter */}
-        <div className="px-4 pb-3 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.label)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                  activeCategory === cat.label
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Content Area */}
-      <div className="p-4 space-y-4 pb-24">
-        {viewMode === "list" ? (
-          <div className="space-y-4">
-            {merchants.map((merchant) => (
-              <Card 
-                key={merchant.id} 
-                className="border-none shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => setLocation("/meet/detail")}
-              >
-                <div className="flex h-32">
-                  <div className="w-32 h-full relative shrink-0">
-                    <img src={merchant.image} alt={merchant.name} className="w-full h-full object-cover" />
-                    {merchant.id === 1 && (
-                      <Badge className="absolute top-2 left-2 bg-orange-500 hover:bg-orange-600 text-[10px] px-1.5 py-0.5 h-5 border-none">
-                        热门
-                      </Badge>
-                    )}
-                  </div>
-                  <CardContent className="flex-1 p-3 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-bold text-base truncate pr-2">{merchant.name}</h3>
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">{merchant.distance}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center text-orange-500 text-xs font-bold">
-                          <Star className="w-3 h-3 fill-current mr-0.5" />
-                          {merchant.rating}
-                        </div>
-                        <span className="text-xs text-muted-foreground">{merchant.price}</span>
-                        <span className="text-xs text-muted-foreground">• {merchant.category}</span>
-                      </div>
-
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {merchant.tags.map((tag, i) => (
-                          <span key={i} className="text-[10px] px-1.5 py-0.5 bg-muted rounded text-muted-foreground">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center text-xs text-muted-foreground mt-2">
-                      <MapPin className="w-3 h-3 mr-1" />
-                      <span className="truncate">{merchant.address}</span>
-                    </div>
-                  </CardContent>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="h-[60vh] flex items-center justify-center bg-muted/30 rounded-2xl border-2 border-dashed border-muted-foreground/20">
-            <div className="text-center space-y-2">
-              <Map className="w-12 h-12 text-muted-foreground/50 mx-auto" />
-              <p className="text-muted-foreground text-sm">地图模式开发中...</p>
-              <Button variant="outline" size="sm" onClick={() => setViewMode("list")}>
-                返回列表
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </Layout>
   );

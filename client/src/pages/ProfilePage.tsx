@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Settings, MapPin, Calendar, Heart, Image as ImageIcon, Star, ChevronRight, Grid, List, Users, Bell } from "lucide-react";
+import { Settings, MapPin, Calendar, Heart, Image as ImageIcon, Star, ChevronRight, Grid, List, Users, Bell, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -19,6 +19,11 @@ const USER_INFO = {
     likes: 1024
   }
 };
+
+const MY_APPOINTMENTS = [
+  { id: 1, title: "周末探店小分队", time: "明天 14:00", location: "三里屯太古里", status: "upcoming" },
+  { id: 2, title: "周五晚上桌游局", time: "周五 19:30", location: "朝阳大悦城", status: "pending" },
+];
 
 const MY_MOMENTS = [
   { id: 1, image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=400&fit=crop", likes: 45, date: "10-24" },
@@ -109,6 +114,39 @@ export default function ProfilePage() {
             <div className="text-center">
               <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.likes}</div>
               <div className="text-xs text-slate-400">获赞</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Appointment Reminders */}
+        <div className="px-4 mb-6">
+          <div className="bg-white border border-slate-100 rounded-xl shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between">
+              <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-500" />
+                我的预约
+              </h3>
+              <span className="text-xs text-slate-400">查看全部</span>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {MY_APPOINTMENTS.map(apt => (
+                <div key={apt.id} className="p-4 flex items-center justify-between active:bg-slate-50 transition-colors">
+                  <div>
+                    <div className="font-medium text-slate-900 mb-1">{apt.title}</div>
+                    <div className="text-xs text-slate-500 flex items-center gap-2">
+                      <span>{apt.time}</span>
+                      <span className="w-1 h-1 rounded-full bg-slate-300" />
+                      <span>{apt.location}</span>
+                    </div>
+                  </div>
+                  <div className={cn(
+                    "px-2 py-1 rounded text-xs font-medium",
+                    apt.status === "upcoming" ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-500"
+                  )}>
+                    {apt.status === "upcoming" ? "即将开始" : "待确认"}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

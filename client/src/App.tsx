@@ -23,13 +23,13 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/search" component={SearchResults} />
-      <Route path={"/meet"} component={MerchantDetailPage} />
+      <Route path="/meet" component={MeetPage} />
       <Route path={"/merchant/:id"} component={MerchantDetailPage} />
       <Route path={"/plan/:id"} component={PlanDetailPage} />
       <Route path={"/circles"} component={CirclesPage} />
       <Route path={"/chat"} component={ChatPage} />
       <Route path={"/publish"} component={PublishPage} />
-       <Route path="/profile" component={ProfilePage} />
+      <Route path="/profile" component={ProfilePage} />
       <Route path="/relations/:type" component={RelationshipPage} />
       <Route path="/notifications" component={NotificationPage} />
       <Route path={"/friends"} component={FriendsPage} />
