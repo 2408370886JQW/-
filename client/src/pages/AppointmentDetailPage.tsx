@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRoute, Link } from "wouter";
-import { ArrowLeft, MapPin, Clock, Users, Navigation, Calendar, Share2, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Users, Navigation, Calendar, Share2, MoreHorizontal, MessageCircle, CheckCircle2, Car, MapPin as MapPinIcon } from "lucide-react";
 import MapView from "@/components/Map";
 import { cn } from "@/lib/utils";
 
@@ -17,10 +17,10 @@ const APPOINTMENTS = [
     status: "upcoming",
     description: "听说三里屯新开了一家网红咖啡店，一起去打卡拍照吧！之后可以去逛逛街。",
     participants: [
-      { id: 1, name: "Alice", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" },
-      { id: 2, name: "Bob", avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop" },
-      { id: 3, name: "Charlie", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" },
-      { id: 888888, name: "我", avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop" }
+      { id: 1, name: "Alice", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "arrived" },
+      { id: 2, name: "Bob", avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop", status: "on_way" },
+      { id: 3, name: "Charlie", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop", status: "pending" },
+      { id: 888888, name: "我", avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop", status: "pending" }
     ]
   },
   { 
@@ -45,6 +45,7 @@ export default function AppointmentDetailPage() {
   const id = params?.id ? parseInt(params.id) : null;
   const appointment = APPOINTMENTS.find(a => a.id === id);
   const mapRef = useRef<google.maps.Map | null>(null);
+  const [myStatus, setMyStatus] = useState<string>("pending");
 
   if (!appointment) {
     return (
@@ -66,6 +67,38 @@ export default function AppointmentDetailPage() {
       position: appointment.coordinates,
       title: appointment.location,
     });
+  };
+
+  const handleAddToCalendar = () => {
+    if (!appointment) return;
+
+    // Parse date string "2026年2月3日 14:00" to Date object
+    const dateStr = appointment.fullTime.replace(/年|月/g, '-').replace('日', '');
+    const startDate = new Date(dateStr);
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // Assume 2 hours duration
+
+    const formatDate = (date: Date) => date.toISOString().replace(/-|:|\.\d+/g, '');
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'BEGIN:VEVENT',
+      `DTSTART:${formatDate(startDate)}`,
+      `DTEND:${formatDate(endDate)}`,
+      `SUMMARY:${appointment.title}`,
+      `DESCRIPTION:${appointment.description || ''}`,
+      `LOCATION:${appointment.address}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', `${appointment.title}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -102,6 +135,13 @@ export default function AppointmentDetailPage() {
               <div>
                 <div className="font-medium text-slate-900">{appointment.fullTime}</div>
                 <div className="text-xs text-slate-400 mt-0.5">请提前10分钟到达</div>
+                <button 
+                  onClick={handleAddToCalendar}
+                  className="mt-2 text-xs flex items-center gap-1 text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-md w-fit active:scale-95 transition-transform"
+                >
+                  <Calendar className="w-3 h-3" />
+                  添加到日历
+                </button>
               </div>
             </div>
             
@@ -146,18 +186,54 @@ export default function AppointmentDetailPage() {
               <Users className="w-5 h-5 text-blue-500" />
               参与人 ({appointment.participants.length})
             </h3>
-            <button className="text-xs text-blue-600 font-medium">邀请好友</button>
+            <Link href="/chat">
+              <button className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                <MessageCircle className="w-3 h-3" />
+                进入群聊
+              </button>
+            </Link>
           </div>
           
           <div className="grid grid-cols-5 gap-3">
-            {appointment.participants.map(p => (
-              <div key={p.id} className="flex flex-col items-center gap-1">
-                <div className="w-12 h-12 rounded-full p-0.5 border border-slate-100 shadow-sm">
-                  <img src={p.avatar} className="w-full h-full rounded-full object-cover" />
+            {appointment.participants.map(p => {
+              const isMe = p.id === 888888;
+              const status = isMe ? myStatus : p.status;
+              
+              return (
+                <div key={p.id} className="flex flex-col items-center gap-1 relative">
+                  <div className="w-12 h-12 rounded-full p-0.5 border border-slate-100 shadow-sm relative">
+                    <img src={p.avatar} className="w-full h-full rounded-full object-cover" />
+                    {status === 'arrived' && (
+                      <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white">
+                        <CheckCircle2 className="w-3 h-3" />
+                      </div>
+                    )}
+                    {status === 'on_way' && (
+                      <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 border-2 border-white">
+                        <Car className="w-3 h-3" />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-slate-600 truncate w-full text-center">{p.name}</span>
+                  {isMe && (
+                    <div className="absolute -bottom-8 flex gap-1 bg-white shadow-lg rounded-full p-1 border border-slate-100 scale-75 origin-top z-10">
+                      <button 
+                        onClick={() => setMyStatus('on_way')}
+                        className={cn("p-1 rounded-full", myStatus === 'on_way' ? "bg-blue-100 text-blue-600" : "text-slate-400 hover:bg-slate-50")}
+                      >
+                        <Car className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => setMyStatus('arrived')}
+                        className={cn("p-1 rounded-full", myStatus === 'arrived' ? "bg-green-100 text-green-600" : "text-slate-400 hover:bg-slate-50")}
+                      >
+                        <MapPinIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <span className="text-xs text-slate-600 truncate w-full text-center">{p.name}</span>
-              </div>
-            ))}
+              );
+            })}
             <button className="flex flex-col items-center gap-1 group">
               <div className="w-12 h-12 rounded-full bg-slate-50 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 group-active:bg-slate-100 transition-colors">
                 <Share2 className="w-5 h-5" />
