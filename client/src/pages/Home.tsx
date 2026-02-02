@@ -161,6 +161,7 @@ export default function Home() {
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [showFriendList, setShowFriendList] = useState(false);
 
   // State for Nav Hiding
   const [isNavVisible, setIsNavVisible] = useState(true);
@@ -420,13 +421,16 @@ export default function Home() {
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input 
-                  placeholder="搜索好友、地点" 
+                  placeholder="搜索好友、地点、套餐、商户" 
                   className="w-full pl-11 bg-slate-100 border-none rounded-full h-11 text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button className="w-11 h-11 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-100 active:scale-95 transition-transform">
+              <button 
+                onClick={() => setShowFriendList(true)}
+                className="w-11 h-11 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-100 active:scale-95 transition-transform"
+              >
                 <User className="w-5 h-5 text-slate-600" />
               </button>
             </div>
@@ -463,6 +467,69 @@ export default function Home() {
             </div>
           </div>
         </motion.div>
+        {/* Friend List Popup */}
+        <AnimatePresence>
+          {showFriendList && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowFriendList(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed inset-y-0 right-0 z-50 w-3/4 max-w-sm bg-white shadow-2xl flex flex-col"
+              >
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-slate-900">好友列表</h3>
+                  <button onClick={() => setShowFriendList(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                    <X className="w-5 h-5 text-slate-500" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {INITIAL_MARKERS.friends.map(friend => (
+                    <div key={friend.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer" onClick={() => {
+                      setShowFriendList(false);
+                      setSelectedFriend(friend);
+                    }}>
+                      <div className={cn(
+                        "w-12 h-12 rounded-full border-2 overflow-hidden",
+                        friend.gender === "female" ? "border-pink-400" : "border-blue-500"
+                      )}>
+                        <img src={friend.avatar} alt="Friend" className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">用户 {friend.id}</div>
+                        <div className="text-xs text-slate-500 flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                          在线
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {/* Mock more friends */}
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={`mock-${i}`} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
+                      <div className="w-12 h-12 rounded-full border-2 border-slate-200 overflow-hidden bg-slate-100">
+                        <User className="w-full h-full p-2 text-slate-300" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">好友 {i}</div>
+                        <div className="text-xs text-slate-500">离线</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         {/* Friend Card Popup */}
         <AnimatePresence>
           {selectedFriend && (
@@ -478,6 +545,14 @@ export default function Home() {
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100) {
+                    setSelectedFriend(null);
+                  }
+                }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-slate-100 flex flex-col"
                 style={{ height: '85vh' }}

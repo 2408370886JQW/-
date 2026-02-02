@@ -249,14 +249,17 @@ export default function BottomNav() {
             if (item.isSpecial) {
               return (
                 <div key={item.path} onClick={togglePublish}>
-                  <div className="relative -top-6 flex flex-col items-center justify-center cursor-pointer group">
+                  <div className="relative -top-8 flex flex-col items-center justify-center cursor-pointer group">
                     <motion.div 
                       animate={isPublishOpen ? { rotate: 45, scale: 1.1 } : { rotate: 0, scale: 1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 border-4 border-white"
+                      className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 border-4 border-white mb-1"
                     >
-                      <Plus className="w-7 h-7 text-white" strokeWidth={3} />
+                      <Plus className="w-8 h-8 text-white" strokeWidth={3} />
                     </motion.div>
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 transition-colors">
+                      发布动态
+                    </span>
                   </div>
                 </div>
               );
