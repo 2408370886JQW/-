@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, MessageCircle, Send, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Star, Share2, UserPlus, Image as ImageIcon } from "lucide-react";
+import { X, Heart, MessageCircle, Send, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Star, Share2, UserPlus, Image as ImageIcon, Download, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Comment {
   id: number;
@@ -22,7 +23,7 @@ interface MomentDetailProps {
     user?: string;
     avatar?: string;
     content: string;
-    title?: string; // Added title support
+    title?: string;
     images?: string[];
     image?: string;
     likes: number;
@@ -84,6 +85,15 @@ const INITIAL_COMMENTS: Comment[] = [
   },
 ];
 
+// Mock friends for @mention
+const MOCK_FRIENDS = [
+  { id: 1, name: "Alice", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" },
+  { id: 2, name: "Bob", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop" },
+  { id: 3, name: "Charlie", avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop" },
+  { id: 4, name: "David", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" },
+  { id: 5, name: "Eva", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" },
+];
+
 export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
   const [isLiked, setIsLiked] = useState(moment.isLiked || false);
   const [isCollected, setIsCollected] = useState(moment.isCollected || false);
@@ -95,10 +105,27 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
   const [replyTo, setReplyTo] = useState<{ id: number, user: string } | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
-  const lastTapRef = useRef(0);
+  const [showMentionList, setShowMentionList] = useState(false);
+  const [showLongPressMenu, setShowLongPressMenu] = useState(false);
   
+  const lastTapRef = useRef(0);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const images = moment.images || (moment.image ? [moment.image] : []);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Handle double tap and long press
+  const handleTouchStart = () => {
+    longPressTimerRef.current = setTimeout(() => {
+      setShowLongPressMenu(true);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+  };
 
   const handleDoubleTap = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
@@ -136,8 +163,34 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
     setIsCollected(!isCollected);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCommentText(value);
+    
+    // Check if last character is @
+    if (value.endsWith('@')) {
+      setShowMentionList(true);
+    } else if (!value.includes('@')) {
+      setShowMentionList(false);
+    }
+  };
+
+  const handleMentionSelect = (friendName: string) => {
+    setCommentText(prev => prev + friendName + " ");
+    setShowMentionList(false);
+    inputRef.current?.focus();
+  };
+
   const handleSendComment = () => {
     if (!commentText.trim()) return;
+    
+    // Check for mentions
+    const mentions = commentText.match(/@(\w+)/g);
+    if (mentions) {
+      mentions.forEach(mention => {
+        toast.success(`已提醒 ${mention} 查看`);
+      });
+    }
     
     const newComment: Comment = {
       id: Date.now(),
@@ -167,8 +220,7 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
     }
     
     setCommentText("");
-    
-    // Scroll to bottom of comments if needed, or just show toast
+    setShowMentionList(false);
   };
 
   const toggleCommentLike = (commentId: number, isReply = false, parentId?: number) => {
@@ -205,8 +257,13 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
     >
       {/* Left Side: Media (Image/Video) - Full height on desktop, top part on mobile */}
       <div 
-        className="relative w-full md:w-[60%] h-[50vh] md:h-full bg-black flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
+        className="relative w-full md:w-[60%] h-[50vh] md:h-full bg-black flex items-center justify-center overflow-hidden shrink-0 cursor-pointer select-none"
         onClick={handleDoubleTap}
+        onMouseDown={handleTouchStart}
+        onMouseUp={handleTouchEnd}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onContextMenu={(e) => e.preventDefault()}
       >
         {/* Like Animation Overlay */}
         <AnimatePresence>
@@ -222,6 +279,57 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Long Press Menu Overlay */}
+        <AnimatePresence>
+          {showLongPressMenu && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-40 bg-black/60 flex items-end justify-center pb-8 md:items-center md:pb-0"
+              onClick={(e) => { e.stopPropagation(); setShowLongPressMenu(false); }}
+            >
+              <motion.div
+                initial={{ y: 100 }}
+                animate={{ y: 0 }}
+                exit={{ y: 100 }}
+                className="bg-white w-[90%] max-w-sm rounded-2xl overflow-hidden shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex flex-col divide-y divide-slate-100">
+                  <button 
+                    className="flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors text-slate-900 font-medium"
+                    onClick={() => {
+                      toast.success("图片已保存到相册");
+                      setShowLongPressMenu(false);
+                    }}
+                  >
+                    <Download className="w-5 h-5" />
+                    保存图片
+                  </button>
+                  <button 
+                    className="flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors text-slate-900 font-medium"
+                    onClick={() => {
+                      toast.success("将减少此类内容推荐");
+                      setShowLongPressMenu(false);
+                    }}
+                  >
+                    <EyeOff className="w-5 h-5" />
+                    不感兴趣
+                  </button>
+                  <button 
+                    className="px-6 py-4 hover:bg-slate-50 transition-colors text-slate-500 text-sm border-t-4 border-slate-50"
+                    onClick={() => setShowLongPressMenu(false)}
+                  >
+                    取消
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Mobile Back Button */}
         <button 
           onClick={onClose}
@@ -238,7 +346,7 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full h-full object-contain bg-black"
+            className="w-full h-full object-contain bg-black pointer-events-none"
           />
         </AnimatePresence>
 
@@ -435,9 +543,10 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
         <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-4 py-3 pb-safe z-20 flex items-center gap-4">
           <div className="flex-1 relative">
             <Input 
+              ref={inputRef}
               placeholder={replyTo ? `回复 ${replyTo.user}...` : "说点什么..."}
               value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
+              onChange={handleInputChange}
               className="bg-slate-100 border-none rounded-full pl-4 pr-10 h-10 text-sm focus-visible:ring-1 focus-visible:ring-slate-300"
               onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
             />
@@ -449,6 +558,32 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
                 <Send className="w-3.5 h-3.5" />
               </button>
             )}
+
+            {/* Mention List Popup */}
+            <AnimatePresence>
+              {showMentionList && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50"
+                >
+                  <div className="p-2 text-xs font-medium text-slate-400 bg-slate-50">选择好友提醒</div>
+                  <div className="max-h-48 overflow-y-auto">
+                    {MOCK_FRIENDS.map(friend => (
+                      <button
+                        key={friend.id}
+                        className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors text-left"
+                        onClick={() => handleMentionSelect(friend.name)}
+                      >
+                        <img src={friend.avatar} className="w-8 h-8 rounded-full object-cover" />
+                        <span className="text-sm font-medium text-slate-900">{friend.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           
           <div className="flex items-center gap-5 shrink-0">
