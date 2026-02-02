@@ -321,13 +321,18 @@ export default function Home() {
             
             {/* Online Status Dot */}
             <div className={cn(
-              "absolute bottom-0 right-0 w-4 h-4 border-2 border-white rounded-full shadow-sm",
-              marker.online ? "bg-yellow-400" : "bg-slate-400"
+              "absolute bottom-0 right-0 w-4 h-4 border-2 border-white rounded-full shadow-sm z-10",
+              marker.online ? "bg-green-500" : "bg-slate-400"
             )} />
             
+            {/* Gender/Status Indicator (Yellow for Female, etc.) */}
+            {marker.gender === "female" && (
+              <div className="absolute top-0 right-0 w-3 h-3 bg-yellow-400 rounded-full border-2 border-white shadow-sm z-10" />
+            )}
+
             {/* Ripple Effect for Online Users */}
             {marker.online && (
-              <div className="absolute -inset-2 rounded-full border-2 border-yellow-400/50 opacity-0 animate-ping" />
+              <div className="absolute -inset-2 rounded-full border-2 border-green-500/50 opacity-0 animate-ping" />
             )}
           </motion.div>
         );
@@ -473,7 +478,15 @@ export default function Home() {
                     <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-1">用户 {selectedFriend.id}</h3>
-                  <p className="text-slate-500 text-sm mb-6">北京 • 活跃于 5 分钟前</p>
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      selectedFriend.online ? "bg-green-500" : "bg-slate-400"
+                    )} />
+                    <p className="text-slate-500 text-sm">
+                      {selectedFriend.online ? "在线" : "活跃于 3 周前"}
+                    </p>
+                  </div>
                   
                   <div className="flex gap-4 w-full mb-8">
                     <button className="flex-1 bg-slate-100/80 text-slate-900 py-3.5 rounded-2xl font-semibold active:scale-95 transition-transform backdrop-blur-md">
@@ -839,20 +852,24 @@ export default function Home() {
                     <span className="text-xs text-slate-400">热门推荐</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
-                      <div className="aspect-video rounded-lg bg-pink-50 mb-2 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=150&fit=crop" className="w-full h-full object-cover" />
+                    <Link href="/plan/date-anniversary">
+                      <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 cursor-pointer active:scale-95 transition-transform">
+                        <div className="aspect-video rounded-lg bg-pink-50 mb-2 overflow-hidden">
+                          <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=150&fit=crop" className="w-full h-full object-cover" />
+                        </div>
+                        <h4 className="font-bold text-sm text-slate-900">情侣浪漫晚餐</h4>
+                        <p className="text-xs text-slate-400 mt-0.5">¥520/双人</p>
                       </div>
-                      <h4 className="font-bold text-sm text-slate-900">情侣浪漫晚餐</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">¥520/双人</p>
-                    </div>
-                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
-                      <div className="aspect-video rounded-lg bg-purple-50 mb-2 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=200&h=150&fit=crop" className="w-full h-full object-cover" />
+                    </Link>
+                    <Link href="/plan/bestie-photo">
+                      <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 cursor-pointer active:scale-95 transition-transform">
+                        <div className="aspect-video rounded-lg bg-purple-50 mb-2 overflow-hidden">
+                          <img src="https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=200&h=150&fit=crop" className="w-full h-full object-cover" />
+                        </div>
+                        <h4 className="font-bold text-sm text-slate-900">闺蜜下午茶</h4>
+                        <p className="text-xs text-slate-400 mt-0.5">¥298/双人</p>
                       </div>
-                      <h4 className="font-bold text-sm text-slate-900">闺蜜下午茶</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">¥298/双人</p>
-                    </div>
+                    </Link>
                   </div>
                 </div>
               </div>

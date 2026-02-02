@@ -92,31 +92,35 @@ export default function CirclesPage() {
         </div>
       </div>
 
-      {/* Waterfall Layout */}
+      {/* Waterfall Layout (Masonry) */}
       <div className="p-2 pb-24">
-        <div className="columns-2 gap-3 space-y-3">
+        <div className="columns-2 gap-2 space-y-2">
           {feeds.map((feed) => (
-            <div key={feed.id} className="break-inside-avoid mb-3">
-              <Card className="border-none shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300 rounded-2xl active:scale-95">
-                <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
+            <div key={feed.id} className="break-inside-avoid mb-2">
+              <Card className="border-none shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300 rounded-xl active:scale-95 bg-white">
+                {/* Image with variable aspect ratio simulation */}
+                <div className={cn(
+                  "relative overflow-hidden bg-slate-100",
+                  feed.id % 2 === 0 ? "aspect-[3/4]" : "aspect-[4/5]"
+                )}>
                   <img 
                     src={feed.image} 
                     alt={feed.title} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <CardContent className="p-3 space-y-2 bg-white">
-                  <h3 className="font-medium text-sm leading-snug line-clamp-2 text-slate-900">
+                
+                <CardContent className="p-2.5 space-y-2">
+                  <h3 className="font-medium text-[13px] leading-snug line-clamp-2 text-slate-900">
                     {feed.title}
                   </h3>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <Avatar className="w-5 h-5 border border-slate-100">
+                      <Avatar className="w-4 h-4 border border-slate-100">
                         <AvatarFallback className="text-[8px] bg-slate-100 text-slate-500">
                           {feed.avatar}
                         </AvatarFallback>
-                        {/* <AvatarImage src={feed.userAvatar} /> */}
                       </Avatar>
                       <span className="text-[10px] text-slate-500 truncate max-w-[60px]">
                         {feed.user}
@@ -125,8 +129,8 @@ export default function CirclesPage() {
                     <div className="flex items-center gap-1 text-slate-400">
                       <Heart 
                         className={cn(
-                          "w-3.5 h-3.5 transition-colors",
-                          feed.isLiked ? "fill-pink-500 text-pink-500" : "text-slate-400"
+                          "w-3 h-3 transition-colors",
+                          feed.isLiked ? "fill-red-500 text-red-500" : "text-slate-400"
                         )} 
                       />
                       <span className="text-[10px]">{feed.likes}</span>
