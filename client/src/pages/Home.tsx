@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -378,9 +378,15 @@ export default function Home() {
               </div>
               
               {/* Stats - Minimalist */}
-              <div className="absolute -bottom-2 -right-2 bg-white rounded-full px-2 py-0.5 shadow-sm flex items-center gap-1 border border-slate-100">
-                <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                <span className="text-[10px] font-bold text-slate-700">{marker.likes}</span>
+              <div className="absolute -bottom-2 -right-2 bg-white rounded-full px-2 py-0.5 shadow-sm flex items-center gap-2 border border-slate-100">
+                <div className="flex items-center gap-1">
+                  <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                  <span className="text-[10px] font-bold text-slate-700">{marker.likes}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="w-3 h-3 fill-blue-400 text-blue-400" />
+                  <span className="text-[10px] font-bold text-slate-700">{marker.comments}</span>
+                </div>
               </div>
             </div>
             
