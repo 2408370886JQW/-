@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import html2canvas from "html2canvas";
+import QRCode from "qrcode";
 
 interface Comment {
   id: number;
@@ -113,12 +115,16 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [showSharePoster, setShowSharePoster] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [isGeneratingPoster, setIsGeneratingPoster] = useState(false);
   
   const lastTapRef = useRef(0);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const images = moment.images || (moment.image ? [moment.image] : []);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const posterRef = useRef<HTMLDivElement>(null);
 
   // Handle double tap and long press
   const handleTouchStart = () => {
@@ -260,6 +266,45 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
     }
   };
 
+  const generateSharePoster = async () => {
+    setIsGeneratingPoster(true);
+    try {
+      // Generate QR Code
+      const url = await QRCode.toDataURL(window.location.href);
+      setQrCodeUrl(url);
+      setShowSharePoster(true);
+    } catch (err) {
+      console.error(err);
+      toast.error("生成分享海报失败");
+      setIsGeneratingPoster(false);
+    }
+  };
+
+  const downloadPoster = async () => {
+    if (!posterRef.current) return;
+    
+    try {
+      const canvas = await html2canvas(posterRef.current, {
+        useCORS: true,
+        scale: 2,
+        backgroundColor: "#ffffff"
+      });
+      
+      const link = document.createElement('a');
+      link.download = `share-${moment.id}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      toast.success("海报已保存到相册");
+      setShowSharePoster(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("保存海报失败");
+    } finally {
+      setIsGeneratingPoster(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: "100%" }}
@@ -268,6 +313,83 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       className="fixed inset-0 z-[100] bg-white flex flex-col md:flex-row"
     >
+      {/* Share Poster Overlay */}
+      <AnimatePresence>
+        {showSharePoster && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4"
+            onClick={() => setShowSharePoster(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl overflow-hidden max-w-sm w-full shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div ref={posterRef} className="bg-white p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <img 
+                    src={moment.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"} 
+                    className="w-10 h-10 rounded-full object-cover border border-slate-100"
+                    crossOrigin="anonymous"
+                  />
+                  <div>
+                    <div className="font-bold text-slate-900">{moment.user || "用户"}</div>
+                    <div className="text-xs text-slate-500">{moment.time || "刚刚"}</div>
+                  </div>
+                </div>
+                
+                <div className="aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-slate-100">
+                  <img 
+                    src={images[0]} 
+                    className="w-full h-full object-cover"
+                    crossOrigin="anonymous"
+                  />
+                </div>
+                
+                <h3 className="font-bold text-lg text-slate-900 mb-2 line-clamp-2">
+                  {moment.title || moment.content.slice(0, 20)}
+                </h3>
+                <p className="text-slate-600 text-sm mb-6 line-clamp-3 leading-relaxed">
+                  {moment.content}
+                </p>
+                
+                <div className="flex items-end justify-between border-t border-slate-100 pt-4">
+                  <div>
+                    <div className="text-xs text-slate-400 mb-1">长按识别二维码</div>
+                    <div className="text-sm font-bold text-slate-900">查看详情</div>
+                  </div>
+                  {qrCodeUrl && (
+                    <img src={qrCodeUrl} className="w-16 h-16" alt="QR Code" />
+                  )}
+                </div>
+              </div>
+              
+              <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+                <Button 
+                  className="flex-1 bg-slate-900 text-white hover:bg-slate-800"
+                  onClick={downloadPoster}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  保存海报
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowSharePoster(false)}
+                >
+                  取消
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Fullscreen Image Preview */}
       <AnimatePresence>
         {isFullscreen && (
@@ -474,7 +596,10 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
             >
               {isFollowing ? "已关注" : "关注"}
             </Button>
-            <button className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 transition-colors">
+            <button 
+              className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 transition-colors"
+              onClick={generateSharePoster}
+            >
               <Share2 className="w-5 h-5" />
             </button>
             <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 transition-colors">
