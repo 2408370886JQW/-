@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, MessageCircle, Send, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Star, Share2, UserPlus, Image as ImageIcon, Download, EyeOff } from "lucide-react";
+import { X, Heart, MessageCircle, Send, MoreHorizontal, MapPin, ChevronLeft, ChevronRight, Star, Share2, UserPlus, Image as ImageIcon, Download, EyeOff, Smile, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -94,6 +94,9 @@ const MOCK_FRIENDS = [
   { id: 5, name: "Eva", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" },
 ];
 
+// Common Emojis
+const EMOJIS = ["😀", "😍", "😂", "👍", "❤️", "🔥", "👏", "🎉", "🤔", "😭", "🙏", "👀", "✨", "💯", "🚀", "💪"];
+
 export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
   const [isLiked, setIsLiked] = useState(moment.isLiked || false);
   const [isCollected, setIsCollected] = useState(moment.isCollected || false);
@@ -107,6 +110,9 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showMentionList, setShowMentionList] = useState(false);
   const [showLongPressMenu, setShowLongPressMenu] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
   
   const lastTapRef = useRef(0);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -181,6 +187,12 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
     inputRef.current?.focus();
   };
 
+  const handleEmojiSelect = (emoji: string) => {
+    setCommentText(prev => prev + emoji);
+    setShowEmojiPicker(false);
+    inputRef.current?.focus();
+  };
+
   const handleSendComment = () => {
     if (!commentText.trim()) return;
     
@@ -221,6 +233,7 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
     
     setCommentText("");
     setShowMentionList(false);
+    setShowEmojiPicker(false);
   };
 
   const toggleCommentLike = (commentId: number, isReply = false, parentId?: number) => {
@@ -255,9 +268,53 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       className="fixed inset-0 z-[100] bg-white flex flex-col md:flex-row"
     >
+      {/* Fullscreen Image Preview */}
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black flex items-center justify-center"
+            onClick={() => { setIsFullscreen(false); setZoomLevel(1); }}
+          >
+            <div className="relative w-full h-full flex items-center justify-center">
+              <motion.img
+                src={images[currentImageIndex]}
+                style={{ scale: zoomLevel }}
+                className="max-w-full max-h-full object-contain transition-transform duration-200"
+                onClick={(e) => e.stopPropagation()}
+              />
+              
+              <button 
+                className="absolute top-4 right-4 p-2 bg-white/10 rounded-full text-white hover:bg-white/20"
+                onClick={() => setIsFullscreen(false)}
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+                <button 
+                  className="p-3 bg-white/10 rounded-full text-white hover:bg-white/20"
+                  onClick={(e) => { e.stopPropagation(); setZoomLevel(prev => Math.max(0.5, prev - 0.5)); }}
+                >
+                  <ZoomOut className="w-6 h-6" />
+                </button>
+                <button 
+                  className="p-3 bg-white/10 rounded-full text-white hover:bg-white/20"
+                  onClick={(e) => { e.stopPropagation(); setZoomLevel(prev => Math.min(3, prev + 0.5)); }}
+                >
+                  <ZoomIn className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Left Side: Media (Image/Video) - Full height on desktop, top part on mobile */}
       <div 
-        className="relative w-full md:w-[60%] h-[50vh] md:h-full bg-black flex items-center justify-center overflow-hidden shrink-0 cursor-pointer select-none"
+        className="relative w-full md:w-[60%] h-[50vh] md:h-full bg-black flex items-center justify-center overflow-hidden shrink-0 cursor-pointer select-none group"
         onClick={handleDoubleTap}
         onMouseDown={handleTouchStart}
         onMouseUp={handleTouchEnd}
@@ -336,6 +393,14 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
           className="md:hidden absolute top-safe left-4 z-20 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors"
         >
           <ChevronLeft className="w-6 h-6" />
+        </button>
+
+        {/* Fullscreen Toggle Button */}
+        <button 
+          onClick={(e) => { e.stopPropagation(); setIsFullscreen(true); }}
+          className="absolute top-4 right-4 z-20 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors opacity-0 group-hover:opacity-100"
+        >
+          <ZoomIn className="w-5 h-5" />
         </button>
 
         <AnimatePresence mode="wait">
@@ -542,14 +607,23 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
         {/* Bottom Interaction Bar */}
         <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-4 py-3 pb-safe z-20 flex items-center gap-4">
           <div className="flex-1 relative">
-            <Input 
-              ref={inputRef}
-              placeholder={replyTo ? `回复 ${replyTo.user}...` : "说点什么..."}
-              value={commentText}
-              onChange={handleInputChange}
-              className="bg-slate-100 border-none rounded-full pl-4 pr-10 h-10 text-sm focus-visible:ring-1 focus-visible:ring-slate-300"
-              onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
-            />
+            <div className="relative">
+              <Input 
+                ref={inputRef}
+                placeholder={replyTo ? `回复 ${replyTo.user}...` : "说点什么..."}
+                value={commentText}
+                onChange={handleInputChange}
+                className="bg-slate-100 border-none rounded-full pl-10 pr-10 h-10 text-sm focus-visible:ring-1 focus-visible:ring-slate-300"
+                onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
+              />
+              <button 
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              >
+                <Smile className="w-5 h-5" />
+              </button>
+            </div>
+            
             {commentText && (
               <button 
                 onClick={handleSendComment}
@@ -558,6 +632,30 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
                 <Send className="w-3.5 h-3.5" />
               </button>
             )}
+
+            {/* Emoji Picker Popup */}
+            <AnimatePresence>
+              {showEmojiPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute bottom-full left-0 mb-2 bg-white rounded-xl shadow-xl border border-slate-100 p-3 z-50 w-64"
+                >
+                  <div className="grid grid-cols-8 gap-2">
+                    {EMOJIS.map(emoji => (
+                      <button
+                        key={emoji}
+                        className="text-xl hover:bg-slate-100 rounded p-1 transition-colors"
+                        onClick={() => handleEmojiSelect(emoji)}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Mention List Popup */}
             <AnimatePresence>
