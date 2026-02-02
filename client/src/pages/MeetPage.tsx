@@ -70,7 +70,7 @@ export default function MeetPage() {
               className="bg-white rounded-2xl overflow-hidden shadow-sm"
             >
               <div className="relative h-64">
-                <img src={person.avatar} className="w-full h-full object-cover" />
+                <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
                   <div className="flex items-end justify-between text-white">
                     <div>

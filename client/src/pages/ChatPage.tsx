@@ -5,8 +5,28 @@ import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+// Types
+type Conversation = {
+  id: number;
+  user: string;
+  avatar: string;
+  lastMessage: string;
+  time: string;
+  unread: number;
+  status: "online" | "offline" | "away";
+};
+
+type Message = {
+  id: number;
+  type: "text" | "location";
+  content: string;
+  isMe: boolean;
+  timestamp: number;
+  address?: string;
+};
+
 // Mock Data
-const CONVERSATIONS = [
+const CONVERSATIONS: Conversation[] = [
   { 
     id: 1, 
     user: "Alice", 
@@ -42,7 +62,7 @@ const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
 const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-const MOCK_MESSAGES = [
+const MOCK_MESSAGES: Message[] = [
   { id: 1, type: "text", content: "Hi Alice! 👋", isMe: true, timestamp: lastWeek.getTime() },
   { id: 2, type: "text", content: "周末有空吗？想去探店", isMe: false, timestamp: yesterday.getTime() },
   { id: 3, type: "text", content: "有啊，想去哪？", isMe: true, timestamp: fiveMinutesAgo.getTime() },
@@ -81,12 +101,12 @@ const formatMessageTime = (timestamp: number, prevTimestamp?: number) => {
 export default function ChatPage() {
   const [activeConversation, setActiveConversation] = useState<number | null>(null);
   const [messageText, setMessageText] = useState("");
-  const [messages, setMessages] = useState(MOCK_MESSAGES);
+  const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
 
   const handleSendMessage = () => {
     if (!messageText.trim()) return;
     
-    const newMessage = {
+    const newMessage: Message = {
       id: Date.now(),
       type: "text",
       content: messageText,
@@ -99,7 +119,7 @@ export default function ChatPage() {
   };
 
   const handleSendLocation = () => {
-    const newMessage = {
+    const newMessage: Message = {
       id: Date.now(),
       type: "location",
       content: "我的位置",
@@ -144,7 +164,7 @@ export default function ChatPage() {
                   className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
                 >
                   <div className="relative">
-                    <img src={chat.avatar} className="w-12 h-12 rounded-full object-cover" />
+                    <img src={chat.avatar} alt={chat.user} className="w-12 h-12 rounded-full object-cover" />
                     <div className={cn(
                       "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white",
                       chat.status === "online" ? "bg-green-500" : 
@@ -192,6 +212,7 @@ export default function ChatPage() {
                     <div className="relative">
                       <img 
                         src={CONVERSATIONS.find(c => c.id === activeConversation)?.avatar} 
+                        alt={CONVERSATIONS.find(c => c.id === activeConversation)?.user || "User"}
                         className="w-8 h-8 rounded-full object-cover" 
                       />
                       <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
@@ -233,6 +254,7 @@ export default function ChatPage() {
                         {!msg.isMe && (
                           <img 
                             src={CONVERSATIONS.find(c => c.id === activeConversation)?.avatar} 
+                            alt="User Avatar"
                             className="w-8 h-8 rounded-full object-cover self-end mb-1" 
                           />
                         )}
