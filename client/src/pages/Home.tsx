@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
+import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -709,66 +710,13 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Dynamics Detail Popup */}
+        {/* Immersive Moment Detail */}
         <AnimatePresence>
           {selectedMoment && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSelectedMoment(null)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-              />
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="fixed inset-4 z-50 bg-white/80 backdrop-blur-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh] border border-white/40"
-              >
-                <div className="relative h-72 bg-slate-100">
-                  <img src={selectedMoment.image} alt="Moment" className="w-full h-full object-cover" />
-                  <button 
-                    onClick={() => setSelectedMoment(null)}
-                    className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center text-white backdrop-blur-md border border-white/20"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="p-6 flex-1 overflow-y-auto">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border border-white/50 shadow-sm">
-                      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" alt="User" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-900">用户 {selectedMoment.id}</h4>
-                      <p className="text-xs text-slate-500">2小时前</p>
-                    </div>
-                  </div>
-                  <p className="text-slate-700 text-lg leading-relaxed mb-6 font-medium">
-                    {selectedMoment.content}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6 text-slate-500">
-                      <div className="flex items-center gap-2">
-                        <Heart className="w-6 h-6 text-pink-500 fill-pink-500" />
-                        <span className="font-medium">{selectedMoment.likes}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MessageCircle className="w-6 h-6" />
-                        <span className="font-medium">{selectedMoment.comments}</span>
-                      </div>
-                    </div>
-                    
-                    <Link href="/circles">
-                      <button className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-200 active:scale-95 transition-transform">
-                        进入圈子
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            </>
+            <MomentDetail 
+              moment={selectedMoment} 
+              onClose={() => setSelectedMoment(null)} 
+            />
           )}
         </AnimatePresence>
 
