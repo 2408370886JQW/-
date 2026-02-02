@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import { OverlayView } from "@react-google-maps/api";
 
 // Mock data for map markers
 const INITIAL_MARKERS = {
@@ -18,8 +19,28 @@ const INITIAL_MARKERS = {
     { id: 4, lat: 39.912, lng: 116.415, type: "friend", icon: User },
   ],
   moments: [
-    { id: 5, lat: 39.902, lng: 116.395, type: "moment", icon: ImageIcon },
-    { id: 6, lat: 39.918, lng: 116.408, type: "moment", icon: ImageIcon },
+    { 
+      id: 5, 
+      lat: 39.902, 
+      lng: 116.395, 
+      type: "moment", 
+      icon: ImageIcon,
+      content: "今天天气真好！",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
+      likes: 24,
+      comments: 5
+    },
+    { 
+      id: 6, 
+      lat: 39.918, 
+      lng: 116.408, 
+      type: "moment", 
+      icon: ImageIcon,
+      content: "打卡网红咖啡店",
+      image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop",
+      likes: 156,
+      comments: 32
+    },
   ],
   meet: [ 
     { id: 7, lat: 39.906, lng: 116.412, type: "meet", icon: ShoppingBag },
@@ -130,6 +151,7 @@ export default function Home() {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [markerData, setMarkerData] = useState(INITIAL_MARKERS);
+  const [overlays, setOverlays] = useState<google.maps.OverlayView[]>([]);
   
   // New state for Meet page
   const [activeScenario, setActiveScenario] = useState("date");
@@ -155,7 +177,11 @@ export default function Home() {
             lat: 39.9042 + (Math.random() - 0.5) * 0.01, // Random location near center
             lng: 116.4074 + (Math.random() - 0.5) * 0.01,
             type: "moment",
-            icon: ImageIcon
+            icon: ImageIcon,
+            content: newMoment.content,
+            image: newMoment.media[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
+            likes: 0,
+            comments: 0
           }
         ]
       }));
@@ -174,19 +200,30 @@ export default function Home() {
 
     // Clear existing markers
     markers.forEach(marker => marker.setMap(null));
+    
+    // Clear existing overlays (custom HTML markers)
+    // Note: We need a way to clear overlays. Since we are using React state to render them in the JSX,
+    // we don't need to manually remove them from the map instance like standard markers.
+    // The rendering logic below handles it.
 
     // Add new markers based on active tab
     const currentMarkers = markerData[activeTab] || [];
-    const newMarkers = currentMarkers.map(item => {
-      return new google.maps.Marker({
-        position: { lat: item.lat, lng: item.lng },
-        map: mapInstance,
-        title: item.type,
-        animation: google.maps.Animation.DROP,
+    
+    // For standard markers (non-moments)
+    if (activeTab !== "moments") {
+      const newMarkers = currentMarkers.map(item => {
+        return new google.maps.Marker({
+          position: { lat: item.lat, lng: item.lng },
+          map: mapInstance,
+          title: item.type,
+          animation: google.maps.Animation.DROP,
+        });
       });
-    });
-
-    setMarkers(newMarkers);
+      setMarkers(newMarkers);
+    } else {
+      setMarkers([]); // Clear standard markers for moments tab
+    }
+    
   }, [activeTab, mapInstance, markerData]);
 
   return (
@@ -249,14 +286,67 @@ export default function Home() {
                 fullscreenControl: false,
               });
             }}
-          />
+          >
+            {/* Custom Overlay for Moments Cards */}
+            {activeTab === "moments" && markerData.moments.map((moment) => (
+              <OverlayView
+                key={moment.id}
+                position={{ lat: moment.lat, lng: moment.lng }}
+                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  className="relative -translate-x-1/2 -translate-y-full mb-2"
+                >
+                  <div className="bg-white rounded-xl shadow-lg p-2 w-32 flex flex-col gap-2">
+                    {/* Image Preview */}
+                    <div className="aspect-square rounded-lg overflow-hidden bg-slate-100">
+                      <img src={moment.image} alt="moment" className="w-full h-full object-cover" />
+                    </div>
+                    
+                    {/* Stats */}
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                        <span>{moment.likes}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <MessageCircle className="w-3 h-3" />
+                        <span>{moment.comments}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Triangle Pointer */}
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[-6px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white filter drop-shadow-sm" />
+                </motion.div>
+              </OverlayView>
+            ))}
+          </MapView>
           
           {/* --- SCENARIO-BASED MEET PAGE OVERLAY --- */}
           {activeTab === "meet" && (
             <div className="absolute inset-0 z-20 bg-slate-50/95 backdrop-blur-sm flex flex-col pt-[120px] pb-24 overflow-hidden">
+              {/* Background Image Layer */}
+              <div className="absolute inset-0 z-[-1] opacity-10">
+                <img 
+                  src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=1200&fit=crop" 
+                  alt="background" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Close/Back Button */}
+              <button 
+                onClick={() => setActiveTab("encounter")}
+                className="absolute top-[120px] right-4 z-30 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-600" />
+              </button>
               
               {/* 1. Scenario Selector (Entry Level) */}
-              <div className="px-4 mb-6">
+              <div className="px-4 mb-6 relative z-10">
                 <h2 className="text-lg font-bold text-slate-900 mb-3">这次见面怎么安排？</h2>
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
                   {SCENARIOS.map((scenario) => {
@@ -290,67 +380,58 @@ export default function Home() {
               </div>
 
               {/* 2. Plan List (Solution Level) */}
-              <div className="flex-1 overflow-y-auto px-4 space-y-4 no-scrollbar">
+              <div className="flex-1 overflow-y-auto px-4 space-y-4 no-scrollbar relative z-10">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-bold text-slate-800">推荐流程</h3>
-                  <span className="text-xs text-slate-400">基于你的选择</span>
+                  <h3 className="font-bold text-slate-900">推荐方案</h3>
+                  <span className="text-xs text-slate-400">基于场景智能生成</span>
                 </div>
 
-                {PLANS[activeScenario as keyof typeof PLANS]?.length > 0 ? (
-                  PLANS[activeScenario as keyof typeof PLANS].map((plan) => (
-                    <Link key={plan.id} href={`/plan/${plan.id}`}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden active:scale-[0.98] transition-transform"
-                    >
-                      {/* Cover Image */}
-                      <div className="h-32 w-full relative">
-                        <img src={plan.image} alt={plan.title} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-                          <div>
-                            <h4 className="text-white font-bold text-lg">{plan.title}</h4>
-                            <div className="flex gap-2 mt-1">
-                              {plan.tags.map((tag) => (
-                                <span key={tag} className="text-[10px] bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
+                {PLANS[activeScenario as keyof typeof PLANS]?.map((plan) => (
+                  <Link key={plan.id} href={`/plan/${plan.id}`}>
+                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 active:scale-[0.98] transition-transform cursor-pointer">
+                      <div className="flex gap-4">
+                        <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+                          <img src={plan.image} alt={plan.title} className="w-full h-full object-cover" />
                         </div>
-                      </div>
-                      
-                      {/* Steps Preview */}
-                      <div className="p-4 bg-slate-50/50">
-                        <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-slate-900 mb-1 truncate">{plan.title}</h4>
+                          <div className="flex flex-wrap gap-1 mb-3">
+                            {plan.tags.map(tag => (
+                              <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          
+                          {/* Steps Preview */}
                           <div className="flex items-center gap-2">
-                            {plan.steps.map((step, index) => (
-                              <div key={index} className="flex items-center">
-                                <div className="flex flex-col items-center gap-1">
-                                  <span className="text-lg">{step.icon}</span>
-                                  <span className="text-[10px] text-slate-500">{step.label}</span>
+                            {plan.steps.map((step, idx) => (
+                              <div key={idx} className="flex items-center">
+                                <div className="flex flex-col items-center">
+                                  <span className="text-xs mb-0.5">{step.icon}</span>
+                                  <span className="text-[10px] text-slate-400 scale-90">{step.label}</span>
                                 </div>
-                                {index < plan.steps.length - 1 && (
-                                  <div className="w-4 h-[1px] bg-slate-300 mx-2" />
+                                {idx < plan.steps.length - 1 && (
+                                  <div className="w-3 h-[1px] bg-slate-200 mx-1 mb-3" />
                                 )}
                               </div>
                             ))}
                           </div>
-                          <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shadow-sm">
-                            <ChevronRight className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex flex-col justify-center">
+                          <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
+                            <ChevronRight className="w-4 h-4 text-slate-400" />
                           </div>
                         </div>
                       </div>
-                    </motion.div>
-                    </Link>
-                  ))
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3">
-                      <ShoppingBag className="w-8 h-8 text-slate-300" />
                     </div>
-                    <p className="text-sm">该场景暂无推荐流程</p>
+                  </Link>
+                ))}
+
+                {(!PLANS[activeScenario as keyof typeof PLANS] || PLANS[activeScenario as keyof typeof PLANS].length === 0) && (
+                  <div className="text-center py-12 text-slate-400">
+                    <p>该场景暂无推荐方案</p>
+                    <p className="text-xs mt-1">试试"约会"或"兄弟"场景</p>
                   </div>
                 )}
               </div>

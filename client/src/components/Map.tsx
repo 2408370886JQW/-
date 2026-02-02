@@ -119,6 +119,7 @@ interface MapViewProps {
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
   onMapReady?: (map: google.maps.Map) => void;
+  children?: React.ReactNode;
 }
 
 export default function MapView({
@@ -126,6 +127,7 @@ export default function MapView({
   initialCenter = { lat: 37.7749, lng: -122.4194 },
   initialZoom = 12,
   onMapReady,
+  children,
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
@@ -155,6 +157,8 @@ export default function MapView({
   }, [init]);
 
   return (
-    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
+    <div ref={mapContainer} className={cn("w-full h-[500px]", className)}>
+      {children}
+    </div>
   );
 }
