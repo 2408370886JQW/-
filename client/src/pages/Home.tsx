@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle } from "lucide-react";
@@ -156,6 +156,43 @@ export default function Home() {
   // New state for Meet page
   const [activeScenario, setActiveScenario] = useState("date");
 
+  // State for Friend Card and Dynamics Detail
+  const [selectedFriend, setSelectedFriend] = useState<any>(null);
+  const [selectedMoment, setSelectedMoment] = useState<any>(null);
+
+  // State for Nav Hiding
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // Handle scroll/drag to hide nav
+  useEffect(() => {
+    let startY = 0;
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const currentY = e.touches[0].clientY;
+      const diff = startY - currentY;
+
+      if (diff > 50) { // Swipe up
+        setIsNavVisible(false);
+      } else if (diff < -50) { // Swipe down
+        setIsNavVisible(true);
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []);
+
   const tabs: { id: TabType; label: string }[] = [
     { id: "encounter", label: "偶遇" },
     { id: "friends", label: "好友" },
@@ -271,6 +308,7 @@ export default function Home() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             whileTap={{ scale: 0.9 }}
+            onClick={() => setSelectedFriend(marker)}
             className="relative -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
           >
             {/* Avatar Container */}
@@ -304,6 +342,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => setSelectedMoment(marker)}
             className="relative -translate-x-1/2 -translate-y-full mb-3 cursor-pointer"
           >
             <div className="glass rounded-2xl shadow-2xl p-2.5 w-44 border border-white/40">
@@ -348,7 +387,13 @@ export default function Home() {
     <Layout showNav={true}>
       <div className="relative h-screen w-full flex flex-col">
         {/* Top Search & Tabs Area - Floating over map */}
-        <div className="absolute top-0 left-0 right-0 z-10 glass pt-safe rounded-b-3xl shadow-sm">
+        <motion.div 
+          ref={navRef}
+          initial={{ y: 0 }}
+          animate={{ y: isNavVisible ? 0 : -200 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="absolute top-0 left-0 right-0 z-10 glass pt-safe rounded-b-3xl shadow-sm"
+        >
           <div className="px-4 py-3">
             {/* Search Bar */}
             <div className="relative mb-4">
@@ -383,7 +428,101 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Friend Card Popup */}
+        <AnimatePresence>
+          {selectedFriend && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedFriend(null)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 pb-safe"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl overflow-hidden mb-4 -mt-16">
+                    <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-1">用户 {selectedFriend.id}</h3>
+                  <p className="text-slate-500 text-sm mb-6">北京 • 活跃于 5 分钟前</p>
+                  
+                  <div className="flex gap-4 w-full">
+                    <button className="flex-1 bg-slate-100 text-slate-900 py-3 rounded-2xl font-semibold active:scale-95 transition-transform">
+                      关注
+                    </button>
+                    <button className="flex-1 bg-blue-600 text-white py-3 rounded-2xl font-semibold active:scale-95 transition-transform">
+                      私聊
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Dynamics Detail Popup */}
+        <AnimatePresence>
+          {selectedMoment && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedMoment(null)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="fixed inset-4 z-50 bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]"
+              >
+                <div className="relative h-64 bg-slate-100">
+                  <img src={selectedMoment.image} alt="Moment" className="w-full h-full object-cover" />
+                  <button 
+                    onClick={() => setSelectedMoment(null)}
+                    className="absolute top-4 right-4 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white backdrop-blur-md"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-6 flex-1 overflow-y-auto">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" alt="User" className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900">用户 {selectedMoment.id}</h4>
+                      <p className="text-xs text-slate-500">2小时前</p>
+                    </div>
+                  </div>
+                  <p className="text-slate-700 text-lg leading-relaxed mb-6">
+                    {selectedMoment.content}
+                  </p>
+                  <div className="flex items-center gap-6 text-slate-500">
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-6 h-6 text-pink-500 fill-pink-500" />
+                      <span className="font-medium">{selectedMoment.likes}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-6 h-6" />
+                      <span className="font-medium">{selectedMoment.comments}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Map Background */}
         <div className="flex-1 w-full h-full bg-slate-50 relative">

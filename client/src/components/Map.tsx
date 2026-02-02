@@ -146,6 +146,7 @@ export default function MapView({
       zoomControl: true,
       streetViewControl: true,
       mapId: "DEMO_MAP_ID",
+      gestureHandling: "greedy", // Enable single-finger panning
     });
     if (onMapReady) {
       onMapReady(map.current);

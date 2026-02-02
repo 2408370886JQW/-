@@ -3,6 +3,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, ChevronLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Link } from "wouter";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Mock friends data grouped by initial
 const FRIENDS_DATA = [
@@ -24,6 +26,8 @@ const FRIENDS_DATA = [
 ];
 
 export default function FriendsPage() {
+  const [selectedFriend, setSelectedFriend] = useState<any>(null);
+
   return (
     <Layout showNav={false}>
       <div className="flex flex-col h-screen bg-white">
@@ -56,7 +60,8 @@ export default function FriendsPage() {
               {group.list.map((friend) => (
                 <div 
                   key={friend.id}
-                  className="flex items-center gap-3 px-4 py-3 active:bg-slate-50 transition-colors border-b border-slate-50 last:border-none"
+                  onClick={() => setSelectedFriend(friend)}
+                  className="flex items-center gap-3 px-4 py-3 active:bg-slate-50 transition-colors border-b border-slate-50 last:border-none cursor-pointer"
                 >
                   <Avatar className="w-10 h-10 border border-slate-100">
                     <AvatarImage src={friend.avatar} />
@@ -81,6 +86,45 @@ export default function FriendsPage() {
           ))}
           <span className="text-[10px] text-slate-400">#</span>
         </div>
+
+        {/* Friend Card Popup */}
+        <AnimatePresence>
+          {selectedFriend && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedFriend(null)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 pb-safe"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl overflow-hidden mb-4 -mt-16">
+                    <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-1">{selectedFriend.name}</h3>
+                  <p className="text-slate-500 text-sm mb-6">北京 • 活跃于 5 分钟前</p>
+                  
+                  <div className="flex gap-4 w-full">
+                    <button className="flex-1 bg-slate-100 text-slate-900 py-3 rounded-2xl font-semibold active:scale-95 transition-transform">
+                      关注
+                    </button>
+                    <button className="flex-1 bg-blue-600 text-white py-3 rounded-2xl font-semibold active:scale-95 transition-transform">
+                      私聊
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </Layout>
   );
