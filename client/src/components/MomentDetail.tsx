@@ -94,9 +94,28 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
   const [comments, setComments] = useState<Comment[]>(INITIAL_COMMENTS);
   const [replyTo, setReplyTo] = useState<{ id: number, user: string } | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const lastTapRef = useRef(0);
   
   const images = moment.images || (moment.image ? [moment.image] : []);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleDoubleTap = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+    
+    if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      // Double tap detected
+      if (!isLiked) {
+        handleLike();
+      }
+      setShowLikeAnimation(true);
+      setTimeout(() => setShowLikeAnimation(false), 1000);
+    }
+    
+    lastTapRef.current = now;
+  };
 
   const handleLike = () => {
     if (isLiked) {
@@ -184,7 +203,24 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
       className="fixed inset-0 z-[100] bg-white flex flex-col md:flex-row"
     >
       {/* Left Side: Media (Image/Video) - Full height on desktop, top part on mobile */}
-      <div className="relative w-full md:w-[60%] h-[50vh] md:h-full bg-black flex items-center justify-center overflow-hidden shrink-0">
+      <div 
+        className="relative w-full md:w-[60%] h-[50vh] md:h-full bg-black flex items-center justify-center overflow-hidden shrink-0 cursor-pointer"
+        onClick={handleDoubleTap}
+      >
+        {/* Like Animation Overlay */}
+        <AnimatePresence>
+          {showLikeAnimation && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1.2 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.3 }}
+              className="absolute z-30 pointer-events-none"
+            >
+              <Heart className="w-24 h-24 text-white fill-white drop-shadow-lg" />
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Mobile Back Button */}
         <button 
           onClick={onClose}
