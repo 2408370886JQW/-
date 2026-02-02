@@ -320,13 +320,14 @@ export default function Home() {
             </div>
             
             {/* Online Status Dot */}
-            {marker.online && (
-              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-sm" />
-            )}
+            <div className={cn(
+              "absolute bottom-0 right-0 w-4 h-4 border-2 border-white rounded-full shadow-sm",
+              marker.online ? "bg-yellow-400" : "bg-slate-400"
+            )} />
             
             {/* Ripple Effect for Online Users */}
             {marker.online && (
-              <div className="absolute -inset-2 rounded-full border-2 border-green-400/50 opacity-0 animate-ping" />
+              <div className="absolute -inset-2 rounded-full border-2 border-yellow-400/50 opacity-0 animate-ping" />
             )}
           </motion.div>
         );
@@ -343,7 +344,10 @@ export default function Home() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setSelectedMoment(marker)}
-            className="relative -translate-x-1/2 -translate-y-full mb-3 cursor-pointer"
+            className="relative -translate-x-1/2 -translate-y-full mb-3 cursor-pointer origin-bottom"
+            style={{ 
+              transform: `scale(${Math.max(0.6, Math.min(1.2, (mapInstance?.getZoom() || 14) / 14))})` 
+            }}
           >
             <div className="glass rounded-2xl shadow-2xl p-2.5 w-44 border border-white/40">
               {/* Image Preview */}
@@ -396,14 +400,16 @@ export default function Home() {
         >
           <div className="px-4 py-3">
             {/* Search Bar */}
-            <div className="relative mb-4">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <div className="relative mb-4 flex items-center gap-2">
               <Input 
-                placeholder="🔍 搜索" 
-                className="pl-11 bg-slate-100/50 border-none rounded-2xl h-11 text-base shadow-inner"
+                placeholder="搜索" 
+                className="flex-1 pl-4 bg-slate-100/50 border-none rounded-2xl h-11 text-base shadow-inner"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+              <button className="w-11 h-11 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-100 active:scale-95 transition-transform">
+                <Search className="w-5 h-5 text-slate-600" />
+              </button>
             </div>
 
             {/* Tabs with Jelly Indicator */}
@@ -430,15 +436,7 @@ export default function Home() {
                           damping: 30,
                           mass: 0.8
                         }}
-                      >
-                        {/* Jelly/Fluid Effect Decoration */}
-                        <motion.div 
-                          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-900 rounded-full opacity-20"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: [1, 1.5, 1] }}
-                          transition={{ repeat: Infinity, duration: 2 }}
-                        />
-                      </motion.div>
+                      />
                     )}
                   </button>
                 );
@@ -612,6 +610,108 @@ export default function Home() {
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: false,
+                styles: [
+                  {
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#212121" }]
+                  },
+                  {
+                    "elementType": "labels.icon",
+                    "stylers": [{ "visibility": "off" }]
+                  },
+                  {
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#757575" }]
+                  },
+                  {
+                    "elementType": "labels.text.stroke",
+                    "stylers": [{ "color": "#212121" }]
+                  },
+                  {
+                    "featureType": "administrative",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#757575" }]
+                  },
+                  {
+                    "featureType": "administrative.country",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#9e9e9e" }]
+                  },
+                  {
+                    "featureType": "administrative.land_parcel",
+                    "stylers": [{ "visibility": "off" }]
+                  },
+                  {
+                    "featureType": "administrative.locality",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#bdbdbd" }]
+                  },
+                  {
+                    "featureType": "poi",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#757575" }]
+                  },
+                  {
+                    "featureType": "poi.park",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#181818" }]
+                  },
+                  {
+                    "featureType": "poi.park",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#616161" }]
+                  },
+                  {
+                    "featureType": "poi.park",
+                    "elementType": "labels.text.stroke",
+                    "stylers": [{ "color": "#1b1b1b" }]
+                  },
+                  {
+                    "featureType": "road",
+                    "elementType": "geometry.fill",
+                    "stylers": [{ "color": "#2c2c2c" }]
+                  },
+                  {
+                    "featureType": "road",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#8a8a8a" }]
+                  },
+                  {
+                    "featureType": "road.arterial",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#373737" }]
+                  },
+                  {
+                    "featureType": "road.highway",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#3c3c3c" }]
+                  },
+                  {
+                    "featureType": "road.highway.controlled_access",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#4e4e4e" }]
+                  },
+                  {
+                    "featureType": "road.local",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#616161" }]
+                  },
+                  {
+                    "featureType": "transit",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#757575" }]
+                  },
+                  {
+                    "featureType": "water",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#000000" }]
+                  },
+                  {
+                    "featureType": "water",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#3d3d3d" }]
+                  }
+                ]
               });
             }}
           >
@@ -731,6 +831,30 @@ export default function Home() {
                     <p className="text-xs mt-1">试试"约会"或"兄弟"场景</p>
                   </div>
                 )}
+
+                {/* Featured Packages Section */}
+                <div className="mt-6 mb-8">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-slate-900">精选套餐</h3>
+                    <span className="text-xs text-slate-400">热门推荐</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
+                      <div className="aspect-video rounded-lg bg-pink-50 mb-2 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=150&fit=crop" className="w-full h-full object-cover" />
+                      </div>
+                      <h4 className="font-bold text-sm text-slate-900">情侣浪漫晚餐</h4>
+                      <p className="text-xs text-slate-400 mt-0.5">¥520/双人</p>
+                    </div>
+                    <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
+                      <div className="aspect-video rounded-lg bg-purple-50 mb-2 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=200&h=150&fit=crop" className="w-full h-full object-cover" />
+                      </div>
+                      <h4 className="font-bold text-sm text-slate-900">闺蜜下午茶</h4>
+                      <p className="text-xs text-slate-400 mt-0.5">¥298/双人</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
