@@ -8,8 +8,10 @@ import Home from "@/pages/Home";
 import SearchResults from "@/pages/SearchResults";
 import MeetPage from "./pages/MeetPage";
 import CirclesPage from "./pages/CirclesPage";
-import { PublishPage } from "./pages/PlaceholderPages";
+import PublishPage from "./pages/PublishPage";
 import ProfilePage from "./pages/ProfilePage";
+import RelationshipPage from "./pages/RelationshipPage";
+import NotificationPage from "./pages/NotificationPage";
 import ChatPage from "./pages/ChatPage";
 import FriendsPage from "./pages/FriendsPage";
 import MerchantDetailPage from "./pages/MerchantDetailPage";
@@ -27,7 +29,9 @@ function Router() {
       <Route path={"/circles"} component={CirclesPage} />
       <Route path={"/chat"} component={ChatPage} />
       <Route path={"/publish"} component={PublishPage} />
-      <Route path={"/profile"} component={ProfilePage} />
+       <Route path="/profile" component={ProfilePage} />
+      <Route path="/relations/:type" component={RelationshipPage} />
+      <Route path="/notifications" component={NotificationPage} />
       <Route path={"/friends"} component={FriendsPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

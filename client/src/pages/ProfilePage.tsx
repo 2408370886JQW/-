@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Settings, MapPin, Calendar, Heart, Image as ImageIcon, Star, ChevronRight, Grid, List, Users } from "lucide-react";
+import { Settings, MapPin, Calendar, Heart, Image as ImageIcon, Star, ChevronRight, Grid, List, Users, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -50,9 +50,17 @@ export default function ProfilePage() {
             className="w-full h-full object-cover opacity-60"
           />
           <div className="absolute top-safe right-4">
-            <button className="p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors">
-              <Settings className="w-6 h-6" />
-            </button>
+            <div className="flex gap-3">
+              <Link href="/notifications">
+                <button className="p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors relative">
+                  <Bell className="w-6 h-6" />
+                  <div className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-900" />
+                </button>
+              </Link>
+              <button className="p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors">
+                <Settings className="w-6 h-6" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -86,14 +94,18 @@ export default function ProfilePage() {
 
           {/* Stats */}
           <div className="flex gap-8 mt-6">
-            <div className="text-center">
-              <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.following}</div>
-              <div className="text-xs text-slate-400">关注</div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.followers}</div>
-              <div className="text-xs text-slate-400">粉丝</div>
-            </div>
+            <Link href="/relations/following">
+              <div className="text-center cursor-pointer active:opacity-70 transition-opacity">
+                <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.following}</div>
+                <div className="text-xs text-slate-400">关注</div>
+              </div>
+            </Link>
+            <Link href="/relations/followers">
+              <div className="text-center cursor-pointer active:opacity-70 transition-opacity">
+                <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.followers}</div>
+                <div className="text-xs text-slate-400">粉丝</div>
+              </div>
+            </Link>
             <div className="text-center">
               <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.likes}</div>
               <div className="text-xs text-slate-400">获赞</div>
