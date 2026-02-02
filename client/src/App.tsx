@@ -9,6 +9,8 @@ import MapPage from "./pages/MapPage";
 import MeetPage from "./pages/MeetPage";
 import CirclesPage from "./pages/CirclesPage";
 import { PublishPage, ProfilePage } from "./pages/PlaceholderPages";
+import ChatPage from "./pages/ChatPage";
+import FriendsPage from "./pages/FriendsPage";
 import MerchantDetailPage from "./pages/MerchantDetailPage";
 import PlanDetailPage from "./pages/PlanDetailPage";
 
@@ -22,8 +24,10 @@ function Router() {
       <Route path={"/merchant/:id"} component={MerchantDetailPage} />
       <Route path={"/plan/:id"} component={PlanDetailPage} />
       <Route path={"/circles"} component={CirclesPage} />
+      <Route path={"/chat"} component={ChatPage} />
       <Route path={"/publish"} component={PublishPage} />
       <Route path={"/profile"} component={ProfilePage} />
+      <Route path={"/friends"} component={FriendsPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
