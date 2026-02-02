@@ -108,7 +108,8 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
     if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
       // Double tap detected
       if (!isLiked) {
-        handleLike();
+        setLikeCount(prev => prev + 1);
+        setIsLiked(true);
       }
       setShowLikeAnimation(true);
       setTimeout(() => setShowLikeAnimation(false), 1000);
