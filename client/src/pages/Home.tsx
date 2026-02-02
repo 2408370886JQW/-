@@ -170,6 +170,7 @@ export default function Home() {
   const [isMeetHeaderCollapsed, setIsMeetHeaderCollapsed] = useState(false);
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
+  const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Handle scroll/drag to hide nav
   useEffect(() => {
@@ -1182,6 +1183,23 @@ export default function Home() {
                   } else {
                     setIsMeetHeaderCollapsed(false);
                   }
+
+                  // Check which shop card is in view
+                  shopCardRefs.current.forEach((card) => {
+                    if (!card) return;
+                    const rect = card.getBoundingClientRect();
+                    const containerRect = target.getBoundingClientRect();
+                    
+                    // If card is near the top of the container (active area)
+                    if (rect.top >= containerRect.top && rect.top < containerRect.top + 200) {
+                      const lat = parseFloat(card.dataset.lat || "0");
+                      const lng = parseFloat(card.dataset.lng || "0");
+                      if (lat && lng && mapInstance) {
+                        mapInstance.panTo({ lat, lng });
+                        mapInstance.setZoom(16);
+                      }
+                    }
+                  });
                 }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -1255,7 +1273,11 @@ export default function Home() {
                   <div className="space-y-4">
                     {/* Package 1: Date Anniversary */}
                     <Link href="/shop/1">
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+                      <div 
+                        ref={(el) => { shopCardRefs.current[0] = el; }}
+                        data-lat="39.9334" data-lng="116.4034"
+                        className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+                      >
                         <div className="aspect-video relative">
                           <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
@@ -1291,7 +1313,11 @@ export default function Home() {
 
                     {/* Package 2: Bestie Afternoon Tea */}
                     <Link href="/shop/2">
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+                      <div 
+                        ref={(el) => { shopCardRefs.current[1] = el; }}
+                        data-lat="39.9345" data-lng="116.4567"
+                        className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+                      >
                         <div className="aspect-video relative">
                           <img src="https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
@@ -1327,7 +1353,11 @@ export default function Home() {
 
                     {/* Package 3: Business Lunch */}
                     <Link href="/shop/3">
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+                      <div 
+                        ref={(el) => { shopCardRefs.current[2] = el; }}
+                        data-lat="39.9456" data-lng="116.4123"
+                        className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+                      >
                         <div className="aspect-video relative">
                           <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
@@ -1363,7 +1393,11 @@ export default function Home() {
 
                     {/* Package 4: Late Night Drinks */}
                     <Link href="/shop/4">
-                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+                      <div 
+                        ref={(el) => { shopCardRefs.current[3] = el; }}
+                        data-lat="39.9321" data-lng="116.4543"
+                        className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+                      >
                         <div className="aspect-video relative">
                           <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
