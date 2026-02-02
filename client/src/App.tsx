@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import SearchResults from "@/pages/SearchResults";
 import MeetPage from "@/pages/MeetPage";
 import AppointmentDetailPage from "@/pages/AppointmentDetailPage";
+import CreateAppointmentPage from "@/pages/CreateAppointmentPage";
 import CirclesPage from "./pages/CirclesPage";
 import PublishPage from "./pages/PublishPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/search" component={SearchResults} />
       <Route path="/meet" component={MeetPage} />
+      <Route path="/appointment/create" component={CreateAppointmentPage} />
       <Route path="/appointment/:id" component={AppointmentDetailPage} />
       <Route path="/merchant/:id" component={MerchantDetailPage} />
       <Route path="/plan/:id" component={PlanDetailPage} />

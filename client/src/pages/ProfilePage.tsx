@@ -14,8 +14,7 @@ const USER_INFO = {
   location: "北京·朝阳",
   joinDate: "2025年加入",
   stats: {
-    following: 128,
-    followers: 356,
+    friends: 42,
     likes: 1024
   }
 };
@@ -99,16 +98,10 @@ export default function ProfilePage() {
 
           {/* Stats */}
           <div className="flex gap-8 mt-6">
-            <Link href="/relations/following">
+            <Link href="/friends">
               <div className="text-center cursor-pointer active:opacity-70 transition-opacity">
-                <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.following}</div>
-                <div className="text-xs text-slate-400">关注</div>
-              </div>
-            </Link>
-            <Link href="/relations/followers">
-              <div className="text-center cursor-pointer active:opacity-70 transition-opacity">
-                <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.followers}</div>
-                <div className="text-xs text-slate-400">粉丝</div>
+                <div className="font-bold text-slate-900 text-lg">{USER_INFO.stats.friends}</div>
+                <div className="text-xs text-slate-400">好友</div>
               </div>
             </Link>
             <div className="text-center">
@@ -126,7 +119,11 @@ export default function ProfilePage() {
                 <Clock className="w-4 h-4 text-blue-500" />
                 我的预约
               </h3>
-              <span className="text-xs text-slate-400">查看全部</span>
+              <Link href="/appointment/create">
+                <button className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md font-medium active:bg-blue-100 transition-colors">
+                  发起预约
+                </button>
+              </Link>
             </div>
             <div className="divide-y divide-slate-50">
               {MY_APPOINTMENTS.map(apt => (

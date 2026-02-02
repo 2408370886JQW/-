@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Heart, MessageCircle, Filter, Users } from "lucide-react";
+import { MapPin, Heart, MessageCircle, Filter, Users, Plus } from "lucide-react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Layout from "@/components/Layout";
@@ -85,8 +86,8 @@ export default function MeetPage() {
                         {person.distance}
                       </div>
                     </div>
-                    <Button size="icon" className="rounded-full bg-white text-red-500 hover:bg-white/90 h-10 w-10">
-                      <Heart className="w-5 h-5 fill-current" />
+                    <Button size="icon" className="rounded-full bg-white text-blue-600 hover:bg-white/90 h-10 w-10">
+                      <Users className="w-5 h-5" />
                     </Button>
                   </div>
                 </div>
@@ -111,9 +112,11 @@ export default function MeetPage() {
         
         {/* Floating Action Button for Creating a Meetup */}
         <div className="fixed bottom-24 right-4">
-          <Button className="h-14 w-14 rounded-full bg-blue-600 shadow-lg hover:bg-blue-700 p-0 flex items-center justify-center">
-            <Users className="w-6 h-6 text-white" />
-          </Button>
+          <Link href="/appointment/create">
+            <Button className="h-14 w-14 rounded-full bg-blue-600 shadow-lg hover:bg-blue-700 p-0 flex items-center justify-center">
+              <Plus className="w-6 h-6 text-white" />
+            </Button>
+          </Link>
         </div>
       </div>
     </Layout>
