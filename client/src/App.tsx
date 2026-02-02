@@ -4,8 +4,8 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
-import MapPage from "./pages/MapPage";
+import Home from "@/pages/Home";
+import SearchResults from "@/pages/SearchResults";
 import MeetPage from "./pages/MeetPage";
 import CirclesPage from "./pages/CirclesPage";
 import { PublishPage, ProfilePage } from "./pages/PlaceholderPages";
@@ -18,8 +18,8 @@ import PlanDetailPage from "./pages/PlanDetailPage";
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/map"} component={MapPage} />
+      <Route path="/" component={Home} />
+      <Route path="/search" component={SearchResults} />
       <Route path={"/meet"} component={MerchantDetailPage} />
       <Route path={"/merchant/:id"} component={MerchantDetailPage} />
       <Route path={"/plan/:id"} component={PlanDetailPage} />

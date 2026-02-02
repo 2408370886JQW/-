@@ -173,6 +173,50 @@ export default function Home() {
   const navRef = useRef<HTMLDivElement>(null);
   const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Listen for new moment posted event
+  useEffect(() => {
+    const handleNewMoment = (e: CustomEvent) => {
+      const newMoment = e.detail;
+      
+      // Add to local state
+      setMarkerData(prev => ({
+        ...prev,
+        moments: [
+          {
+            id: newMoment.id,
+            lat: 39.9042 + (Math.random() - 0.5) * 0.01, // Random nearby location if not specified
+            lng: 116.4074 + (Math.random() - 0.5) * 0.01,
+            type: "moment",
+            icon: ImageIcon,
+            content: newMoment.content,
+            image: newMoment.media[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
+            likes: 0,
+            comments: 0,
+            hashtags: newMoment.hashtags
+          },
+          ...prev.moments
+        ]
+      }));
+
+      // Switch to moments tab to show the new post
+      setActiveTab("moments");
+      
+      // If map instance exists, pan to the new moment
+      if (mapInstance) {
+        // Use a slight delay to ensure marker is rendered
+        setTimeout(() => {
+          mapInstance.panTo({ lat: 39.9042, lng: 116.4074 });
+          mapInstance.setZoom(16);
+        }, 500);
+      }
+    };
+
+    window.addEventListener('new-moment-posted', handleNewMoment as EventListener);
+    return () => {
+      window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
+    };
+  }, [mapInstance]);
+
   // Handle scroll/drag to hide nav
   useEffect(() => {
     let startY = 0;
@@ -448,6 +492,7 @@ export default function Home() {
                   className="w-full pl-11 bg-slate-100 border-none rounded-full h-11 text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => window.location.href = "/search"}
                 />
               </div>
               <button 

@@ -28,6 +28,13 @@ export default function BottomNav() {
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [content, setContent] = useState("");
+  
+  // State for hashtags
+  const [hashtags, setHashtags] = useState<string[]>([]);
+  const [showHashtagInput, setShowHashtagInput] = useState(false);
+  const [hashtagInput, setHashtagInput] = useState("");
+  
+  const POPULAR_HASHTAGS = ["#周末去哪儿", "#探店", "#美食", "#打卡", "#生活记录", "#OOTD"];
 
   // Wireframe structure: Map, Circles, Publish (Center), Chat, Friends
   const navItems = [
@@ -74,6 +81,7 @@ export default function BottomNav() {
       content,
       media: mediaFiles,
       location: selectedLocation,
+      hashtags,
       timestamp: new Date().toISOString()
     };
 
@@ -85,6 +93,7 @@ export default function BottomNav() {
     setContent("");
     setMediaFiles([]);
     setSelectedLocation(null);
+    setHashtags([]);
     setIsPublishOpen(false);
     
     toast.success("发布成功！");
@@ -168,16 +177,88 @@ export default function BottomNav() {
                 </div>
 
                 {/* Location Tag Display */}
-                {selectedLocation && (
-                  <div className="flex items-center gap-2 text-blue-600 bg-blue-50 self-start px-3 py-1.5 rounded-full text-sm font-medium">
-                    <MapPin className="w-4 h-4" />
-                    {selectedLocation}
-                    <button onClick={() => setSelectedLocation(null)} className="ml-1">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  {selectedLocation && (
+                    <div className="flex items-center gap-2 text-blue-600 bg-blue-50 self-start px-3 py-1.5 rounded-full text-sm font-medium">
+                      <MapPin className="w-4 h-4" />
+                      {selectedLocation}
+                      <button onClick={() => setSelectedLocation(null)} className="ml-1">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Hashtags Display */}
+                  {hashtags.map(tag => (
+                    <div key={tag} className="flex items-center gap-1 text-pink-600 bg-pink-50 px-3 py-1.5 rounded-full text-sm font-medium">
+                      <span>{tag}</span>
+                      <button onClick={() => setHashtags(prev => prev.filter(t => t !== tag))} className="ml-1">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Hashtag Picker */}
+              <AnimatePresence>
+                {showHashtagInput && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="absolute bottom-20 left-4 right-4 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-20"
+                  >
+                    <div className="flex gap-2 mb-3">
+                      <input
+                        type="text"
+                        value={hashtagInput}
+                        onChange={(e) => setHashtagInput(e.target.value)}
+                        placeholder="输入话题..."
+                        className="flex-1 bg-slate-100 border-none rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-500"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && hashtagInput.trim()) {
+                            const tag = hashtagInput.startsWith('#') ? hashtagInput : `#${hashtagInput}`;
+                            if (!hashtags.includes(tag)) {
+                              setHashtags([...hashtags, tag]);
+                            }
+                            setHashtagInput("");
+                          }
+                        }}
+                      />
+                      <Button 
+                        onClick={() => {
+                          if (hashtagInput.trim()) {
+                            const tag = hashtagInput.startsWith('#') ? hashtagInput : `#${hashtagInput}`;
+                            if (!hashtags.includes(tag)) {
+                              setHashtags([...hashtags, tag]);
+                            }
+                            setHashtagInput("");
+                          }
+                        }}
+                        className="bg-pink-500 text-white"
+                      >
+                        添加
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {POPULAR_HASHTAGS.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            if (!hashtags.includes(tag)) {
+                              setHashtags([...hashtags, tag]);
+                            }
+                          }}
+                          className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-full text-xs font-medium hover:bg-pink-50 hover:text-pink-600 transition-colors"
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Location Picker Popup */}
               <AnimatePresence>
@@ -216,9 +297,15 @@ export default function BottomNav() {
                     <ImageIcon className="w-6 h-6 text-green-500" />
                     <span className="text-sm font-medium">图片</span>
                   </button>
-                  <button className="flex items-center gap-2 text-slate-600">
-                    <Video className="w-6 h-6 text-red-500" />
-                    <span className="text-sm font-medium">视频</span>
+                  <button 
+                    onClick={() => setShowHashtagInput(!showHashtagInput)}
+                    className={cn(
+                      "flex items-center gap-2 transition-colors",
+                      hashtags.length > 0 ? "text-pink-600" : "text-slate-600"
+                    )}
+                  >
+                    <span className="text-lg font-bold text-pink-500">#</span>
+                    <span className="text-sm font-medium">话题</span>
                   </button>
                   <button 
                     onClick={() => setShowLocationPicker(!showLocationPicker)}
