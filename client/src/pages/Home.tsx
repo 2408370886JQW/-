@@ -11,12 +11,12 @@ import { createRoot } from "react-dom/client";
 // Mock data for map markers
 const INITIAL_MARKERS = {
   encounter: [
-    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", online: true },
-    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", online: false },
+    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", online: true, gender: "female" },
+    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", online: false, gender: "male" },
   ],
   friends: [
-    { id: 3, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", online: true },
-    { id: 4, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", online: true },
+    { id: 3, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", online: true, gender: "female" },
+    { id: 4, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", online: true, gender: "male" },
   ],
   moments: [
     { 
@@ -314,7 +314,7 @@ export default function Home() {
             {/* Avatar Container */}
             <div className={cn(
               "w-14 h-14 rounded-full border-4 shadow-xl overflow-hidden transition-transform duration-300",
-              marker.type === "encounter" ? "border-pink-400" : "border-blue-400"
+              marker.gender === "female" ? "border-pink-400" : "border-blue-500"
             )}>
               <img src={marker.avatar} alt="User" className="w-full h-full object-cover" />
             </div>
@@ -386,7 +386,7 @@ export default function Home() {
   return (
     <Layout showNav={true}>
       <div className="relative h-screen w-full flex flex-col">
-        {/* Top Search & Tabs Area - Floating over map */}
+        {/* Top Search & Tabs Area - Floating Glass Effect */}
         <motion.div 
           ref={navRef}
           initial={{ y: 0 }}
@@ -406,30 +406,46 @@ export default function Home() {
               />
             </div>
 
-            {/* Tabs */}
-            <div className="flex items-center justify-between px-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "relative px-4 py-2 text-base font-medium transition-all duration-300 active-scale",
-                    activeTab === tab.id ? "text-slate-900 scale-105" : "text-slate-400"
-                  )}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <motion.div 
-                      layoutId="activeTabIndicator"
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-1.5 bg-slate-800 rounded-full" 
-                    />
-                  )}
-                </button>
-              ))}
+            {/* Tabs with Jelly Indicator */}
+            <div className="flex items-center justify-between px-1 relative">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "relative flex-1 py-2 text-base font-bold transition-colors duration-300 z-10",
+                      isActive ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+                    )}
+                  >
+                    <span className="relative z-10">{tab.label}</span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTabIndicator"
+                        className="absolute inset-0 bg-white/50 shadow-sm rounded-xl -z-0"
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 400, 
+                          damping: 30,
+                          mass: 0.8
+                        }}
+                      >
+                        {/* Jelly/Fluid Effect Decoration */}
+                        <motion.div 
+                          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-900 rounded-full opacity-20"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: [1, 1.5, 1] }}
+                          transition={{ repeat: Infinity, duration: 2 }}
+                        />
+                      </motion.div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </motion.div>
-
         {/* Friend Card Popup */}
         <AnimatePresence>
           {selectedFriend && (
@@ -446,23 +462,71 @@ export default function Home() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 pb-safe"
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl rounded-t-3xl p-6 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-white/20"
+                style={{ maxHeight: '85vh', overflowY: 'auto' }}
               >
+                <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mb-8" />
+                
                 <div className="flex flex-col items-center">
-                  <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl overflow-hidden mb-4 -mt-16">
+                  <div className={cn(
+                    "w-24 h-24 rounded-full border-4 shadow-xl overflow-hidden mb-4",
+                    selectedFriend.gender === "female" ? "border-pink-400" : "border-blue-500"
+                  )}>
                     <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-1">用户 {selectedFriend.id}</h3>
                   <p className="text-slate-500 text-sm mb-6">北京 • 活跃于 5 分钟前</p>
                   
-                  <div className="flex gap-4 w-full">
-                    <button className="flex-1 bg-slate-100 text-slate-900 py-3 rounded-2xl font-semibold active:scale-95 transition-transform">
+                  <div className="flex gap-4 w-full mb-8">
+                    <button className="flex-1 bg-slate-100/80 text-slate-900 py-3.5 rounded-2xl font-semibold active:scale-95 transition-transform backdrop-blur-md">
                       关注
                     </button>
-                    <button className="flex-1 bg-blue-600 text-white py-3 rounded-2xl font-semibold active:scale-95 transition-transform">
+                    <button className="flex-1 bg-blue-600 text-white py-3.5 rounded-2xl font-semibold active:scale-95 transition-transform shadow-lg shadow-blue-200">
                       私聊
                     </button>
                   </div>
+
+                  {/* Detailed Info Section */}
+                  <div className="w-full space-y-4">
+                    <div className="bg-slate-50/50 rounded-2xl p-4">
+                      <h4 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">个人信息</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-600">星座</span>
+                          <span className="font-medium text-slate-900">天秤座</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-600">职业</span>
+                          <span className="font-medium text-slate-900">设计师</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-600">兴趣</span>
+                          <div className="flex gap-2">
+                            <span className="px-2 py-1 bg-pink-100 text-pink-600 text-xs rounded-lg font-medium">摄影</span>
+                            <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-lg font-medium">旅行</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-slate-50/50 rounded-2xl p-4">
+                      <h4 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">最近动态</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=200&h=200&fit=crop",
+                          "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=200&h=200&fit=crop",
+                          "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=200&h=200&fit=crop"
+                        ].map((url, i) => (
+                          <div key={i} className="aspect-square rounded-xl bg-slate-200 overflow-hidden">
+                            <img src={url} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Bottom Spacer for Safe Area */}
+                  <div className="h-8" />
                 </div>
               </motion.div>
             </>
@@ -484,20 +548,20 @@ export default function Home() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="fixed inset-4 z-50 bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]"
+                className="fixed inset-4 z-50 bg-white/80 backdrop-blur-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh] border border-white/40"
               >
-                <div className="relative h-64 bg-slate-100">
+                <div className="relative h-72 bg-slate-100">
                   <img src={selectedMoment.image} alt="Moment" className="w-full h-full object-cover" />
                   <button 
                     onClick={() => setSelectedMoment(null)}
-                    className="absolute top-4 right-4 w-8 h-8 bg-black/50 rounded-full flex items-center justify-center text-white backdrop-blur-md"
+                    className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center text-white backdrop-blur-md border border-white/20"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 <div className="p-6 flex-1 overflow-y-auto">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border border-white/50 shadow-sm">
                       <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" alt="User" className="w-full h-full object-cover" />
                     </div>
                     <div>
@@ -505,18 +569,26 @@ export default function Home() {
                       <p className="text-xs text-slate-500">2小时前</p>
                     </div>
                   </div>
-                  <p className="text-slate-700 text-lg leading-relaxed mb-6">
+                  <p className="text-slate-700 text-lg leading-relaxed mb-6 font-medium">
                     {selectedMoment.content}
                   </p>
-                  <div className="flex items-center gap-6 text-slate-500">
-                    <div className="flex items-center gap-2">
-                      <Heart className="w-6 h-6 text-pink-500 fill-pink-500" />
-                      <span className="font-medium">{selectedMoment.likes}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6 text-slate-500">
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-6 h-6 text-pink-500 fill-pink-500" />
+                        <span className="font-medium">{selectedMoment.likes}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-6 h-6" />
+                        <span className="font-medium">{selectedMoment.comments}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <MessageCircle className="w-6 h-6" />
-                      <span className="font-medium">{selectedMoment.comments}</span>
-                    </div>
+                    
+                    <Link href="/circles">
+                      <button className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-200 active:scale-95 transition-transform">
+                        进入圈子
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </motion.div>
@@ -574,9 +646,10 @@ export default function Home() {
                     const Icon = scenario.icon;
                     const isActive = activeScenario === scenario.id;
                     return (
-                      <button
+                      <motion.button
                         key={scenario.id}
                         onClick={() => setActiveScenario(scenario.id)}
+                        whileTap={{ scale: 0.9 }}
                         className={cn(
                           "flex flex-col items-center gap-2 min-w-[64px] transition-all",
                           isActive ? "opacity-100 scale-105" : "opacity-60 hover:opacity-80"
@@ -594,7 +667,7 @@ export default function Home() {
                         )}>
                           {scenario.label}
                         </span>
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
@@ -609,7 +682,10 @@ export default function Home() {
 
                 {PLANS[activeScenario as keyof typeof PLANS]?.map((plan) => (
                   <Link key={plan.id} href={`/plan/${plan.id}`}>
-                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 active:scale-[0.98] transition-transform cursor-pointer">
+                    <motion.div 
+                      whileTap={{ scale: 0.98 }}
+                      className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
+                    >
                       <div className="flex gap-4">
                         <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
                           <img src={plan.image} alt={plan.title} className="w-full h-full object-cover" />
@@ -645,7 +721,7 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   </Link>
                 ))}
 
