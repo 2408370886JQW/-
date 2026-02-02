@@ -160,6 +160,7 @@ export default function Home() {
   // State for Friend Card and Dynamics Detail
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
 
   // State for Nav Hiding
   const [isNavVisible, setIsNavVisible] = useState(true);
@@ -229,7 +230,16 @@ export default function Home() {
     };
 
     window.addEventListener('new-moment-posted', handleNewMoment as EventListener);
-    return () => window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
+    
+    const handleShowPlanDetails = (event: CustomEvent) => {
+      setSelectedPlan(event.detail);
+    };
+    window.addEventListener('show-plan-details', handleShowPlanDetails as EventListener);
+
+    return () => {
+      window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
+      window.removeEventListener('show-plan-details', handleShowPlanDetails as EventListener);
+    };
   }, []);
 
   // Update markers when tab changes or marker data updates
@@ -314,8 +324,8 @@ export default function Home() {
           >
             {/* Avatar Container */}
             <div className={cn(
-              "w-14 h-14 rounded-full border-4 shadow-xl overflow-hidden transition-transform duration-300",
-              marker.gender === "female" ? "border-pink-400" : "border-blue-500"
+              "w-14 h-14 rounded-full border-[3px] shadow-[0_0_15px_rgba(0,0,0,0.3)] overflow-hidden transition-transform duration-300",
+              marker.gender === "female" ? "border-[#FF00FF]" : "border-[#00F0FF]"
             )}>
               <img src={marker.avatar} alt="User" className="w-full h-full object-cover" />
             </div>
@@ -398,19 +408,22 @@ export default function Home() {
           initial={{ y: 0 }}
           animate={{ y: isNavVisible ? 0 : -200 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="absolute top-0 left-0 right-0 z-10 glass pt-safe rounded-b-3xl shadow-sm"
+          className="absolute top-0 left-0 right-0 z-10 bg-black/40 backdrop-blur-md pt-safe rounded-b-[32px] border-b border-white/10"
         >
           <div className="px-4 py-3">
             {/* Search Bar */}
             <div className="relative mb-4 flex items-center gap-2">
-              <Input 
-                placeholder="搜索" 
-                className="flex-1 pl-4 bg-slate-100/50 border-none rounded-2xl h-11 text-base shadow-inner"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button className="w-11 h-11 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-100 active:scale-95 transition-transform">
-                <Search className="w-5 h-5 text-slate-600" />
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
+                <Input 
+                  placeholder="搜索好友、地点" 
+                  className="w-full pl-11 bg-white/10 border-none rounded-full h-11 text-base text-white placeholder:text-white/50 focus-visible:ring-1 focus-visible:ring-white/30"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button className="w-11 h-11 flex items-center justify-center bg-white/10 rounded-full active:scale-95 transition-transform">
+                <User className="w-5 h-5 text-white" />
               </button>
             </div>
 
@@ -424,14 +437,14 @@ export default function Home() {
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
                       "relative flex-1 py-2 text-base font-bold transition-colors duration-300 z-10",
-                      isActive ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+                      isActive ? "text-white" : "text-white/40 hover:text-white/60"
                     )}
                   >
                     <span className="relative z-10">{tab.label}</span>
                     {isActive && (
                       <motion.div
                         layoutId="activeTabIndicator"
-                        className="absolute inset-0 bg-white/50 shadow-sm rounded-xl -z-0"
+                        className="absolute inset-x-2 bottom-0 h-1 bg-[#00F0FF] rounded-full shadow-[0_0_10px_#00F0FF]"
                         transition={{ 
                           type: "spring", 
                           stiffness: 400, 
@@ -469,8 +482,8 @@ export default function Home() {
                 
                 <div className="flex flex-col items-center">
                   <div className={cn(
-                    "w-24 h-24 rounded-full border-4 shadow-xl overflow-hidden mb-4",
-                    selectedFriend.gender === "female" ? "border-pink-400" : "border-blue-500"
+                    "w-24 h-24 rounded-full border-[4px] shadow-[0_0_30px_rgba(0,0,0,0.2)] overflow-hidden mb-4",
+                    selectedFriend.gender === "female" ? "border-[#FF00FF]" : "border-[#00F0FF]"
                   )}>
                     <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
                   </div>
@@ -599,6 +612,119 @@ export default function Home() {
                         进入圈子
                       </button>
                     </Link>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Plan Details Modal */}
+        <AnimatePresence>
+          {selectedPlan && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedPlan(null)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl overflow-hidden shadow-[0_-10px_40px_rgba(0,0,0,0.1)] flex flex-col h-[85vh]"
+              >
+                {/* Header Image */}
+                <div className="relative h-48 shrink-0">
+                  <img src={selectedPlan.image} alt={selectedPlan.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <button 
+                    onClick={() => setSelectedPlan(null)}
+                    className="absolute top-4 right-4 w-8 h-8 bg-black/30 rounded-full flex items-center justify-center text-white backdrop-blur-md border border-white/20"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-2xl font-bold text-white mb-2">{selectedPlan.title}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPlan.tags.map((tag: string) => (
+                        <span key={tag} className="text-xs px-2 py-1 bg-white/20 backdrop-blur-md text-white rounded-lg">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 pb-safe">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-slate-900 text-lg">行程安排</h4>
+                      <span className="text-sm text-slate-500">全程约 4 小时</span>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="relative pl-4 space-y-8">
+                      {/* Vertical Line */}
+                      <div className="absolute left-[19px] top-2 bottom-2 w-0.5 bg-slate-100" />
+
+                      {selectedPlan.steps.map((step: any, idx: number) => (
+                        <div key={idx} className="relative flex gap-4">
+                          {/* Icon Node */}
+                          <div className="relative z-10 w-10 h-10 rounded-full bg-white border-2 border-slate-100 flex items-center justify-center shadow-sm text-lg">
+                            {step.icon}
+                          </div>
+                          
+                          {/* Content */}
+                          <div className="flex-1 pt-1">
+                            <h5 className="font-bold text-slate-900 mb-1">{step.label}</h5>
+                            <p className="text-sm text-slate-500 mb-3">{step.desc}</p>
+                            
+                            {/* Recommended Shop Card */}
+                            <div className="bg-slate-50 rounded-xl p-3 flex gap-3 border border-slate-100">
+                              <div className="w-16 h-16 rounded-lg bg-slate-200 overflow-hidden shrink-0">
+                                <img 
+                                  src={idx === 0 ? "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop" : "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop"} 
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start">
+                                  <h6 className="font-bold text-slate-900 text-sm truncate">推荐店铺 {idx + 1}</h6>
+                                  <div className="flex items-center gap-0.5 shrink-0">
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                    <span className="text-xs font-medium text-slate-900">4.{8-idx}</span>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-1">人均 ¥{100 * (idx + 1)}</p>
+                                <div className="flex gap-2 mt-2">
+                                  <button className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-600">
+                                    导航
+                                  </button>
+                                  <button className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-medium">
+                                    预订
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Bottom Action Bar */}
+                  <div className="mt-8 flex gap-4">
+                    <button className="flex-1 py-3.5 bg-slate-100 text-slate-900 font-bold rounded-2xl">
+                      分享给好友
+                    </button>
+                    <button className="flex-1 py-3.5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200">
+                      一键发起
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -793,48 +919,53 @@ export default function Home() {
                 </div>
 
                 {PLANS[activeScenario as keyof typeof PLANS]?.map((plan) => (
-                  <Link key={plan.id} href={`/plan/${plan.id}`}>
-                    <motion.div 
-                      whileTap={{ scale: 0.98 }}
-                      className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
-                    >
-                      <div className="flex gap-4">
-                        <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
-                          <img src={plan.image} alt={plan.title} className="w-full h-full object-cover" />
+                  <motion.div 
+                    key={plan.id}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      // Toggle expansion logic could go here, or open a bottom sheet
+                      // For now, let's use a state to show details in a bottom sheet to keep flow on one page
+                      const event = new CustomEvent('show-plan-details', { detail: plan });
+                      window.dispatchEvent(event);
+                    }}
+                    className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
+                  >
+                    <div className="flex gap-4">
+                      <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+                        <img src={plan.image} alt={plan.title} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-slate-900 mb-1 truncate">{plan.title}</h4>
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {plan.tags.map(tag => (
+                            <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md">
+                              {tag}
+                            </span>
+                          ))}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-slate-900 mb-1 truncate">{plan.title}</h4>
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {plan.tags.map(tag => (
-                              <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                          
-                          {/* Steps Preview */}
-                          <div className="flex items-center gap-2">
-                            {plan.steps.map((step, idx) => (
-                              <div key={idx} className="flex items-center">
-                                <div className="flex flex-col items-center">
-                                  <span className="text-xs mb-0.5">{step.icon}</span>
-                                  <span className="text-[10px] text-slate-400 scale-90">{step.label}</span>
-                                </div>
-                                {idx < plan.steps.length - 1 && (
-                                  <div className="w-3 h-[1px] bg-slate-200 mx-1 mb-3" />
-                                )}
+                        
+                        {/* Steps Preview */}
+                        <div className="flex items-center gap-2">
+                          {plan.steps.map((step, idx) => (
+                            <div key={idx} className="flex items-center">
+                              <div className="flex flex-col items-center">
+                                <span className="text-xs mb-0.5">{step.icon}</span>
+                                <span className="text-[10px] text-slate-400 scale-90">{step.label}</span>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex flex-col justify-center">
-                          <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
-                            <ChevronRight className="w-4 h-4 text-slate-400" />
-                          </div>
+                              {idx < plan.steps.length - 1 && (
+                                <div className="w-3 h-[1px] bg-slate-200 mx-1 mb-3" />
+                                )}
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    </motion.div>
-                  </Link>
+                      <div className="flex flex-col justify-center">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
+                          <ChevronRight className="w-4 h-4 text-slate-400" />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
                 ))}
 
                 {(!PLANS[activeScenario as keyof typeof PLANS] || PLANS[activeScenario as keyof typeof PLANS].length === 0) && (
@@ -913,6 +1044,74 @@ export default function Home() {
                                 </div>
                               </div>
                               <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯网红打卡地，极简工业风，拍照超好看。</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Package 3: Business Lunch */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                      <div className="aspect-video relative">
+                        <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                          <h4 className="font-bold text-lg text-white">商务宴请套餐</h4>
+                          <p className="text-white/90 text-sm">¥888/四人</p>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-md">高端</span>
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">私密</span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex gap-3">
+                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                              <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <div className="flex justify-between items-start">
+                                <h5 className="font-bold text-slate-900 text-sm truncate">京兆尹</h5>
+                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-xs font-medium text-slate-900">5.0</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">米其林三星素食，环境清幽，适合商务洽谈。</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Package 4: Late Night Drinks */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                      <div className="aspect-video relative">
+                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                          <h4 className="font-bold text-lg text-white">微醺时刻</h4>
+                          <p className="text-white/90 text-sm">¥168/双人</p>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-500 text-xs rounded-md">酒吧</span>
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">鸡尾酒</span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex gap-3">
+                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                              <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <div className="flex justify-between items-start">
+                                <h5 className="font-bold text-slate-900 text-sm truncate">Union</h5>
+                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-xs font-medium text-slate-900">4.7</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯瑜舍酒店一层，氛围极佳的Lounge Bar。</p>
                             </div>
                           </div>
                         </div>

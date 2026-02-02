@@ -51,29 +51,29 @@
   --secondary: oklch(0.82 0.12 180.0);
   --secondary-foreground: oklch(0.25 0.05 180.0);
   
-  /* Off-white Background */
-  --background: oklch(0.98 0.01 240.0);
-  --foreground: oklch(0.25 0.02 240.0);
+  /* Dark Background (JAGAT Style) */
+  --background: oklch(0.15 0.02 240.0);
+  --foreground: oklch(0.98 0.01 240.0);
   
   /* Card & Popover */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.02 240.0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.02 240.0);
+  --card: oklch(0.20 0.02 240.0);
+  --card-foreground: oklch(0.98 0.01 240.0);
+  --popover: oklch(0.20 0.02 240.0);
+  --popover-foreground: oklch(0.98 0.01 240.0);
   
   /* Muted & Accent */
-  --muted: oklch(0.96 0.01 240.0);
-  --muted-foreground: oklch(0.55 0.02 240.0);
-  --accent: oklch(0.96 0.01 240.0);
-  --accent-foreground: oklch(0.25 0.02 240.0);
+  --muted: oklch(0.25 0.02 240.0);
+  --muted-foreground: oklch(0.70 0.02 240.0);
+  --accent: oklch(0.25 0.02 240.0);
+  --accent-foreground: oklch(0.98 0.01 240.0);
   
   /* Destructive */
   --destructive: oklch(0.6 0.2 25.0);
   --destructive-foreground: oklch(0.98 0 0);
   
   /* Border & Input */
-  --border: oklch(0.92 0.01 240.0);
-  --input: oklch(0.92 0.01 240.0);
+  --border: oklch(0.30 0.02 240.0);
+  --input: oklch(0.30 0.02 240.0);
   --ring: oklch(0.68 0.18 25.0);
   
   /* Charts */
@@ -98,11 +98,11 @@
 
 /* iOS-style Glassmorphism Utilities */
 .glass {
-  @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-sm;
+  @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-lg;
 }
 
-.glass-dark {
-  @apply bg-black/60 backdrop-blur-xl border border-white/10 shadow-sm;
+.glass-light {
+  @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-sm;
 }
 
 /* iOS-style Press Effect */

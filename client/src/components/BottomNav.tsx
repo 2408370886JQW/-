@@ -31,11 +31,11 @@ export default function BottomNav() {
 
   // Wireframe structure: Map, Circles, Publish (Center), Chat, Friends
   const navItems = [
-    { path: "/", icon: MapPin, label: "地图", isMap: true },
-    { path: "/circles", icon: Users, label: "圈子" },
+    { path: "/", icon: MapPin, label: "地图", isMap: true, activeColor: "text-[#00F0FF]" },
+    { path: "/circles", icon: Users, label: "圈子", activeColor: "text-[#FF00FF]" },
     { path: "/publish", icon: Plus, label: "发动态", isSpecial: true },
-    { path: "/chat", icon: MessageSquare, label: "聊天" },
-    { path: "/profile", icon: User, label: "我的" },
+    { path: "/chat", icon: MessageSquare, label: "聊天", activeColor: "text-[#00FF94]" },
+    { path: "/profile", icon: User, label: "我的", activeColor: "text-[#FFD600]" },
   ];
 
   const togglePublish = (e: React.MouseEvent) => {
@@ -241,7 +241,7 @@ export default function BottomNav() {
       </AnimatePresence>
 
       {/* Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t-0 pb-safe rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-t border-white/10 pb-safe rounded-t-[32px] shadow-[0_-4px_30px_rgba(0,0,0,0.3)]">
         <div className="flex justify-around items-end h-20 px-2 max-w-md mx-auto relative">
           {navItems.map((item) => {
             const isActive = location === item.path;
@@ -253,13 +253,10 @@ export default function BottomNav() {
                     <motion.div 
                       animate={isPublishOpen ? { rotate: 45, scale: 1.1 } : { rotate: 0, scale: 1 }}
                       whileTap={{ scale: 0.9 }}
-                      className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 border-4 border-white/80"
+                      className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#FF00FF] to-[#00F0FF] flex items-center justify-center shadow-[0_0_20px_rgba(0,240,255,0.5)] border-2 border-white/20"
                     >
-                      <Plus className="w-8 h-8 text-white" strokeWidth={3} />
+                      <Plus className="w-7 h-7 text-white" strokeWidth={3} />
                     </motion.div>
-                    <span className="text-[11px] font-semibold text-slate-600 mt-1.5">
-                      {item.label}
-                    </span>
                   </div>
                 </div>
               );
@@ -273,8 +270,7 @@ export default function BottomNav() {
                     {/* Animated Background Effect when Active */}
                     {isActive && (
                       <motion.div
-                        className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-blue-100/50 -z-10"
-                        initial={{ scale: 0.8, opacity: 0 }}
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-[#00F0FF]/20 blur-md -z-10"
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       />
@@ -288,17 +284,11 @@ export default function BottomNav() {
                       <item.icon 
                         className={cn(
                           "w-7 h-7 transition-colors duration-300",
-                          isActive ? "text-blue-600 fill-blue-600" : "text-slate-400"
+                          isActive ? "text-[#00F0FF] fill-[#00F0FF]/20" : "text-white/40"
                         )} 
                         strokeWidth={isActive ? 2.5 : 2}
                       />
                     </motion.div>
-                    <span className={cn(
-                      "text-[10px] font-bold mt-1 transition-colors duration-300",
-                      isActive ? "text-blue-600" : "text-slate-400"
-                    )}>
-                      {item.label}
-                    </span>
                   </div>
                 </Link>
               );
@@ -307,6 +297,17 @@ export default function BottomNav() {
             return (
               <Link key={item.path} href={item.path}>
                 <div className="flex flex-col items-center justify-center w-16 h-full pb-3 cursor-pointer relative">
+                  {isActive && (
+                    <motion.div
+                      className={cn(
+                        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full blur-md -z-10 opacity-20",
+                        item.activeColor?.replace("text-", "bg-")
+                      )}
+                      animate={{ scale: 1, opacity: 0.3 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    />
+                  )}
+
                   <motion.div
                     animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
                     whileTap={{ scale: 0.8 }}
@@ -315,26 +316,11 @@ export default function BottomNav() {
                     <item.icon 
                       className={cn(
                         "w-7 h-7 transition-colors duration-300",
-                        isActive ? "text-slate-900" : "text-slate-400"
+                        isActive ? item.activeColor : "text-white/40"
                       )} 
                       strokeWidth={isActive ? 2.5 : 2}
                     />
                   </motion.div>
-                  <span className={cn(
-                    "text-[10px] font-bold mt-1 transition-colors duration-300",
-                    isActive ? "text-slate-900" : "text-slate-400"
-                  )}>
-                    {item.label}
-                  </span>
-                  
-                  {/* Active Indicator Dot */}
-                  {isActive && (
-                    <motion.div 
-                      layoutId="nav-indicator"
-                      className="absolute bottom-2 w-1 h-1 bg-slate-900 rounded-full"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
                 </div>
               </Link>
             );
