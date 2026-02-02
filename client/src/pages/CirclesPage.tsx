@@ -63,7 +63,7 @@ export default function CirclesPage() {
     }
   ];
 
-  const tabs = ["关注", "发现", "北京"];
+  const tabs = ["好友", "发现", "北京"];
 
   return (
     <Layout>
