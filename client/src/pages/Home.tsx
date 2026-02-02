@@ -161,7 +161,9 @@ export default function Home() {
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [showGroupBuying, setShowGroupBuying] = useState(false);
   const [showFriendList, setShowFriendList] = useState(false);
+  const [selectedShop, setSelectedShop] = useState<any>(null);
 
   // State for Nav Hiding
   const [isNavVisible, setIsNavVisible] = useState(true);
@@ -427,7 +429,7 @@ export default function Home() {
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input 
-                  placeholder="搜索好友、地点、套餐、商户" 
+                  placeholder="搜索好友ID、套餐名称、商户名称" 
                   className="w-full pl-11 bg-slate-100 border-none rounded-full h-11 text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -497,7 +499,7 @@ export default function Home() {
                     <X className="w-5 h-5 text-slate-500" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain">
                   {INITIAL_MARKERS.friends.map(friend => (
                     <div key={friend.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer" onClick={() => {
                       setShowFriendList(false);
@@ -710,6 +712,147 @@ export default function Home() {
           )}
         </AnimatePresence>
 
+        {/* Group Buying Selection Modal */}
+        <AnimatePresence>
+          {showGroupBuying && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowGroupBuying(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl overflow-hidden shadow-[0_-10px_40px_rgba(0,0,0,0.1)] flex flex-col max-h-[85vh]"
+              >
+                <div className="p-6 pb-safe">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold text-slate-900">选择套餐类型</h3>
+                    <button onClick={() => setShowGroupBuying(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                      <X className="w-5 h-5 text-slate-500" />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { id: 'couple', label: '情侣套餐', icon: '💑', color: 'bg-pink-50 text-pink-600' },
+                      { id: 'bestie', label: '闺蜜套餐', icon: '👯‍♀️', color: 'bg-purple-50 text-purple-600' },
+                      { id: 'bros', label: '兄弟套餐', icon: '🍻', color: 'bg-blue-50 text-blue-600' },
+                      { id: 'fun', label: '情趣套餐', icon: '🎭', color: 'bg-red-50 text-red-600' },
+                      { id: 'family', label: '家庭套餐', icon: '👨‍👩‍👧‍👦', color: 'bg-orange-50 text-orange-600' },
+                      { id: 'business', label: '商务套餐', icon: '💼', color: 'bg-slate-50 text-slate-600' },
+                    ].map(type => (
+                      <div 
+                        key={type.id}
+                        className="flex flex-col items-center justify-center p-6 rounded-2xl border border-slate-100 hover:border-slate-200 hover:shadow-md transition-all cursor-pointer active:scale-95"
+                        onClick={() => {
+                          // Handle selection
+                          setShowGroupBuying(false);
+                          // Could navigate to specific list or filter
+                        }}
+                      >
+                        <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-3", type.color)}>
+                          {type.icon}
+                        </div>
+                        <span className="font-bold text-slate-900">{type.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Shop Detail Card */}
+        <AnimatePresence>
+          {selectedShop && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedShop(null)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100) {
+                    setSelectedShop(null);
+                  }
+                }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl overflow-hidden shadow-[0_-10px_40px_rgba(0,0,0,0.1)] flex flex-col h-[60vh]"
+              >
+                {/* Drag Handle */}
+                <div className="w-full flex justify-center pt-4 pb-2 shrink-0 cursor-grab active:cursor-grabbing" onClick={() => setSelectedShop(null)}>
+                  <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
+                </div>
+
+                {/* Header Image */}
+                <div className="relative h-48 shrink-0">
+                  <img src={selectedShop.image} alt={selectedShop.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-2xl font-bold text-white mb-1">{selectedShop.name}</h3>
+                    <div className="flex items-center gap-2 text-white/90 text-sm">
+                      <div className="flex items-center gap-0.5">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-bold">{selectedShop.rating}</span>
+                      </div>
+                      <span>•</span>
+                      <span>¥{selectedShop.price}/人</span>
+                      <span>•</span>
+                      <span>西餐</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 pb-safe">
+                  <div className="space-y-6">
+                    {/* Location */}
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-slate-900 font-medium">{selectedShop.address}</p>
+                        <p className="text-slate-500 text-sm mt-0.5">距您 1.2km</p>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <h4 className="font-bold text-slate-900 mb-2">店铺介绍</h4>
+                      <p className="text-slate-600 leading-relaxed">{selectedShop.desc}</p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                      <button className="py-3 bg-slate-100 text-slate-900 font-bold rounded-xl">
+                        导航前往
+                      </button>
+                      <button className="py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200">
+                        立即预订
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         {/* Plan Details Modal */}
         <AnimatePresence>
           {selectedPlan && (
@@ -793,11 +936,22 @@ export default function Home() {
                                 </div>
                                 <p className="text-xs text-slate-400 mt-1">人均 ¥{100 * (idx + 1)}</p>
                                 <div className="flex gap-2 mt-2">
-                                  <Link href={`/shop/${idx + 1}`}>
-                                    <button className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-600 hover:bg-slate-50">
-                                      查看详情
-                                    </button>
-                                  </Link>
+                                  <button 
+                                    onClick={() => {
+                                      setSelectedShop({
+                                        id: idx + 1,
+                                        name: `推荐店铺 ${idx + 1}`,
+                                        rating: 4.8 - idx * 0.1,
+                                        price: 100 * (idx + 1),
+                                        image: idx === 0 ? "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop" : "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop",
+                                        desc: "坐落在古老寺庙中的法餐厅，环境优雅，适合约会。",
+                                        address: "东城区五道营胡同88号"
+                                      });
+                                    }}
+                                    className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-600 hover:bg-slate-50"
+                                  >
+                                    查看详情
+                                  </button>
                                   <button className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-medium hover:bg-blue-100">
                                     预订
                                   </button>
