@@ -47,6 +47,7 @@ const INITIAL_MARKERS = {
     { id: 7, lat: 39.906, lng: 116.412, type: "meet", icon: ShoppingBag },
     { id: 8, lat: 39.910, lng: 116.402, type: "meet", icon: ShoppingBag },
   ],
+
 };
 
 // --- NEW DATA STRUCTURES FOR SCENARIO-BASED MEET PAGE ---
@@ -952,15 +953,24 @@ export default function Home() {
                                 <div className="flex gap-2 mt-2">
                                   <button 
                                     onClick={() => {
-                                      setSelectedShop({
+                                      const shopData = {
                                         id: idx + 1,
                                         name: `推荐店铺 ${idx + 1}`,
                                         rating: 4.8 - idx * 0.1,
                                         price: 100 * (idx + 1),
                                         image: idx === 0 ? "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop" : "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop",
                                         desc: "坐落在古老寺庙中的法餐厅，环境优雅，适合约会。",
-                                        address: "东城区五道营胡同88号"
-                                      });
+                                        address: "东城区五道营胡同88号",
+                                        lat: 39.9042 + (Math.random() - 0.5) * 0.01,
+                                        lng: 116.4074 + (Math.random() - 0.5) * 0.01
+                                      };
+                                      setSelectedShop(shopData);
+                                      setSelectedPlan(null); // Close plan details
+                                      setActiveTab("encounter"); // Close meet overlay
+                                      if (mapInstance) {
+                                        mapInstance.panTo({ lat: shopData.lat, lng: shopData.lng });
+                                        mapInstance.setZoom(18);
+                                      }
                                     }}
                                     className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-600 hover:bg-slate-50"
                                   >
