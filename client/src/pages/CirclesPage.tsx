@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import MomentDetail from "@/components/MomentDetail";
 import Layout from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,6 +9,8 @@ import { Search, Heart, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function CirclesPage() {
+  const [selectedFeed, setSelectedFeed] = useState<any>(null);
+
   const feeds = [
     {
       id: 1,
@@ -97,7 +102,16 @@ export default function CirclesPage() {
         <div className="columns-2 gap-2 space-y-2">
           {feeds.map((feed) => (
             <div key={feed.id} className="break-inside-avoid mb-2">
-              <Card className="border-none shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300 rounded-xl active:scale-95 bg-white">
+              <Card 
+                  className="border-none shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300 rounded-xl active:scale-95 bg-white"
+                  onClick={() => setSelectedFeed({
+                    ...feed,
+                    content: feed.title + "\n\n这里是详细内容描述...", // Mock content
+                    comments: 12,
+                    time: "10-24",
+                    hashtags: ["探店", "生活", "打卡"]
+                  })}
+                >
                 {/* Image with variable aspect ratio simulation */}
                 <div className={cn(
                   "relative overflow-hidden bg-slate-100",
@@ -142,6 +156,16 @@ export default function CirclesPage() {
           ))}
         </div>
       </div>
+
+      {/* Moment Detail Modal */}
+      <AnimatePresence>
+        {selectedFeed && (
+          <MomentDetail 
+            moment={selectedFeed} 
+            onClose={() => setSelectedFeed(null)} 
+          />
+        )}
+      </AnimatePresence>
 
       {/* Floating Action Button */}
       <div className="fixed bottom-24 right-4 z-50">
