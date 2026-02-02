@@ -13,7 +13,7 @@ const INITIAL_MARKERS = {
   encounter: [
     { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
     { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male" },
-    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "female" },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "male" },
   ],
   friends: [
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "online", gender: "female" },
@@ -261,6 +261,13 @@ export default function Home() {
     // We now use OverlayView for ALL tabs to support custom avatars and cards
     setMarkers([]); 
     
+    // Add zoom listener for dynamic scaling
+    const zoomListener = mapInstance.addListener('zoom_changed', () => {
+      const zoom = mapInstance.getZoom() || 14;
+      const scale = Math.max(0.4, Math.min(1.5, Math.pow(zoom / 14, 1.5)));
+      document.documentElement.style.setProperty('--map-marker-scale', scale.toString());
+    });
+
     // Custom Overlay Implementation using AdvancedMarkerElement or Custom Overlay
     // Since we are moving away from @react-google-maps/api, we need to implement custom overlays manually
     // However, for simplicity and performance in this specific task, we will use a custom implementation
@@ -350,39 +357,35 @@ export default function Home() {
       });
     } else if (activeTab === "moments") {
       markerData.moments.forEach(marker => {
+        // Calculate scale based on zoom level, but apply it via style prop to the container
+        // We use a state or ref to track zoom, but here we can use the map instance directly in the render
+        // However, since this is inside useEffect, it only runs on mount/update. 
+        // To make it dynamic, we need to listen to zoom_changed event.
+        // But for now, let's use a simpler approach: CSS variable or inline style updated by map event.
+        // Actually, the previous implementation was static. Let's make it dynamic by using a class that updates.
+        
         const content = (
-          <motion.div 
-            initial={{ opacity: 0, y: 20, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            whileTap={{ scale: 0.95 }}
+          <div 
+            className="moment-marker-container relative -translate-x-1/2 -translate-y-full mb-3 cursor-pointer origin-bottom transition-transform duration-200 ease-out"
             onClick={() => setSelectedMoment(marker)}
-            className="relative -translate-x-1/2 -translate-y-full mb-3 cursor-pointer origin-bottom"
-            style={{ 
-              transform: `scale(${Math.max(0.4, Math.min(1.5, Math.pow((mapInstance?.getZoom() || 14) / 14, 1.5)))})` 
-            }}
+            style={{ transform: 'scale(var(--map-marker-scale, 1))' }}
           >
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-2.5 w-44 border border-white/60">
+            <div className="bg-white rounded-xl shadow-lg p-1.5 w-32">
               {/* Image Preview */}
-              <div className="w-full h-28 rounded-xl overflow-hidden mb-2.5 bg-slate-100 shadow-inner">
+              <div className="w-full h-24 rounded-lg overflow-hidden bg-slate-100">
                 <img src={marker.image} alt="Moment" className="w-full h-full object-cover" />
               </div>
               
-              {/* Stats */}
-              <div className="flex items-center justify-between px-1.5 pb-0.5">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                  <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
-                  <span>{marker.likes}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                  <MessageCircle className="w-3.5 h-3.5 fill-blue-100 text-blue-500" />
-                  <span>{marker.comments}</span>
-                </div>
+              {/* Stats - Minimalist */}
+              <div className="absolute -bottom-2 -right-2 bg-white rounded-full px-2 py-0.5 shadow-sm flex items-center gap-1 border border-slate-100">
+                <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                <span className="text-[10px] font-bold text-slate-700">{marker.likes}</span>
               </div>
             </div>
             
             {/* Triangle Pointer */}
-            <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white/80 drop-shadow-sm" />
-          </motion.div>
+            <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white drop-shadow-sm" />
+          </div>
         );
 
         const overlay = new CustomOverlay({ lat: marker.lat, lng: marker.lng }, content);
@@ -395,6 +398,7 @@ export default function Home() {
 
     return () => {
       newOverlays.forEach(overlay => overlay.setMap(null));
+      google.maps.event.removeListener(zoomListener);
     };
 
   }, [activeTab, mapInstance, markerData]);
@@ -981,140 +985,148 @@ export default function Home() {
                   </div>
                   <div className="space-y-4">
                     {/* Package 1: Date Anniversary */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                      <div className="aspect-video relative">
-                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-                          <h4 className="font-bold text-lg text-white">情侣浪漫晚餐</h4>
-                          <p className="text-white/90 text-sm">¥520/双人</p>
+                    <Link href="/shop/1">
+                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+                        <div className="aspect-video relative">
+                          <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                            <h4 className="font-bold text-lg text-white">情侣浪漫晚餐</h4>
+                            <p className="text-white/90 text-sm">¥520/双人</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="px-2 py-0.5 bg-pink-50 text-pink-500 text-xs rounded-md">浪漫</span>
-                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">西餐</span>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex gap-3">
-                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                              <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0 pr-2">
-                              <div className="flex justify-between items-start">
-                                <h5 className="font-bold text-slate-900 text-sm truncate">TRB Hutong</h5>
-                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-xs font-medium text-slate-900">4.9</span>
-                                </div>
+                        <div className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="px-2 py-0.5 bg-pink-50 text-pink-500 text-xs rounded-md">浪漫</span>
+                            <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">西餐</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex gap-3">
+                              <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
                               </div>
-                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">坐落在古老寺庙中的法餐厅，环境优雅，适合约会。</p>
+                              <div className="flex-1 min-w-0 pr-2">
+                                <div className="flex justify-between items-start">
+                                  <h5 className="font-bold text-slate-900 text-sm truncate">TRB Hutong</h5>
+                                  <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                    <span className="text-xs font-medium text-slate-900">4.9</span>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">坐落在古老寺庙中的法餐厅，环境优雅，适合约会。</p>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Package 2: Bestie Afternoon Tea */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                      <div className="aspect-video relative">
-                        <img src="https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-                          <h4 className="font-bold text-lg text-white">闺蜜下午茶</h4>
-                          <p className="text-white/90 text-sm">¥298/双人</p>
+                    <Link href="/shop/2">
+                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+                        <div className="aspect-video relative">
+                          <img src="https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                            <h4 className="font-bold text-lg text-white">闺蜜下午茶</h4>
+                            <p className="text-white/90 text-sm">¥298/双人</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="px-2 py-0.5 bg-purple-50 text-purple-500 text-xs rounded-md">出片</span>
-                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">甜点</span>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex gap-3">
-                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                              <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0 pr-2">
-                              <div className="flex justify-between items-start">
-                                <h5 className="font-bold text-slate-900 text-sm truncate">Algorithm 算法</h5>
-                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-xs font-medium text-slate-900">4.8</span>
-                                </div>
+                        <div className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="px-2 py-0.5 bg-purple-50 text-purple-500 text-xs rounded-md">出片</span>
+                            <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">甜点</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex gap-3">
+                              <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
                               </div>
-                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯网红打卡地，极简工业风，拍照超好看。</p>
+                              <div className="flex-1 min-w-0 pr-2">
+                                <div className="flex justify-between items-start">
+                                  <h5 className="font-bold text-slate-900 text-sm truncate">Algorithm 算法</h5>
+                                  <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                    <span className="text-xs font-medium text-slate-900">4.8</span>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯网红打卡地，极简工业风，拍照超好看。</p>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Package 3: Business Lunch */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                      <div className="aspect-video relative">
-                        <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-                          <h4 className="font-bold text-lg text-white">商务宴请套餐</h4>
-                          <p className="text-white/90 text-sm">¥888/四人</p>
+                    <Link href="/shop/3">
+                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+                        <div className="aspect-video relative">
+                          <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                            <h4 className="font-bold text-lg text-white">商务宴请套餐</h4>
+                            <p className="text-white/90 text-sm">¥888/四人</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-md">高端</span>
-                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">私密</span>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex gap-3">
-                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                              <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0 pr-2">
-                              <div className="flex justify-between items-start">
-                                <h5 className="font-bold text-slate-900 text-sm truncate">京兆尹</h5>
-                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-xs font-medium text-slate-900">5.0</span>
-                                </div>
+                        <div className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-md">高端</span>
+                            <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">私密</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex gap-3">
+                              <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
                               </div>
-                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">米其林三星素食，环境清幽，适合商务洽谈。</p>
+                              <div className="flex-1 min-w-0 pr-2">
+                                <div className="flex justify-between items-start">
+                                  <h5 className="font-bold text-slate-900 text-sm truncate">京兆尹</h5>
+                                  <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                    <span className="text-xs font-medium text-slate-900">5.0</span>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">米其林三星素食，环境清幽，适合商务洽谈。</p>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Package 4: Late Night Drinks */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                      <div className="aspect-video relative">
-                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-                          <h4 className="font-bold text-lg text-white">微醺时刻</h4>
-                          <p className="text-white/90 text-sm">¥168/双人</p>
+                    <Link href="/shop/4">
+                      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform">
+                        <div className="aspect-video relative">
+                          <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                            <h4 className="font-bold text-lg text-white">微醺时刻</h4>
+                            <p className="text-white/90 text-sm">¥168/双人</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-500 text-xs rounded-md">酒吧</span>
-                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">鸡尾酒</span>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex gap-3">
-                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                              <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0 pr-2">
-                              <div className="flex justify-between items-start">
-                                <h5 className="font-bold text-slate-900 text-sm truncate">Union</h5>
-                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-xs font-medium text-slate-900">4.7</span>
-                                </div>
+                        <div className="p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-500 text-xs rounded-md">酒吧</span>
+                            <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">鸡尾酒</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex gap-3">
+                              <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                                <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
                               </div>
-                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯瑜舍酒店一层，氛围极佳的Lounge Bar。</p>
+                              <div className="flex-1 min-w-0 pr-2">
+                                <div className="flex justify-between items-start">
+                                  <h5 className="font-bold text-slate-900 text-sm truncate">Union</h5>
+                                  <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                    <span className="text-xs font-medium text-slate-900">4.7</span>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯瑜舍酒店一层，氛围极佳的Lounge Bar。</p>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -1122,6 +1134,120 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Plan Details Modal */}
+      <AnimatePresence>
+        {selectedPlan && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedPlan(null)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-[70] bg-white flex flex-col"
+            >
+              {/* Header Image */}
+              <div className="relative h-64 shrink-0">
+                <img src={selectedPlan.image} alt={selectedPlan.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+                
+                {/* Back Button */}
+                <button 
+                  onClick={() => setSelectedPlan(null)}
+                  className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+
+                {/* Title Area */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h2 className="text-2xl font-bold text-white mb-2">{selectedPlan.title}</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPlan.tags.map((tag: string) => (
+                      <span key={tag} className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-medium">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto bg-slate-50">
+                <div className="p-6 space-y-6">
+                  {/* Steps */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                      <span className="w-1 h-4 bg-blue-500 rounded-full" />
+                      流程安排
+                    </h3>
+                    <div className="space-y-6 relative">
+                      {/* Connecting Line */}
+                      <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-100" />
+                      
+                      {selectedPlan.steps.map((step: any, idx: number) => (
+                        <div key={idx} className="relative flex gap-4">
+                          <div className="w-10 h-10 rounded-full bg-white border-2 border-blue-100 flex items-center justify-center text-lg shadow-sm z-10">
+                            {step.icon}
+                          </div>
+                          <div className="flex-1 pt-1">
+                            <h4 className="font-bold text-slate-900">{step.label}</h4>
+                            <p className="text-sm text-slate-500 mt-1">{step.desc}</p>
+                            
+                            {/* Recommended Shop for this step */}
+                            <div className="mt-3 bg-slate-50 rounded-xl p-3 flex gap-3 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => window.location.href = `/shop/${idx + 1}`}>
+                              <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
+                                <img src={`https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop`} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1 min-w-0 flex justify-between items-center">
+                                <div>
+                                  <div className="font-bold text-slate-900 text-sm">推荐店铺 {idx + 1}</div>
+                                  <div className="text-xs text-slate-400 mt-0.5">人均 ¥{100 * (idx + 1)}</div>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-slate-400" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tips */}
+                  <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
+                    <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                      <span className="text-lg">💡</span>
+                      小贴士
+                    </h3>
+                    <p className="text-sm text-blue-700 leading-relaxed">
+                      建议提前2天预订餐厅位置。如果是周末出行，记得查看路况信息，预留充足的通勤时间。
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action Bar */}
+              <div className="bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <div className="flex gap-4">
+                  <button className="flex-1 py-3.5 bg-slate-100 text-slate-900 font-bold rounded-2xl active:scale-95 transition-transform">
+                    分享给好友
+                  </button>
+                  <button className="flex-1 py-3.5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">
+                    一键发起
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </Layout>
   );
 }

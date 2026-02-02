@@ -280,14 +280,21 @@ export default function BottomNav() {
                       animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
                       whileTap={{ scale: 0.8 }}
                       transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      className="flex flex-col items-center gap-1"
                     >
                       <item.icon 
                         className={cn(
-                          "w-7 h-7 transition-colors duration-300",
+                          "w-6 h-6 transition-colors duration-300",
                           isActive ? "text-blue-600 fill-blue-600" : "text-slate-400"
                         )} 
                         strokeWidth={isActive ? 2.5 : 2}
                       />
+                      <span className={cn(
+                        "text-[10px] font-medium transition-colors duration-300",
+                        isActive ? "text-blue-600" : "text-slate-400"
+                      )}>
+                        {item.label}
+                      </span>
                     </motion.div>
                   </div>
                 </Link>
@@ -312,14 +319,21 @@ export default function BottomNav() {
                     animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
                     whileTap={{ scale: 0.8 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    className="flex flex-col items-center gap-1"
                   >
                     <item.icon 
                       className={cn(
-                        "w-7 h-7 transition-colors duration-300",
+                        "w-6 h-6 transition-colors duration-300",
                         isActive ? item.activeColor : "text-slate-400"
                       )} 
                       strokeWidth={isActive ? 2.5 : 2}
                     />
+                    <span className={cn(
+                      "text-[10px] font-medium transition-colors duration-300",
+                      isActive ? item.activeColor : "text-slate-400"
+                    )}>
+                      {item.label}
+                    </span>
                   </motion.div>
                 </div>
               </Link>
