@@ -130,7 +130,8 @@ export default function ProfilePage() {
             </div>
             <div className="divide-y divide-slate-50">
               {MY_APPOINTMENTS.map(apt => (
-                <div key={apt.id} className="p-4 flex items-center justify-between active:bg-slate-50 transition-colors">
+                <Link key={apt.id} href={`/appointment/${apt.id}`}>
+                <div className="p-4 flex items-center justify-between active:bg-slate-50 transition-colors cursor-pointer">
                   <div>
                     <div className="font-medium text-slate-900 mb-1">{apt.title}</div>
                     <div className="text-xs text-slate-500 flex items-center gap-2">
@@ -146,6 +147,7 @@ export default function ProfilePage() {
                     {apt.status === "upcoming" ? "即将开始" : "待确认"}
                   </div>
                 </div>
+              </Link>
               ))}
             </div>
           </div>
