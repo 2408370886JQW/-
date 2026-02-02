@@ -324,8 +324,8 @@ export default function Home() {
           >
             {/* Avatar Container */}
             <div className={cn(
-              "w-14 h-14 rounded-full border-[3px] shadow-[0_0_15px_rgba(0,0,0,0.3)] overflow-hidden transition-transform duration-300",
-              marker.gender === "female" ? "border-[#FF00FF]" : "border-[#00F0FF]"
+              "w-14 h-14 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform duration-300",
+              marker.gender === "female" ? "border-pink-400" : "border-blue-500"
             )}>
               <img src={marker.avatar} alt="User" className="w-full h-full object-cover" />
             </div>
@@ -358,10 +358,10 @@ export default function Home() {
             onClick={() => setSelectedMoment(marker)}
             className="relative -translate-x-1/2 -translate-y-full mb-3 cursor-pointer origin-bottom"
             style={{ 
-              transform: `scale(${Math.max(0.6, Math.min(1.2, (mapInstance?.getZoom() || 14) / 14))})` 
+              transform: `scale(${Math.max(0.4, Math.min(1.5, Math.pow((mapInstance?.getZoom() || 14) / 14, 1.5)))})` 
             }}
           >
-            <div className="glass rounded-2xl shadow-2xl p-2.5 w-44 border border-white/40">
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl p-2.5 w-44 border border-white/60">
               {/* Image Preview */}
               <div className="w-full h-28 rounded-xl overflow-hidden mb-2.5 bg-slate-100 shadow-inner">
                 <img src={marker.image} alt="Moment" className="w-full h-full object-cover" />
@@ -408,22 +408,22 @@ export default function Home() {
           initial={{ y: 0 }}
           animate={{ y: isNavVisible ? 0 : -200 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="absolute top-0 left-0 right-0 z-10 bg-black/40 backdrop-blur-md pt-safe rounded-b-[32px] border-b border-white/10"
+          className="absolute top-0 left-0 right-0 z-10 bg-white/80 backdrop-blur-md pt-safe rounded-b-[32px] border-b border-slate-100 shadow-sm"
         >
           <div className="px-4 py-3">
             {/* Search Bar */}
             <div className="relative mb-4 flex items-center gap-2">
               <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input 
                   placeholder="搜索好友、地点" 
-                  className="w-full pl-11 bg-white/10 border-none rounded-full h-11 text-base text-white placeholder:text-white/50 focus-visible:ring-1 focus-visible:ring-white/30"
+                  className="w-full pl-11 bg-slate-100 border-none rounded-full h-11 text-base text-slate-900 placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button className="w-11 h-11 flex items-center justify-center bg-white/10 rounded-full active:scale-95 transition-transform">
-                <User className="w-5 h-5 text-white" />
+              <button className="w-11 h-11 flex items-center justify-center bg-white rounded-full shadow-sm border border-slate-100 active:scale-95 transition-transform">
+                <User className="w-5 h-5 text-slate-600" />
               </button>
             </div>
 
@@ -437,14 +437,14 @@ export default function Home() {
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
                       "relative flex-1 py-2 text-base font-bold transition-colors duration-300 z-10",
-                      isActive ? "text-white" : "text-white/40 hover:text-white/60"
+                      isActive ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
                     )}
                   >
                     <span className="relative z-10">{tab.label}</span>
                     {isActive && (
                       <motion.div
                         layoutId="activeTabIndicator"
-                        className="absolute inset-x-2 bottom-0 h-1 bg-[#00F0FF] rounded-full shadow-[0_0_10px_#00F0FF]"
+                        className="absolute inset-x-2 bottom-0 h-1 bg-slate-900 rounded-full"
                         transition={{ 
                           type: "spring", 
                           stiffness: 400, 
@@ -475,18 +475,23 @@ export default function Home() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl rounded-t-3xl p-6 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-white/20"
-                style={{ maxHeight: '85vh', overflowY: 'auto' }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-slate-100 flex flex-col"
+                style={{ height: '85vh' }}
               >
-                <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mb-8" />
+                {/* Drag Handle Area */}
+                <div className="w-full flex justify-center pt-4 pb-2 shrink-0 cursor-grab active:cursor-grabbing" onClick={() => setSelectedFriend(null)}>
+                  <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
+                </div>
                 
-                <div className="flex flex-col items-center">
-                  <div className={cn(
-                    "w-24 h-24 rounded-full border-[4px] shadow-[0_0_30px_rgba(0,0,0,0.2)] overflow-hidden mb-4",
-                    selectedFriend.gender === "female" ? "border-[#FF00FF]" : "border-[#00F0FF]"
-                  )}>
-                    <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
-                  </div>
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto p-6 pt-2 pb-32">
+                  <div className="flex flex-col items-center">
+                    <div className={cn(
+                      "w-24 h-24 rounded-full border-[4px] shadow-xl overflow-hidden mb-4",
+                      selectedFriend.gender === "female" ? "border-pink-400" : "border-blue-500"
+                    )}>
+                      <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
+                    </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-1">用户 {selectedFriend.id}</h3>
                   <div className="flex items-center gap-2 mb-6">
                     <div className={cn(
@@ -550,6 +555,7 @@ export default function Home() {
                   
                   {/* Bottom Spacer for Safe Area */}
                   <div className="h-8" />
+                  </div>
                 </div>
               </motion.div>
             </>
@@ -702,10 +708,12 @@ export default function Home() {
                                 </div>
                                 <p className="text-xs text-slate-400 mt-1">人均 ¥{100 * (idx + 1)}</p>
                                 <div className="flex gap-2 mt-2">
-                                  <button className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-600">
-                                    导航
-                                  </button>
-                                  <button className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-medium">
+                                  <Link href={`/shop/${idx + 1}`}>
+                                    <button className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-600 hover:bg-slate-50">
+                                      查看详情
+                                    </button>
+                                  </Link>
+                                  <button className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-medium hover:bg-blue-100">
                                     预订
                                   </button>
                                 </div>
@@ -750,39 +758,34 @@ export default function Home() {
                 fullscreenControl: false,
                 styles: [
                   {
+                    "featureType": "all",
                     "elementType": "geometry",
-                    "stylers": [{ "color": "#212121" }]
+                    "stylers": [{ "color": "#f5f5f5" }]
                   },
                   {
+                    "featureType": "all",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#616161" }]
+                  },
+                  {
+                    "featureType": "all",
+                    "elementType": "labels.text.stroke",
+                    "stylers": [{ "color": "#f5f5f5" }]
+                  },
+                  {
+                    "featureType": "all",
                     "elementType": "labels.icon",
                     "stylers": [{ "visibility": "off" }]
                   },
                   {
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#757575" }]
-                  },
-                  {
-                    "elementType": "labels.text.stroke",
-                    "stylers": [{ "color": "#212121" }]
-                  },
-                  {
-                    "featureType": "administrative",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#757575" }]
-                  },
-                  {
-                    "featureType": "administrative.country",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#9e9e9e" }]
-                  },
-                  {
                     "featureType": "administrative.land_parcel",
-                    "stylers": [{ "visibility": "off" }]
-                  },
-                  {
-                    "featureType": "administrative.locality",
                     "elementType": "labels.text.fill",
                     "stylers": [{ "color": "#bdbdbd" }]
+                  },
+                  {
+                    "featureType": "poi",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#eeeeee" }]
                   },
                   {
                     "featureType": "poi",
@@ -792,62 +795,57 @@ export default function Home() {
                   {
                     "featureType": "poi.park",
                     "elementType": "geometry",
-                    "stylers": [{ "color": "#181818" }]
+                    "stylers": [{ "color": "#e5e5e5" }]
                   },
                   {
                     "featureType": "poi.park",
                     "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#616161" }]
-                  },
-                  {
-                    "featureType": "poi.park",
-                    "elementType": "labels.text.stroke",
-                    "stylers": [{ "color": "#1b1b1b" }]
+                    "stylers": [{ "color": "#9e9e9e" }]
                   },
                   {
                     "featureType": "road",
-                    "elementType": "geometry.fill",
-                    "stylers": [{ "color": "#2c2c2c" }]
-                  },
-                  {
-                    "featureType": "road",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#8a8a8a" }]
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#ffffff" }]
                   },
                   {
                     "featureType": "road.arterial",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#373737" }]
-                  },
-                  {
-                    "featureType": "road.highway",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#3c3c3c" }]
-                  },
-                  {
-                    "featureType": "road.highway.controlled_access",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#4e4e4e" }]
-                  },
-                  {
-                    "featureType": "road.local",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#616161" }]
-                  },
-                  {
-                    "featureType": "transit",
                     "elementType": "labels.text.fill",
                     "stylers": [{ "color": "#757575" }]
                   },
                   {
+                    "featureType": "road.highway",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#dadada" }]
+                  },
+                  {
+                    "featureType": "road.highway",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#616161" }]
+                  },
+                  {
+                    "featureType": "road.local",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{ "color": "#9e9e9e" }]
+                  },
+                  {
+                    "featureType": "transit.line",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#e5e5e5" }]
+                  },
+                  {
+                    "featureType": "transit.station",
+                    "elementType": "geometry",
+                    "stylers": [{ "color": "#eeeeee" }]
+                  },
+                  {
                     "featureType": "water",
                     "elementType": "geometry",
-                    "stylers": [{ "color": "#000000" }]
+                    "stylers": [{ "color": "#c9c9c9" }]
                   },
                   {
                     "featureType": "water",
                     "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#3d3d3d" }]
+                    "stylers": [{ "color": "#9e9e9e" }]
                   }
                 ]
               });
