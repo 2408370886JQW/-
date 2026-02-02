@@ -93,7 +93,21 @@
   --sidebar-border: oklch(0.92 0.01 240.0);
   --sidebar-ring: oklch(0.68 0.18 25.0);
   
-  --radius: 1rem;
+  --radius: 1.5rem; /* Larger radius for iOS feel */
+}
+
+/* iOS-style Glassmorphism Utilities */
+.glass {
+  @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-sm;
+}
+
+.glass-dark {
+  @apply bg-black/60 backdrop-blur-xl border border-white/10 shadow-sm;
+}
+
+/* iOS-style Press Effect */
+.active-scale {
+  @apply active:scale-95 transition-transform duration-200 ease-out;
 }
 
 .dark {

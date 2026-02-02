@@ -241,22 +241,23 @@ export default function BottomNav() {
       </AnimatePresence>
 
       {/* Bottom Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 pb-safe">
-        <div className="flex justify-around items-end h-16 px-2 max-w-md mx-auto relative">
+      <div className="fixed bottom-0 left-0 right-0 z-50 glass border-t-0 pb-safe rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div className="flex justify-around items-end h-20 px-2 max-w-md mx-auto relative">
           {navItems.map((item) => {
             const isActive = location === item.path;
             
             if (item.isSpecial) {
               return (
                 <div key={item.path} onClick={togglePublish}>
-                  <div className="relative -top-5 flex flex-col items-center justify-center cursor-pointer">
+                  <div className="relative -top-6 flex flex-col items-center justify-center cursor-pointer group">
                     <motion.div 
-                      animate={isPublishOpen ? { rotate: 45 } : { rotate: 0 }}
-                      className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                      animate={isPublishOpen ? { rotate: 45, scale: 1.1 } : { rotate: 0, scale: 1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 border-4 border-white/80"
                     >
-                      <item.icon className="w-8 h-8 text-white" />
+                      <Plus className="w-8 h-8 text-white" strokeWidth={3} />
                     </motion.div>
-                    <span className="text-[10px] font-medium text-slate-600 mt-1">
+                    <span className="text-[11px] font-semibold text-slate-600 mt-1.5">
                       {item.label}
                     </span>
                   </div>
@@ -268,50 +269,40 @@ export default function BottomNav() {
             if (item.isMap) {
               return (
                 <Link key={item.path} href={item.path}>
-                  <div className="flex flex-col items-center justify-center w-16 h-full pb-2 cursor-pointer relative">
+                  <div className="flex flex-col items-center justify-center w-16 h-full pb-3 cursor-pointer relative active-scale">
                     {/* Animated Background Effect when Active */}
                     {isActive && (
                       <motion.div
-                        className="absolute top-1 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-blue-100/50 -z-10"
+                        className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-blue-100/50 -z-10"
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ 
-                          scale: [1, 1.5, 1],
-                          opacity: [0.5, 0.2, 0.5]
+                          scale: [1, 1.4, 1],
+                          opacity: [0.6, 0, 0.6]
                         }}
                         transition={{ 
-                          duration: 2,
+                          duration: 2.5,
                           repeat: Infinity,
                           ease: "easeInOut"
                         }}
                       />
                     )}
                     
-                    {/* Icon with Bounce Effect */}
                     <motion.div
-                      animate={isActive ? { y: [0, -4, 0] } : { y: 0 }}
-                      transition={{ 
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatType: "loop",
-                        ease: "easeInOut",
-                        repeatDelay: 1
-                      }}
+                      animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
                     >
-                      <item.icon
+                      <item.icon 
                         className={cn(
-                          "w-6 h-6 mb-1 transition-colors relative z-10",
-                          isActive ? "text-blue-600 fill-blue-600" : "text-slate-400"
-                        )}
+                          "w-7 h-7 transition-all duration-300",
+                          isActive ? "text-blue-600 fill-blue-600 drop-shadow-sm" : "text-slate-400"
+                        )} 
                         strokeWidth={isActive ? 2.5 : 2}
                       />
                     </motion.div>
-                    
-                    <span
-                      className={cn(
-                        "text-[10px] font-medium transition-colors",
-                        isActive ? "text-blue-600" : "text-slate-400"
-                      )}
-                    >
+                    <span className={cn(
+                      "text-[11px] font-semibold mt-1.5 transition-colors duration-300",
+                      isActive ? "text-blue-600" : "text-slate-400"
+                    )}>
                       {item.label}
                     </span>
                   </div>
@@ -321,20 +312,23 @@ export default function BottomNav() {
 
             return (
               <Link key={item.path} href={item.path}>
-                <div className="flex flex-col items-center justify-center w-16 h-full pb-2 cursor-pointer active:scale-95 transition-transform">
-                  <item.icon
-                    className={cn(
-                      "w-6 h-6 mb-1 transition-colors",
-                      isActive ? "text-slate-900 fill-slate-900" : "text-slate-400"
-                    )}
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  <span
-                    className={cn(
-                      "text-[10px] font-medium transition-colors",
-                      isActive ? "text-slate-900" : "text-slate-400"
-                    )}
+                <div className="flex flex-col items-center justify-center w-16 h-full pb-3 cursor-pointer active-scale">
+                  <motion.div
+                    animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
                   >
+                    <item.icon 
+                      className={cn(
+                        "w-7 h-7 transition-all duration-300",
+                        isActive ? "text-slate-900 drop-shadow-sm" : "text-slate-400"
+                      )} 
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                  </motion.div>
+                  <span className={cn(
+                    "text-[11px] font-semibold mt-1.5 transition-colors duration-300",
+                    isActive ? "text-slate-900" : "text-slate-400"
+                  )}>
                     {item.label}
                   </span>
                 </div>

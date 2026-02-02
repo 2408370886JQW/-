@@ -6,17 +6,17 @@ import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { OverlayView } from "@react-google-maps/api";
+import { createRoot } from "react-dom/client";
 
 // Mock data for map markers
 const INITIAL_MARKERS = {
   encounter: [
-    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile },
-    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile },
+    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", online: true },
+    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", online: false },
   ],
   friends: [
-    { id: 3, lat: 39.908, lng: 116.397, type: "friend", icon: User },
-    { id: 4, lat: 39.912, lng: 116.415, type: "friend", icon: User },
+    { id: 3, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", online: true },
+    { id: 4, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", online: true },
   ],
   moments: [
     { 
@@ -210,34 +210,152 @@ export default function Home() {
     const currentMarkers = markerData[activeTab] || [];
     
     // For standard markers (non-moments)
-    if (activeTab !== "moments") {
-      const newMarkers = currentMarkers.map(item => {
-        return new google.maps.Marker({
-          position: { lat: item.lat, lng: item.lng },
-          map: mapInstance,
-          title: item.type,
-          animation: google.maps.Animation.DROP,
-        });
-      });
-      setMarkers(newMarkers);
-    } else {
-      setMarkers([]); // Clear standard markers for moments tab
-    }
+    // We now use OverlayView for ALL tabs to support custom avatars and cards
+    setMarkers([]); 
     
+    // Custom Overlay Implementation using AdvancedMarkerElement or Custom Overlay
+    // Since we are moving away from @react-google-maps/api, we need to implement custom overlays manually
+    // However, for simplicity and performance in this specific task, we will use a custom implementation
+    // that renders React components into map overlays.
+    
+    class CustomOverlay extends google.maps.OverlayView {
+      position: google.maps.LatLngLiteral;
+      content: React.ReactNode;
+      container: HTMLDivElement;
+      root: any;
+
+      constructor(position: google.maps.LatLngLiteral, content: React.ReactNode) {
+        super();
+        this.position = position;
+        this.content = content;
+        this.container = document.createElement('div');
+        this.container.style.position = 'absolute';
+        this.container.style.cursor = 'pointer';
+        this.root = createRoot(this.container);
+      }
+
+      onAdd() {
+        const panes = this.getPanes();
+        if (panes) {
+          panes.overlayMouseTarget.appendChild(this.container);
+          this.root.render(this.content);
+        }
+      }
+
+      draw() {
+        const projection = this.getProjection();
+        if (!projection) return;
+
+        const point = projection.fromLatLngToDivPixel(new google.maps.LatLng(this.position));
+        if (point) {
+          this.container.style.left = point.x + 'px';
+          this.container.style.top = point.y + 'px';
+        }
+      }
+
+      onRemove() {
+        if (this.container.parentNode) {
+          this.container.parentNode.removeChild(this.container);
+        }
+        this.root.unmount();
+      }
+    }
+
+    // Render markers based on active tab
+    const newOverlays: google.maps.OverlayView[] = [];
+
+    if (activeTab === "encounter" || activeTab === "friends") {
+      markerData[activeTab].forEach(marker => {
+        const content = (
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileTap={{ scale: 0.9 }}
+            className="relative -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
+          >
+            {/* Avatar Container */}
+            <div className={cn(
+              "w-14 h-14 rounded-full border-4 shadow-xl overflow-hidden transition-transform duration-300",
+              marker.type === "encounter" ? "border-pink-400" : "border-blue-400"
+            )}>
+              <img src={marker.avatar} alt="User" className="w-full h-full object-cover" />
+            </div>
+            
+            {/* Online Status Dot */}
+            {marker.online && (
+              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+            )}
+            
+            {/* Ripple Effect for Online Users */}
+            {marker.online && (
+              <div className="absolute -inset-2 rounded-full border-2 border-green-400/50 opacity-0 animate-ping" />
+            )}
+          </motion.div>
+        );
+        
+        const overlay = new CustomOverlay({ lat: marker.lat, lng: marker.lng }, content);
+        overlay.setMap(mapInstance);
+        newOverlays.push(overlay);
+      });
+    } else if (activeTab === "moments") {
+      markerData.moments.forEach(marker => {
+        const content = (
+          <motion.div 
+            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative -translate-x-1/2 -translate-y-full mb-3 cursor-pointer"
+          >
+            <div className="glass rounded-2xl shadow-2xl p-2.5 w-44 border border-white/40">
+              {/* Image Preview */}
+              <div className="w-full h-28 rounded-xl overflow-hidden mb-2.5 bg-slate-100 shadow-inner">
+                <img src={marker.image} alt="Moment" className="w-full h-full object-cover" />
+              </div>
+              
+              {/* Stats */}
+              <div className="flex items-center justify-between px-1.5 pb-0.5">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                  <Heart className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
+                  <span>{marker.likes}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                  <MessageCircle className="w-3.5 h-3.5 fill-blue-100 text-blue-500" />
+                  <span>{marker.comments}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Triangle Pointer */}
+            <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white/80 drop-shadow-sm" />
+          </motion.div>
+        );
+
+        const overlay = new CustomOverlay({ lat: marker.lat, lng: marker.lng }, content);
+        overlay.setMap(mapInstance);
+        newOverlays.push(overlay);
+      });
+    }
+
+    setOverlays(newOverlays);
+
+    return () => {
+      newOverlays.forEach(overlay => overlay.setMap(null));
+    };
+
   }, [activeTab, mapInstance, markerData]);
 
   return (
     <Layout showNav={true}>
       <div className="relative h-screen w-full flex flex-col">
         {/* Top Search & Tabs Area - Floating over map */}
-        <div className="absolute top-0 left-0 right-0 z-10 bg-white/90 backdrop-blur-md shadow-sm pt-safe">
-          <div className="px-4 py-2">
+        <div className="absolute top-0 left-0 right-0 z-10 glass pt-safe rounded-b-3xl shadow-sm">
+          <div className="px-4 py-3">
             {/* Search Bar */}
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <div className="relative mb-4">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <Input 
-                placeholder="搜索" 
-                className="pl-9 bg-slate-100 border-none rounded-full h-9 text-sm"
+                placeholder="🔍 搜索" 
+                className="pl-11 bg-slate-100/50 border-none rounded-2xl h-11 text-base shadow-inner"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -250,17 +368,16 @@ export default function Home() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "relative px-4 py-2 text-sm font-medium transition-colors",
-                    activeTab === tab.id ? "text-slate-900" : "text-slate-500"
+                    "relative px-4 py-2 text-base font-medium transition-all duration-300 active-scale",
+                    activeTab === tab.id ? "text-slate-900 scale-105" : "text-slate-400"
                   )}
                 >
                   {tab.label}
                   {activeTab === tab.id && (
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1 bg-slate-800 rounded-full" />
-                  )}
-                  {/* Triangle indicator for active tab (visual match to wireframe) */}
-                  {activeTab === tab.id && (
-                    <div className="absolute -bottom-[9px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-800" />
+                    <motion.div 
+                      layoutId="activeTabIndicator"
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-1.5 bg-slate-800 rounded-full" 
+                    />
                   )}
                 </button>
               ))}
@@ -287,42 +404,7 @@ export default function Home() {
               });
             }}
           >
-            {/* Custom Overlay for Moments Cards */}
-            {activeTab === "moments" && markerData.moments.map((moment) => (
-              <OverlayView
-                key={moment.id}
-                position={{ lat: moment.lat, lng: moment.lng }}
-                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-              >
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  className="relative -translate-x-1/2 -translate-y-full mb-2"
-                >
-                  <div className="bg-white rounded-xl shadow-lg p-2 w-32 flex flex-col gap-2">
-                    {/* Image Preview */}
-                    <div className="aspect-square rounded-lg overflow-hidden bg-slate-100">
-                      <img src={moment.image} alt="moment" className="w-full h-full object-cover" />
-                    </div>
-                    
-                    {/* Stats */}
-                    <div className="flex items-center justify-between px-1">
-                      <div className="flex items-center gap-1 text-xs text-slate-500">
-                        <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                        <span>{moment.likes}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-slate-500">
-                        <MessageCircle className="w-3 h-3" />
-                        <span>{moment.comments}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Triangle Pointer */}
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[-6px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white filter drop-shadow-sm" />
-                </motion.div>
-              </OverlayView>
-            ))}
+            {/* Markers are now handled by the useEffect hook with CustomOverlay */}
           </MapView>
           
           {/* --- SCENARIO-BASED MEET PAGE OVERLAY --- */}

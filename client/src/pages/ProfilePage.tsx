@@ -54,6 +54,28 @@ export default function ProfilePage() {
           </div>
         </Link>
 
+        {/* User Moments History - New Feature */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-lg text-slate-900">我的动态</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="relative aspect-square rounded-xl overflow-hidden bg-slate-100">
+                <img 
+                  src={`https://images.unsplash.com/photo-${item === 1 ? '1507525428034-b723cf961d3e' : item === 2 ? '1509042239860-f550ce710b93' : item === 3 ? '1517248135467-4c7edcad34c4' : '1561053720-76cd73ff22c3'}?w=300&h=300&fit=crop`} 
+                  alt="Moment" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                  <div className="flex items-center gap-1 text-white text-xs">
+                    <Heart className="w-3 h-3 fill-white" />
+                    <span>{item * 24}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-2">
           <h3 className="font-bold text-lg text-slate-900">我的服务</h3>
           <div className="grid grid-cols-2 gap-3">
