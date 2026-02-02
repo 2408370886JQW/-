@@ -172,22 +172,43 @@ export default function Home() {
   const navRef = useRef<HTMLDivElement>(null);
 
   // Handle scroll/drag to hide nav
-  // Removed global touch listener to prevent map interaction from hiding nav
-  // Nav visibility is now controlled by specific content scrolling
   useEffect(() => {
-    // Only hide nav when scrolling in content areas, not map
-    const handleContentScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (target.scrollTop > 50) {
+    let startY = 0;
+    let isDragging = false;
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+      isDragging = true;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      const currentY = e.touches[0].clientY;
+      const diff = startY - currentY;
+
+      // Hide nav when dragging map (swiping up/down significantly)
+      if (Math.abs(diff) > 10) {
         setIsNavVisible(false);
-      } else {
-        setIsNavVisible(true);
       }
     };
 
-    // Attach to specific scrollable containers if needed
-    // For now, we keep nav visible by default and only hide on specific interactions
-    setIsNavVisible(true);
+    const handleTouchEnd = () => {
+      isDragging = false;
+      // Show nav when dragging stops
+      setTimeout(() => {
+        setIsNavVisible(true);
+      }, 300);
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
   }, []);
 
   const tabs: { id: TabType; label: string }[] = [
@@ -1087,15 +1108,18 @@ export default function Home() {
           
           {/* --- SCENARIO-BASED MEET PAGE OVERLAY --- */}
           {activeTab === "meet" && (
-            <div className="absolute inset-0 z-20 bg-slate-50/95 backdrop-blur-sm flex flex-col pt-[120px] pb-24 overflow-hidden">
-              {/* Background Image Layer */}
-              <div className="absolute inset-0 z-[-1] opacity-10">
+            <div className="absolute inset-0 z-20 bg-slate-50 flex flex-col pt-[120px] pb-24 overflow-hidden">
+              {/* Background Image Layer - Only visible when header is NOT collapsed */}
+              <motion.div 
+                className="absolute inset-0 z-[-1] opacity-10"
+                animate={{ opacity: isMeetHeaderCollapsed ? 0 : 0.1 }}
+              >
                 <img 
                   src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=1200&fit=crop" 
                   alt="background" 
                   className="w-full h-full object-cover"
                 />
-              </div>
+              </motion.div>
 
               {/* Close/Back Button */}
               <button 
