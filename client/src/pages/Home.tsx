@@ -167,35 +167,27 @@ export default function Home() {
 
   // State for Nav Hiding
   const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isMeetHeaderCollapsed, setIsMeetHeaderCollapsed] = useState(false);
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
 
   // Handle scroll/drag to hide nav
+  // Removed global touch listener to prevent map interaction from hiding nav
+  // Nav visibility is now controlled by specific content scrolling
   useEffect(() => {
-    let startY = 0;
-    
-    const handleTouchStart = (e: TouchEvent) => {
-      startY = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      const currentY = e.touches[0].clientY;
-      const diff = startY - currentY;
-
-      if (diff > 50) { // Swipe up
+    // Only hide nav when scrolling in content areas, not map
+    const handleContentScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.scrollTop > 50) {
         setIsNavVisible(false);
-      } else if (diff < -50) { // Swipe down
+      } else {
         setIsNavVisible(true);
       }
     };
 
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchmove', handleTouchMove);
-
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-    };
+    // Attach to specific scrollable containers if needed
+    // For now, we keep nav visible by default and only hide on specific interactions
+    setIsNavVisible(true);
   }, []);
 
   const tabs: { id: TabType; label: string }[] = [
@@ -499,7 +491,7 @@ export default function Home() {
                     <X className="w-5 h-5 text-slate-500" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain h-full touch-pan-y">
                   {INITIAL_MARKERS.friends.map(friend => (
                     <div key={friend.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer" onClick={() => {
                       setShowFriendList(false);
@@ -1113,8 +1105,16 @@ export default function Home() {
                 <X className="w-5 h-5 text-slate-600" />
               </button>
               
-              {/* 1. Scenario Selector (Entry Level) */}
-              <div className="px-4 mb-6 relative z-10">
+              {/* 1. Scenario Selector (Entry Level) - Collapsible */}
+              <motion.div 
+                className="px-4 relative z-10 overflow-hidden"
+                animate={{ 
+                  height: isMeetHeaderCollapsed ? 0 : "auto",
+                  opacity: isMeetHeaderCollapsed ? 0 : 1,
+                  marginBottom: isMeetHeaderCollapsed ? 0 : "1.5rem"
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              >
                 <h2 className="text-lg font-bold text-slate-900 mb-3">这次见面怎么安排？</h2>
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
                   {SCENARIOS.map((scenario) => {
@@ -1146,10 +1146,20 @@ export default function Home() {
                     );
                   })}
                 </div>
-              </div>
+              </motion.div>
 
               {/* 2. Plan List (Solution Level) */}
-              <div className="flex-1 overflow-y-auto px-4 space-y-4 no-scrollbar relative z-10">
+              <div 
+                className="flex-1 overflow-y-auto px-4 space-y-4 no-scrollbar relative z-10"
+                onScroll={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (target.scrollTop > 50) {
+                    setIsMeetHeaderCollapsed(true);
+                  } else {
+                    setIsMeetHeaderCollapsed(false);
+                  }
+                }}
+              >
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-bold text-slate-900">推荐方案</h3>
                   <span className="text-xs text-slate-400">基于场景智能生成</span>
