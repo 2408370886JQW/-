@@ -11,12 +11,13 @@ import { createRoot } from "react-dom/client";
 // Mock data for map markers
 const INITIAL_MARKERS = {
   encounter: [
-    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", online: true, gender: "female" },
-    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", online: false, gender: "male" },
+    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
+    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male" },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "female" },
   ],
   friends: [
-    { id: 3, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", online: true, gender: "female" },
-    { id: 4, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", online: true, gender: "male" },
+    { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "online", gender: "female" },
+    { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "online", gender: "male" },
   ],
   moments: [
     { 
@@ -319,19 +320,15 @@ export default function Home() {
               <img src={marker.avatar} alt="User" className="w-full h-full object-cover" />
             </div>
             
-            {/* Online Status Dot */}
+            {/* Status Dot */}
             <div className={cn(
               "absolute bottom-0 right-0 w-4 h-4 border-2 border-white rounded-full shadow-sm z-10",
-              marker.online ? "bg-green-500" : "bg-slate-400"
+              marker.status === "online" ? "bg-green-500" : 
+              marker.status === "away" ? "bg-yellow-400" : "bg-slate-400"
             )} />
-            
-            {/* Gender/Status Indicator (Yellow for Female, etc.) */}
-            {marker.gender === "female" && (
-              <div className="absolute top-0 right-0 w-3 h-3 bg-yellow-400 rounded-full border-2 border-white shadow-sm z-10" />
-            )}
 
             {/* Ripple Effect for Online Users */}
-            {marker.online && (
+            {marker.status === "online" && (
               <div className="absolute -inset-2 rounded-full border-2 border-green-500/50 opacity-0 animate-ping" />
             )}
           </motion.div>
@@ -481,10 +478,12 @@ export default function Home() {
                   <div className="flex items-center gap-2 mb-6">
                     <div className={cn(
                       "w-2 h-2 rounded-full",
-                      selectedFriend.online ? "bg-green-500" : "bg-slate-400"
+                      selectedFriend.status === "online" ? "bg-green-500" : 
+                      selectedFriend.status === "away" ? "bg-yellow-400" : "bg-slate-400"
                     )} />
                     <p className="text-slate-500 text-sm">
-                      {selectedFriend.online ? "在线" : "活跃于 3 周前"}
+                      {selectedFriend.status === "online" ? "在线" : 
+                       selectedFriend.status === "away" ? "活跃于 3 小时前" : "活跃于 24 小时前"}
                     </p>
                   </div>
                   
@@ -851,25 +850,74 @@ export default function Home() {
                     <h3 className="font-bold text-slate-900">精选套餐</h3>
                     <span className="text-xs text-slate-400">热门推荐</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Link href="/plan/date-anniversary">
-                      <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 cursor-pointer active:scale-95 transition-transform">
-                        <div className="aspect-video rounded-lg bg-pink-50 mb-2 overflow-hidden">
-                          <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=150&fit=crop" className="w-full h-full object-cover" />
+                  <div className="space-y-4">
+                    {/* Package 1: Date Anniversary */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                      <div className="aspect-video relative">
+                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                          <h4 className="font-bold text-lg text-white">情侣浪漫晚餐</h4>
+                          <p className="text-white/90 text-sm">¥520/双人</p>
                         </div>
-                        <h4 className="font-bold text-sm text-slate-900">情侣浪漫晚餐</h4>
-                        <p className="text-xs text-slate-400 mt-0.5">¥520/双人</p>
                       </div>
-                    </Link>
-                    <Link href="/plan/bestie-photo">
-                      <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 cursor-pointer active:scale-95 transition-transform">
-                        <div className="aspect-video rounded-lg bg-purple-50 mb-2 overflow-hidden">
-                          <img src="https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=200&h=150&fit=crop" className="w-full h-full object-cover" />
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="px-2 py-0.5 bg-pink-50 text-pink-500 text-xs rounded-md">浪漫</span>
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">西餐</span>
                         </div>
-                        <h4 className="font-bold text-sm text-slate-900">闺蜜下午茶</h4>
-                        <p className="text-xs text-slate-400 mt-0.5">¥298/双人</p>
+                        <div className="space-y-3">
+                          <div className="flex gap-3">
+                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                              <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <div className="flex justify-between items-start">
+                                <h5 className="font-bold text-slate-900 text-sm truncate">TRB Hutong</h5>
+                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-xs font-medium text-slate-900">4.9</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">坐落在古老寺庙中的法餐厅，环境优雅，适合约会。</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </Link>
+                    </div>
+
+                    {/* Package 2: Bestie Afternoon Tea */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                      <div className="aspect-video relative">
+                        <img src="https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                          <h4 className="font-bold text-lg text-white">闺蜜下午茶</h4>
+                          <p className="text-white/90 text-sm">¥298/双人</p>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="px-2 py-0.5 bg-purple-50 text-purple-500 text-xs rounded-md">出片</span>
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">甜点</span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex gap-3">
+                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                              <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <div className="flex justify-between items-start">
+                                <h5 className="font-bold text-slate-900 text-sm truncate">Algorithm 算法</h5>
+                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-xs font-medium text-slate-900">4.8</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯网红打卡地，极简工业风，拍照超好看。</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
