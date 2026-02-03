@@ -20,7 +20,7 @@ const INITIAL_MARKERS = {
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male" },
     { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "female" },
     { id: 9, lat: 39.910, lng: 116.400, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
-    { id: 10, lat: 39.905, lng: 116.410, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "away", gender: "male" },
+    { id: 10, lat: 39.905, lng: 116.410, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male" },
     { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", status: "offline", gender: "male" },
   ],
   moments: [
@@ -397,7 +397,7 @@ export default function Home() {
             {/* Status Dot */}
             <div className={cn(
               "absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white",
-              marker.status === "online" ? "bg-green-500" : "bg-gray-400"
+              marker.status === "online" ? "bg-green-500" : marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
             )} />
           </div>
         );
@@ -557,7 +557,7 @@ export default function Home() {
                         <div className="font-bold text-slate-900">用户 {friend.id}</div>
                         <div className="text-xs text-slate-500 flex items-center gap-1">
                           <div className={cn("w-2 h-2 rounded-full", friend.status === "online" ? "bg-green-500" : "bg-gray-400")} />
-                          {friend.status === "online" ? "在线" : "离线"}
+                          {friend.status === "online" ? "在线" : friend.status === "recent" ? "1小时内在线" : "离线"}
                         </div>
                       </div>
                     </div>
@@ -640,13 +640,13 @@ export default function Home() {
                     </span>
                     <span className={cn(
                       "px-2 py-0.5 text-xs rounded-full font-medium flex items-center gap-1",
-                      selectedFriend.status === "online" ? "bg-green-100 text-green-600" : 
-                      selectedFriend.status === "away" ? "bg-yellow-100 text-yellow-600" : "bg-gray-100 text-gray-600"
+                        selectedFriend.status === "online" ? "bg-green-100 text-green-600" : 
+                      selectedFriend.status === "recent" ? "bg-yellow-100 text-yellow-600" : "bg-gray-100 text-gray-600"
                     )}>
                       <div className={cn(
                         "w-1.5 h-1.5 rounded-full",
                         selectedFriend.status === "online" ? "bg-green-500" : 
-                        selectedFriend.status === "away" ? "bg-yellow-500" : "bg-gray-500"
+                        selectedFriend.status === "recent" ? "bg-yellow-500" : "bg-gray-500"
                       )} />
                       {selectedFriend.lastSeen || (selectedFriend.status === "online" ? "在线" : "离线")}
                     </span>
