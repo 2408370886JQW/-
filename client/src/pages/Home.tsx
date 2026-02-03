@@ -288,6 +288,7 @@ export default function Home() {
           }
         ]
       }));
+      
       // Switch to moments tab
       setActiveTab("moments");
     };
@@ -298,7 +299,7 @@ export default function Home() {
     };
   }, []);
 
-  // Initialize Map Overlays
+  // Update markers when active tab changes
   useEffect(() => {
     if (!mapInstance) return;
 
@@ -306,198 +307,207 @@ export default function Home() {
     overlays.forEach(overlay => overlay.setMap(null));
     setOverlays([]);
 
-    // Create new overlays based on active tab
     const newOverlays: google.maps.OverlayView[] = [];
 
-    const createOverlay = (position: google.maps.LatLngLiteral, content: HTMLElement) => {
-      class CustomOverlay extends google.maps.OverlayView {
-        position: google.maps.LatLngLiteral;
-        content: HTMLElement;
-        div: HTMLElement | null = null;
+    // Define CustomOverlay class
+    class CustomOverlay extends google.maps.OverlayView {
+      position: google.maps.LatLng;
+      content: HTMLElement;
+      
+      constructor(position: google.maps.LatLng, content: HTMLElement) {
+        super();
+        this.position = position;
+        this.content = content;
+      }
 
-        constructor(position: google.maps.LatLngLiteral, content: HTMLElement) {
-          super();
-          this.position = position;
-          this.content = content;
+      onAdd() {
+        const panes = this.getPanes();
+        if (panes) {
+          panes.overlayMouseTarget.appendChild(this.content);
         }
+      }
 
-        onAdd() {
-          this.div = document.createElement('div');
-          this.div.style.position = 'absolute';
-          this.div.appendChild(this.content);
-          const panes = this.getPanes();
-          panes?.overlayMouseTarget.appendChild(this.div);
-        }
-
-        draw() {
-          const overlayProjection = this.getProjection();
-          const point = overlayProjection.fromLatLngToDivPixel(new google.maps.LatLng(this.position));
-          if (this.div && point) {
-            this.div.style.left = point.x + 'px';
-            this.div.style.top = point.y + 'px';
-            this.div.style.transform = 'translate(-50%, -50%)'; // Center the overlay
-          }
-        }
-
-        onRemove() {
-          if (this.div) {
-            (this.div.parentNode as HTMLElement).removeChild(this.div);
-            this.div = null;
+      draw() {
+        const projection = this.getProjection();
+        if (projection) {
+          const pixel = projection.fromLatLngToDivPixel(this.position);
+          if (pixel) {
+            this.content.style.position = 'absolute';
+            this.content.style.left = pixel.x + 'px';
+            this.content.style.top = pixel.y + 'px';
+            this.content.style.transform = 'translate(-50%, -100%)'; // Center horizontally, anchor at bottom
           }
         }
       }
-      return new CustomOverlay(position, content);
-    };
 
-    const data = activeTab === "encounter" ? markerData.encounter :
-                 activeTab === "friends" ? markerData.friends :
-                 activeTab === "moments" ? markerData.moments : [];
+      onRemove() {
+        if (this.content.parentElement) {
+          this.content.parentElement.removeChild(this.content);
+        }
+      }
+    }
 
-    data.forEach((item: any) => {
-      const el = document.createElement('div');
-      const root = createRoot(el);
+    // Add markers based on active tab
+    const currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
+    
+    currentMarkers.forEach((marker: any) => {
+      const div = document.createElement('div');
+      div.style.cursor = 'pointer';
       
-      if (activeTab === "moments") {
-        // Moment Card Style - Rounded Rectangle (Bubble-like)
+      // Render different markers based on type
+      if (marker.type === 'encounter') {
+        // Encounter Marker
+        const root = createRoot(div);
         root.render(
           <div 
-            className="relative group cursor-pointer hover:z-50 transition-all duration-300 hover:scale-110"
-            onClick={() => setSelectedMoment(item)}
-          >
-            <div className="w-24 h-28 bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-white transform transition-transform">
-              <div className="h-20 w-full overflow-hidden">
-                <img src={item.image} className="w-full h-full object-cover" />
-              </div>
-              <div className="h-8 px-2 flex items-center justify-between bg-white">
-                <div className="flex items-center gap-1">
-                  <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                  <span className="text-[10px] font-bold text-slate-600">{item.likes}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <MessageSquare className="w-3 h-3 fill-slate-300 text-slate-300" />
-                  <span className="text-[10px] font-bold text-slate-600">{item.comments}</span>
-                </div>
-              </div>
-            </div>
-            {/* Triangle pointer */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-white filter drop-shadow-sm"></div>
-          </div>
-        );
-      } else {
-        // User Avatar Style
-        root.render(
-          <div 
-            className="relative group cursor-pointer hover:z-50 transition-all duration-300 hover:scale-110"
-            onClick={() => setSelectedFriend(item)}
+            className="relative group"
+            onClick={() => setSelectedFriend(marker)}
           >
             <div className={cn(
-              "w-14 h-14 rounded-full border-[3px] shadow-lg overflow-hidden bg-white relative z-10",
-              item.gender === "female" ? "border-pink-400" : "border-blue-500"
+              "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
+              marker.gender === "female" ? "border-pink-400" : "border-blue-500"
             )}>
-              <img src={item.avatar} className="w-full h-full object-cover" />
+              <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
-            
             {/* Status Dot */}
             <div className={cn(
-              "absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white z-20 shadow-sm",
-              item.status === "online" ? "bg-green-500" : 
-              item.status === "away" ? "bg-yellow-500" : "bg-gray-400"
+              "absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white",
+              marker.status === "online" ? "bg-green-500" : 
+              marker.status === "away" ? "bg-yellow-500" : "bg-gray-400"
             )} />
-            
-            {/* Label for Encounter Tab */}
-            {activeTab === "encounter" && (
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap z-20 border border-slate-100">
-                <span className="text-[10px] font-medium text-slate-600">{item.lastSeen}</span>
+          </div>
+        );
+      } else if (marker.type === 'friend') {
+        // Friend Marker
+        const root = createRoot(div);
+        root.render(
+          <div 
+            className="relative group"
+            onClick={() => setSelectedFriend(marker)}
+          >
+            <div className={cn(
+              "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
+              marker.gender === "female" ? "border-pink-400" : "border-blue-500"
+            )}>
+              <img src={marker.avatar} className="w-full h-full object-cover" />
+            </div>
+            {/* Status Dot */}
+            <div className={cn(
+              "absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white",
+              marker.status === "online" ? "bg-green-500" : "bg-gray-400"
+            )} />
+          </div>
+        );
+      } else if (marker.type === 'moment') {
+        // Moment Marker - Rounded Rectangle (Bubble) Style
+        const root = createRoot(div);
+        root.render(
+          <div 
+            className="relative group transition-transform hover:scale-105 active:scale-95"
+            onClick={() => setSelectedMoment(marker)}
+          >
+            <div className="w-20 h-24 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-white flex flex-col">
+              <div className="flex-1 relative overflow-hidden">
+                <img src={marker.image} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               </div>
-            )}
+              <div className="h-6 bg-white flex items-center justify-between px-1.5">
+                <div className="flex items-center gap-0.5">
+                  <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                  <span className="text-[10px] font-bold text-slate-600">{marker.likes}</span>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <MessageCircle className="w-3 h-3 text-slate-400" />
+                  <span className="text-[10px] font-medium text-slate-400">{marker.comments}</span>
+                </div>
+              </div>
+            </div>
+            {/* Triangle Pointer */}
+            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 shadow-sm z-[-1]" />
           </div>
         );
       }
 
-      const overlay = createOverlay({ lat: item.lat, lng: item.lng }, el);
+      const overlay = new CustomOverlay(
+        new google.maps.LatLng(marker.lat, marker.lng),
+        div
+      );
       overlay.setMap(mapInstance);
       newOverlays.push(overlay);
     });
 
     setOverlays(newOverlays);
 
+    return () => {
+      newOverlays.forEach(overlay => overlay.setMap(null));
+    };
   }, [mapInstance, activeTab, markerData]);
 
   return (
-    <Layout>
-      <div className="relative w-full h-full bg-slate-50 flex flex-col overflow-hidden">
-        {/* Top Navigation Bar */}
-        <div className="relative z-40">
-          <AnimatePresence>
-            {isNavVisible && activeTab !== "meet" && (
-              <motion.div 
-                initial={{ y: -100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -100, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="absolute top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-sm pt-safe pb-2 px-4 rounded-b-3xl"
+    <Layout showNav={isNavVisible}>
+      <div className="relative w-full h-screen overflow-hidden bg-slate-50">
+        
+        {/* Top Navigation Bar - Auto Hide */}
+        <motion.div 
+          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-2 bg-gradient-to-b from-white/90 to-white/0 pointer-events-none"
+          animate={{ 
+            y: isNavVisible && activeTab !== 'meet' ? 0 : -100,
+            opacity: isNavVisible && activeTab !== 'meet' ? 1 : 0
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        >
+          <div className="pointer-events-auto">
+            {/* Search Bar */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-100 flex items-center px-4">
+                <Search className="w-4 h-4 text-slate-400 mr-2" />
+                <input 
+                  type="text"
+                  placeholder="搜索用户、动态、地点..."
+                  className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button 
+                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-100 flex items-center justify-center active:scale-95 transition-transform"
+                onClick={() => setShowFriendList(true)}
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4 gap-2">
-                    <Search className="w-4 h-4 text-slate-400" />
-                    <input 
-                      type="text"
-                      placeholder="搜索好友ID、套餐名称、商户名称"
-                      className="flex-1 bg-transparent border-none outline-none text-sm text-slate-900 placeholder:text-slate-400"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <button 
-                    className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
-                    onClick={() => setShowFriendList(true)}
-                  >
-                    <Users className="w-5 h-5 text-slate-600" />
-                  </button>
-                </div>
+                <Users className="w-5 h-5 text-slate-600" />
+              </button>
+            </div>
 
-                {/* Tabs with Subtitles */}
-                <div className="flex justify-between px-2">
-                  {tabs.map((tab) => {
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className="flex flex-col items-center relative py-2 px-4"
-                      >
-                        <span className={cn(
-                          "text-base font-bold transition-colors duration-300",
-                          isActive ? "text-slate-900" : "text-slate-400"
-                        )}>
-                          {tab.label}
-                        </span>
-                        <span className={cn(
-                          "text-[10px] font-medium transition-colors duration-300 mt-0.5",
-                          isActive ? "text-slate-900" : "text-slate-400"
-                        )}>
-                          {tab.subtitle}
-                        </span>
-                        {isActive && (
-                          <motion.div
-                            layoutId="activeTabIndicator"
-                            className="absolute bottom-0 w-8 h-1 bg-slate-900 rounded-full"
-                            transition={{ 
-                              type: "spring", 
-                              stiffness: 400, 
-                              damping: 30,
-                              mass: 0.8
-                            }}
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+            {/* Tab Switcher */}
+            <div className="flex items-center justify-between px-2">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex flex-col items-center gap-0.5 group"
+                >
+                  <span className={cn(
+                    "text-base font-bold transition-colors",
+                    activeTab === tab.id ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
+                  )}>
+                    {tab.label}
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-medium transition-colors",
+                    activeTab === tab.id ? "text-blue-500" : "text-slate-300"
+                  )}>
+                    {tab.subtitle}
+                  </span>
+                  {activeTab === tab.id && (
+                    <motion.div 
+                      layoutId="activeTabIndicator"
+                      className="w-4 h-1 bg-blue-500 rounded-full mt-1"
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
 
         {/* Friend List Popup */}
         <AnimatePresence>
@@ -665,7 +675,7 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Map Container */}
+        {/* Map Container - FIXED: Ensure it takes full space and has correct z-index */}
         <div className="absolute inset-0 z-0">
           <MapView 
             className="w-full h-full"
@@ -677,8 +687,6 @@ export default function Home() {
               // Remove default UI controls to match wireframe clean look
               map.setOptions({
                 disableDefaultUI: true,
-                zoomControl: false,
-                fullscreenControl: false,
                 styles: [
                   {
                     "featureType": "all",
@@ -906,7 +914,7 @@ export default function Home() {
                             <div key={idx} className="flex items-center gap-1">
                               <span>{step.icon}</span>
                               <span>{step.label}</span>
-                              {idx < plan.steps.length - 1 && <ChevronRight className="w-3 h-3 text-slate-300" />}
+                              {idx < plan.steps.length - 1 && <span className="text-slate-300">→</span>}
                             </div>
                           ))}
                         </div>
