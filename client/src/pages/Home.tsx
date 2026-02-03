@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -338,12 +338,18 @@ export default function Home() {
       markerData.encounter.forEach(user => {
         const div = document.createElement('div');
         div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10';
+        
+        // Determine status color
+        let statusColor = "bg-gray-400"; // Default offline (grey)
+        if (user.status === "online") statusColor = "bg-green-500"; // Online (green)
+        else if (user.status === "away") statusColor = "bg-yellow-400"; // Away/Just left (yellow)
+        
         div.innerHTML = `
           <div class="relative">
             <div class="w-12 h-12 rounded-full border-2 ${user.gender === 'female' ? 'border-pink-400' : 'border-blue-500'} overflow-hidden shadow-lg bg-white">
               <img src="${user.avatar}" class="w-full h-full object-cover" />
             </div>
-            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+            <div class="absolute -bottom-1 -right-1 w-4 h-4 ${statusColor} border-2 border-white rounded-full"></div>
             <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-white px-2 py-1 rounded-lg shadow-md text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
               打招呼
             </div>
@@ -361,7 +367,7 @@ export default function Home() {
         div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20';
         div.innerHTML = `
           <div class="relative">
-            <div class="w-14 h-14 rounded-full border-[3px] border-green-500 overflow-hidden shadow-xl bg-white">
+            <div class="w-14 h-14 rounded-full border-[3px] ${friend.gender === 'female' ? 'border-pink-400' : 'border-blue-500'} overflow-hidden shadow-xl bg-white">
               <img src="${friend.avatar}" class="w-full h-full object-cover" />
             </div>
             <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm border border-slate-100">
@@ -384,13 +390,18 @@ export default function Home() {
             <div class="w-16 h-20 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-white relative">
               <img src="${moment.image}" class="w-full h-full object-cover" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              
+              <!-- Likes (Bottom Left) -->
               <div class="absolute bottom-1 left-1 text-[10px] text-white font-medium flex items-center gap-0.5">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 ${moment.likes}
               </div>
-            </div>
-            <div class="absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 border-white overflow-hidden shadow-sm">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" class="w-full h-full object-cover" />
+
+              <!-- Comments (Bottom Right) -->
+              <div class="absolute bottom-1 right-1 text-[10px] text-white font-medium flex items-center gap-0.5">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                ${moment.comments}
+              </div>
             </div>
           </div>
         `;
@@ -449,11 +460,12 @@ export default function Home() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                  <Link href="/profile">
-                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors">
-                      <User className="w-5 h-5 text-slate-600" />
-                    </button>
-                  </Link>
+                  <button 
+                    onClick={() => setShowFriendList(true)}
+                    className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
+                  >
+                    <Users className="w-5 h-5 text-slate-600" />
+                  </button>
                 </div>
 
                 {/* Tabs with Subtitles */}
@@ -646,7 +658,7 @@ export default function Home() {
                     <div className="grid grid-cols-3 gap-2">
                       {[1, 2, 3, 4, 5, 6].map(i => (
                         <div key={i} className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
-                          <img src={`https://images.unsplash.com/photo-${1500000000000 + i}?w=200&h=200&fit=crop`} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                          <img src={`https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop`} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                         </div>
                       ))}
                     </div>
