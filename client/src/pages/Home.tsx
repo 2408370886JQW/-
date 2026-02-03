@@ -14,11 +14,11 @@ const INITIAL_MARKERS = {
   encounter: [
     { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
     { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "24小时内在线" },
-    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "male", lastSeen: "15分钟前在线" },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "female", lastSeen: "15分钟前在线" },
   ],
   friends: [
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "online", gender: "female" },
-    { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "male" },
+    { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "female" },
     { id: 9, lat: 39.910, lng: 116.400, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
     { id: 10, lat: 39.905, lng: 116.410, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "away", gender: "male" },
     { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "offline", gender: "female" },
@@ -409,19 +409,24 @@ export default function Home() {
             className="relative group transition-transform hover:scale-105 active:scale-95"
             onClick={() => setSelectedMoment(marker)}
           >
-            <div className="w-28 h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-white flex flex-col">
-              <div className="flex-1 relative overflow-hidden">
+            <div className="w-48 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-white flex flex-col">
+              <div className="aspect-video relative overflow-hidden">
                 <img src={marker.image} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               </div>
-              <div className="h-6 bg-white flex items-center justify-between px-1.5">
-                <div className="flex items-center gap-0.5">
-                  <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                  <span className="text-[10px] font-bold text-slate-600">{marker.likes}</span>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  <MessageCircle className="w-3 h-3 text-slate-400" />
-                  <span className="text-[10px] font-medium text-slate-400">{marker.comments}</span>
+              <div className="p-2 bg-white">
+                <p className="text-xs text-slate-900 font-medium truncate mb-1.5">{marker.content}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                      <span className="text-[10px] font-bold text-slate-600">{marker.likes}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="w-3 h-3 text-slate-400" />
+                      <span className="text-[10px] font-medium text-slate-400">{marker.comments}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -558,26 +563,29 @@ export default function Home() {
                     </div>
                   ))}
                   {/* Mock more friends with mixed genders */}
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <div key={`mock-${i}`} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
-                      <div className={cn(
-                        "w-12 h-12 rounded-full border-2 overflow-hidden bg-slate-100",
-                        i % 2 === 0 ? "border-pink-500" : "border-blue-500"
-                      )}>
-                        <img 
-                          src={i % 2 === 0 
-                            ? `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80&id=${i}` 
-                            : `https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&q=80&id=${i}`
-                          } 
-                          className="w-full h-full object-cover"
-                        />
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(i => {
+                    const isFemale = i % 2 === 0;
+                    return (
+                      <div key={`mock-${i}`} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
+                        <div className={cn(
+                          "w-12 h-12 rounded-full border-2 overflow-hidden bg-slate-100",
+                          isFemale ? "border-pink-500" : "border-blue-500"
+                        )}>
+                          <img 
+                            src={isFemale
+                              ? `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80&id=${i}` 
+                              : `https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&q=80&id=${i}`
+                            } 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900">好友 {i}</div>
+                          <div className="text-xs text-slate-500">离线</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-bold text-slate-900">好友 {i}</div>
-                        <div className="text-xs text-slate-500">离线</div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </motion.div>
             </>
@@ -815,7 +823,7 @@ export default function Home() {
               {/* Header Image Area - Collapsible on Scroll */}
               <motion.div 
                 className="relative shrink-0 overflow-hidden"
-                animate={{ height: isMeetHeaderCollapsed ? 100 : 192 }}
+                animate={{ height: isMeetHeaderCollapsed ? 0 : 200 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
                 <img 
@@ -825,28 +833,30 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
                 
-                {/* Back Button - Always Visible */}
-                <button 
-                  onClick={() => setActiveTab("encounter")}
-                  className="absolute top-4 left-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-colors z-50"
-                  style={{ marginTop: 'env(safe-area-inset-top)' }}
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
-
                 {/* Title */}
                 <motion.div 
-                  className="absolute bottom-4 left-4 text-white"
+                  className="absolute bottom-6 left-4 text-white"
                   animate={{ opacity: isMeetHeaderCollapsed ? 0 : 1 }}
                 >
-                  <h1 className="text-2xl font-bold">发现美好生活</h1>
+                  <h1 className="text-2xl font-bold mb-1">发现美好生活</h1>
                   <p className="text-sm opacity-90">与你喜欢的TA一起发现美好</p>
                 </motion.div>
               </motion.div>
 
+              {/* Fixed Back Button Bar */}
+              <div className="absolute top-0 left-0 right-0 z-50 p-4 pointer-events-none">
+                <button 
+                  onClick={() => setActiveTab("encounter")}
+                  className="pointer-events-auto p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-colors shadow-sm"
+                  style={{ marginTop: 'env(safe-area-inset-top)' }}
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+              </div>
+
               {/* Content Area */}
               <div 
-                className="flex-1 overflow-y-auto pt-4"
+                className="flex-1 overflow-y-auto pt-4 pb-24"
                 onScroll={(e) => {
                   const scrollTop = e.currentTarget.scrollTop;
                   setIsMeetHeaderCollapsed(scrollTop > 50);
