@@ -12,13 +12,13 @@ import { createRoot } from "react-dom/client";
 // Mock data for map markers
 const INITIAL_MARKERS = {
   encounter: [
-    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
-    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male" },
-    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "male" },
+    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
+    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "24小时内在线" },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "male", lastSeen: "15分钟前在线" },
   ],
   friends: [
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "online", gender: "female" },
-    { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "online", gender: "male" },
+    { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "male" },
   ],
   moments: [
     { 
@@ -365,11 +365,17 @@ export default function Home() {
       markerData.friends.forEach(friend => {
         const div = document.createElement('div');
         div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20';
+        
+        // Determine status color for friends
+        let statusColor = "bg-gray-400"; // Default offline (grey)
+        if (friend.status === "online") statusColor = "bg-green-500"; // Online (green)
+
         div.innerHTML = `
           <div class="relative">
             <div class="w-14 h-14 rounded-full border-[3px] ${friend.gender === 'female' ? 'border-pink-400' : 'border-blue-500'} overflow-hidden shadow-xl bg-white">
               <img src="${friend.avatar}" class="w-full h-full object-cover" />
             </div>
+            <div class="absolute -bottom-1 -right-1 w-4 h-4 ${statusColor} border-2 border-white rounded-full"></div>
             <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm border border-slate-100">
               <span class="text-[10px] font-bold text-slate-700 whitespace-nowrap">好友</span>
             </div>
@@ -387,13 +393,13 @@ export default function Home() {
         div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10 hover:z-30';
         div.innerHTML = `
           <div class="relative transition-transform duration-300 group-hover:scale-110">
-            <div class="w-16 h-20 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-white relative">
+            <div class="w-16 h-16 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-white relative">
               <img src="${moment.image}" class="w-full h-full object-cover" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               
               <!-- Likes (Bottom Left) -->
               <div class="absolute bottom-1 left-1 text-[10px] text-white font-medium flex items-center gap-0.5">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 ${moment.likes}
               </div>
 
@@ -554,8 +560,8 @@ export default function Home() {
                       <div>
                         <div className="font-bold text-slate-900">用户 {friend.id}</div>
                         <div className="text-xs text-slate-500 flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500" />
-                          在线
+                          <div className={cn("w-2 h-2 rounded-full", friend.status === "online" ? "bg-green-500" : "bg-gray-400")} />
+                          {friend.status === "online" ? "在线" : "离线"}
                         </div>
                       </div>
                     </div>
@@ -624,9 +630,17 @@ export default function Home() {
                     <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full font-medium">
                       {selectedFriend.gender === "female" ? "♀ 24岁" : "♂ 26岁"}
                     </span>
-                    <span className="px-2 py-0.5 bg-green-100 text-green-600 text-xs rounded-full font-medium flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      在线
+                    <span className={cn(
+                      "px-2 py-0.5 text-xs rounded-full font-medium flex items-center gap-1",
+                      selectedFriend.status === "online" ? "bg-green-100 text-green-600" : 
+                      selectedFriend.status === "away" ? "bg-yellow-100 text-yellow-600" : "bg-gray-100 text-gray-600"
+                    )}>
+                      <div className={cn(
+                        "w-1.5 h-1.5 rounded-full",
+                        selectedFriend.status === "online" ? "bg-green-500" : 
+                        selectedFriend.status === "away" ? "bg-yellow-500" : "bg-gray-500"
+                      )} />
+                      {selectedFriend.lastSeen || (selectedFriend.status === "online" ? "在线" : "离线")}
                     </span>
                   </div>
 
