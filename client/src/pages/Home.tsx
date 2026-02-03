@@ -288,20 +288,17 @@ export default function Home() {
           }
         ]
       }));
-      
-      // Refresh markers
-      if (mapInstance) {
-        // Trigger re-render of markers
-      }
+      // Switch to moments tab
+      setActiveTab("moments");
     };
 
     window.addEventListener('new-moment-posted', handleNewMoment as EventListener);
     return () => {
       window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
     };
-  }, [mapInstance]);
+  }, []);
 
-  // Custom Overlay for Markers
+  // Initialize Map Overlays
   useEffect(() => {
     if (!mapInstance) return;
 
@@ -309,196 +306,178 @@ export default function Home() {
     overlays.forEach(overlay => overlay.setMap(null));
     setOverlays([]);
 
+    // Create new overlays based on active tab
     const newOverlays: google.maps.OverlayView[] = [];
 
-    // Helper to create overlay
     const createOverlay = (position: google.maps.LatLngLiteral, content: HTMLElement) => {
-      const overlay = new google.maps.OverlayView();
-      overlay.onAdd = function() {
-        const layer = this.getPanes()?.overlayMouseTarget;
-        layer?.appendChild(content);
-      };
-      overlay.draw = function() {
-        const projection = this.getProjection();
-        const point = projection.fromLatLngToDivPixel(position);
-        if (point) {
-          content.style.left = point.x + 'px';
-          content.style.top = point.y + 'px';
+      class CustomOverlay extends google.maps.OverlayView {
+        position: google.maps.LatLngLiteral;
+        content: HTMLElement;
+        div: HTMLElement | null = null;
+
+        constructor(position: google.maps.LatLngLiteral, content: HTMLElement) {
+          super();
+          this.position = position;
+          this.content = content;
         }
-      };
-      overlay.onRemove = function() {
-        content.parentNode?.removeChild(content);
-      };
-      overlay.setMap(mapInstance);
-      return overlay;
+
+        onAdd() {
+          this.div = document.createElement('div');
+          this.div.style.position = 'absolute';
+          this.div.appendChild(this.content);
+          const panes = this.getPanes();
+          panes?.overlayMouseTarget.appendChild(this.div);
+        }
+
+        draw() {
+          const overlayProjection = this.getProjection();
+          const point = overlayProjection.fromLatLngToDivPixel(new google.maps.LatLng(this.position));
+          if (this.div && point) {
+            this.div.style.left = point.x + 'px';
+            this.div.style.top = point.y + 'px';
+            this.div.style.transform = 'translate(-50%, -50%)'; // Center the overlay
+          }
+        }
+
+        onRemove() {
+          if (this.div) {
+            (this.div.parentNode as HTMLElement).removeChild(this.div);
+            this.div = null;
+          }
+        }
+      }
+      return new CustomOverlay(position, content);
     };
 
-    // 1. Encounter Markers
-    if (activeTab === "encounter") {
-      markerData.encounter.forEach(user => {
-        const div = document.createElement('div');
-        div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10';
-        
-        // Determine status color
-        let statusColor = "bg-gray-400"; // Default offline (grey)
-        if (user.status === "online") statusColor = "bg-green-500"; // Online (green)
-        else if (user.status === "away") statusColor = "bg-yellow-400"; // Away/Just left (yellow)
-        
-        div.innerHTML = `
-          <div class="relative">
-            <div class="w-12 h-12 rounded-full border-2 ${user.gender === 'female' ? 'border-pink-400' : 'border-blue-500'} overflow-hidden shadow-lg bg-white">
-              <img src="${user.avatar}" class="w-full h-full object-cover" />
-            </div>
-            <div class="absolute -bottom-1 -right-1 w-4 h-4 ${statusColor} border-2 border-white rounded-full"></div>
-            <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-white px-2 py-1 rounded-lg shadow-md text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              打招呼
-            </div>
-          </div>
-        `;
-        div.onclick = () => setSelectedFriend(user);
-        newOverlays.push(createOverlay({ lat: user.lat, lng: user.lng }, div));
-      });
-    }
+    const data = activeTab === "encounter" ? markerData.encounter :
+                 activeTab === "friends" ? markerData.friends :
+                 activeTab === "moments" ? markerData.moments : [];
 
-    // 2. Friends Markers
-    if (activeTab === "friends") {
-      markerData.friends.forEach(friend => {
-        const div = document.createElement('div');
-        div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20';
-        
-        // Determine status color for friends
-        let statusColor = "bg-gray-400"; // Default offline (grey)
-        if (friend.status === "online") statusColor = "bg-green-500"; // Online (green)
-
-        div.innerHTML = `
-          <div class="relative">
-            <div class="w-14 h-14 rounded-full border-[3px] ${friend.gender === 'female' ? 'border-pink-400' : 'border-blue-500'} overflow-hidden shadow-xl bg-white">
-              <img src="${friend.avatar}" class="w-full h-full object-cover" />
-            </div>
-            <div class="absolute -bottom-1 -right-1 w-4 h-4 ${statusColor} border-2 border-white rounded-full"></div>
-          </div>
-        `;
-        div.onclick = () => setSelectedFriend(friend);
-        newOverlays.push(createOverlay({ lat: friend.lat, lng: friend.lng }, div));
-      });
-    }
-
-    // 3. Moments Markers
-    if (activeTab === "moments") {
-      markerData.moments.forEach(moment => {
-        const div = document.createElement('div');
-        div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10 hover:z-30';
-        div.innerHTML = `
-          <div class="relative transition-transform duration-300 group-hover:scale-110">
-            <div class="w-16 h-16 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-white relative rotate-45 transform origin-center">
-              <div class="-rotate-45 w-full h-full">
-                <img src="${moment.image}" class="w-full h-full object-cover" />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                
-                <!-- Likes (Bottom Left) -->
-                <div class="absolute bottom-1 left-1 text-[10px] text-white font-medium flex items-center gap-0.5">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                  ${moment.likes}
+    data.forEach((item: any) => {
+      const el = document.createElement('div');
+      const root = createRoot(el);
+      
+      if (activeTab === "moments") {
+        // Moment Card Style - Rounded Rectangle (Bubble-like)
+        root.render(
+          <div 
+            className="relative group cursor-pointer hover:z-50 transition-all duration-300 hover:scale-110"
+            onClick={() => setSelectedMoment(item)}
+          >
+            <div className="w-24 h-28 bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-white transform transition-transform">
+              <div className="h-20 w-full overflow-hidden">
+                <img src={item.image} className="w-full h-full object-cover" />
+              </div>
+              <div className="h-8 px-2 flex items-center justify-between bg-white">
+                <div className="flex items-center gap-1">
+                  <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                  <span className="text-[10px] font-bold text-slate-600">{item.likes}</span>
                 </div>
-
-                <!-- Comments (Bottom Right) -->
-                <div class="absolute bottom-1 right-1 text-[10px] text-white font-medium flex items-center gap-0.5">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  ${moment.comments}
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="w-3 h-3 fill-slate-300 text-slate-300" />
+                  <span className="text-[10px] font-bold text-slate-600">{item.comments}</span>
                 </div>
               </div>
             </div>
+            {/* Triangle pointer */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-white filter drop-shadow-sm"></div>
           </div>
-        `;
-        div.onclick = () => setSelectedMoment(moment);
-        newOverlays.push(createOverlay({ lat: moment.lat, lng: moment.lng }, div));
-      });
-    }
+        );
+      } else {
+        // User Avatar Style
+        root.render(
+          <div 
+            className="relative group cursor-pointer hover:z-50 transition-all duration-300 hover:scale-110"
+            onClick={() => setSelectedFriend(item)}
+          >
+            <div className={cn(
+              "w-14 h-14 rounded-full border-[3px] shadow-lg overflow-hidden bg-white relative z-10",
+              item.gender === "female" ? "border-pink-400" : "border-blue-500"
+            )}>
+              <img src={item.avatar} className="w-full h-full object-cover" />
+            </div>
+            
+            {/* Status Dot */}
+            <div className={cn(
+              "absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white z-20 shadow-sm",
+              item.status === "online" ? "bg-green-500" : 
+              item.status === "away" ? "bg-yellow-500" : "bg-gray-400"
+            )} />
+            
+            {/* Label for Encounter Tab */}
+            {activeTab === "encounter" && (
+              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap z-20 border border-slate-100">
+                <span className="text-[10px] font-medium text-slate-600">{item.lastSeen}</span>
+              </div>
+            )}
+          </div>
+        );
+      }
 
-    // 4. Meet Markers (Shops)
-    if (activeTab === "meet") {
-      markerData.meet.forEach(shop => {
-        const div = document.createElement('div');
-        div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10';
-        div.innerHTML = `
-          <div class="relative transition-transform duration-300 group-hover:scale-110">
-            <div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center shadow-lg text-white">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            </div>
-            <div class="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white px-2 py-0.5 rounded-md shadow-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-              <span class="text-xs font-bold text-slate-700">网红店</span>
-            </div>
-          </div>
-        `;
-        div.onclick = () => setSelectedShop(shop);
-        newOverlays.push(createOverlay({ lat: shop.lat, lng: shop.lng }, div));
-      });
-    }
+      const overlay = createOverlay({ lat: item.lat, lng: item.lng }, el);
+      overlay.setMap(mapInstance);
+      newOverlays.push(overlay);
+    });
 
     setOverlays(newOverlays);
 
   }, [mapInstance, activeTab, markerData]);
 
   return (
-    <Layout showNav={true}>
-      <div className="relative h-screen w-full overflow-hidden bg-slate-50">
-        {/* Top Navigation Bar - Floating - HIDDEN when activeTab is 'meet' */}
-        <AnimatePresence>
-          {activeTab !== "meet" && (
-            <motion.div 
-              className="absolute top-0 left-0 right-0 z-40 pt-safe"
-              initial={{ y: -200, opacity: 0 }}
-              animate={{ y: isNavVisible ? 0 : -200, opacity: isNavVisible ? 1 : 0 }}
-              exit={{ y: -200, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            >
-              <div className="mx-4 mt-2 bg-white/90 backdrop-blur-md shadow-sm rounded-2xl p-2 pb-1">
-                {/* Search Bar */}
-                <div className="flex items-center gap-3 mb-3 px-1">
+    <Layout>
+      <div className="relative w-full h-full bg-slate-50 flex flex-col overflow-hidden">
+        {/* Top Navigation Bar */}
+        <div className="relative z-40">
+          <AnimatePresence>
+            {isNavVisible && activeTab !== "meet" && (
+              <motion.div 
+                initial={{ y: -100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -100, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="absolute top-0 left-0 right-0 bg-white/80 backdrop-blur-md shadow-sm pt-safe pb-2 px-4 rounded-b-3xl"
+              >
+                <div className="flex items-center gap-3 mb-3">
                   <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4 gap-2">
                     <Search className="w-4 h-4 text-slate-400" />
                     <input 
                       type="text"
                       placeholder="搜索好友ID、套餐名称、商户名称"
-                      className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-slate-400"
+                      className="flex-1 bg-transparent border-none outline-none text-sm text-slate-900 placeholder:text-slate-400"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
                   <button 
-                    onClick={() => setShowFriendList(true)}
                     className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors"
+                    onClick={() => setShowFriendList(true)}
                   >
                     <Users className="w-5 h-5 text-slate-600" />
                   </button>
                 </div>
 
                 {/* Tabs with Subtitles */}
-                <div className="flex items-center justify-between px-1 relative">
+                <div className="flex justify-between px-2">
                   {tabs.map((tab) => {
                     const isActive = activeTab === tab.id;
                     return (
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={cn(
-                          "relative flex-1 py-2 flex flex-col items-center justify-center transition-colors duration-300 z-10",
-                          isActive ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
-                        )}
+                        className="flex flex-col items-center relative py-2 px-4"
                       >
                         <span className={cn(
-                          "text-base font-bold relative z-10 leading-none mb-1",
-                          isActive ? "scale-110" : "scale-100"
+                          "text-base font-bold transition-colors duration-300",
+                          isActive ? "text-slate-900" : "text-slate-400"
                         )}>
                           {tab.label}
                         </span>
                         <span className={cn(
-                          "text-[10px] font-medium leading-none transition-all duration-300",
-                          isActive ? "text-slate-500 opacity-100" : "text-slate-300 opacity-0 h-0 overflow-hidden"
+                          "text-[10px] font-medium transition-colors duration-300 mt-0.5",
+                          isActive ? "text-slate-900" : "text-slate-400"
                         )}>
                           {tab.subtitle}
                         </span>
-                        
                         {isActive && (
                           <motion.div
                             layoutId="activeTabIndicator"
@@ -515,10 +494,10 @@ export default function Home() {
                     );
                   })}
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Friend List Popup */}
         <AnimatePresence>
@@ -699,8 +678,6 @@ export default function Home() {
               map.setOptions({
                 disableDefaultUI: true,
                 zoomControl: false,
-                mapTypeControl: false,
-                streetViewControl: false,
                 fullscreenControl: false,
                 styles: [
                   {
@@ -906,10 +883,8 @@ export default function Home() {
                     key={plan.id}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      // Toggle expansion logic could go here, or open a bottom sheet
-                      // For now, let's use a state to show details in a bottom sheet to keep flow on one page
-                      const event = new CustomEvent('show-plan-details', { detail: plan });
-                      window.dispatchEvent(event);
+                      // Show plan details
+                      setSelectedPlan(plan);
                     }}
                     className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
                   >
@@ -944,15 +919,28 @@ export default function Home() {
                 <div className="pt-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-bold text-slate-900">热门好店</h3>
-                    <button className="text-xs text-blue-600 font-medium">查看全部</button>
+                    <button 
+                      className="text-xs text-blue-600 font-medium"
+                      onClick={() => setShowGroupBuying(true)}
+                    >
+                      查看全部
+                    </button>
                   </div>
-                  
-                  <div className="space-y-3 pb-20">
+
+                  <div className="space-y-4 pb-8">
+                    {/* Shop Card 1 */}
                     <div 
                       onClick={() => {
-                        // Find the first plan (Date First) and show it
-                        const firstPlan = PLANS.date[0];
-                        setSelectedPlan(firstPlan);
+                        // Show shop details instead of plan details
+                        setSelectedShop({
+                          id: 1,
+                          name: "微醺时刻",
+                          price: 168,
+                          image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop",
+                          rating: 4.7,
+                          desc: "三里屯瑜舍酒店一层，氛围极佳的Lounge Bar。",
+                          tags: ["酒吧", "鸡尾酒"]
+                        });
                       }}
                       ref={el => { shopCardRefs.current[0] = el; }}
                       data-lat="39.9321" data-lng="116.4543"
@@ -1104,6 +1092,135 @@ export default function Home() {
                   <button className="flex-1 py-3.5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">
                     一键发起
                   </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Shop Details Modal */}
+      <AnimatePresence>
+        {selectedShop && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedShop(null)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-[70] bg-white flex flex-col"
+            >
+              {/* Header Image */}
+              <div className="relative h-64 shrink-0">
+                <img src={selectedShop.image} alt={selectedShop.name} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+                
+                {/* Back Button */}
+                <button 
+                  onClick={() => setSelectedShop(null)}
+                  className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+
+                {/* Title Area */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h2 className="text-2xl font-bold text-white mb-2">{selectedShop.name}</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedShop.tags.map((tag: string) => (
+                      <span key={tag} className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-medium">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto bg-slate-50">
+                <div className="p-6 space-y-6">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 className="font-bold text-slate-900 mb-2">店铺介绍</h3>
+                    <p className="text-slate-600 leading-relaxed">{selectedShop.desc}</p>
+                    <div className="mt-4 flex items-center gap-2">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-bold text-slate-900">{selectedShop.rating}</span>
+                      <span className="text-slate-400 text-sm">/ 5.0</span>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-2xl p-6 shadow-sm">
+                    <h3 className="font-bold text-slate-900 mb-4">套餐详情</h3>
+                    <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl">
+                      <div>
+                        <div className="font-bold text-slate-900">双人微醺套餐</div>
+                        <div className="text-sm text-slate-500 mt-1">含2杯特调鸡尾酒 + 小食拼盘</div>
+                      </div>
+                      <div className="text-xl font-bold text-red-500">¥{selectedShop.price}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action Bar */}
+              <div className="bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <button className="w-full py-3.5 bg-red-500 text-white font-bold rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-transform">
+                  立即购买
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Group Buying List Modal */}
+      <AnimatePresence>
+        {showGroupBuying && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowGroupBuying(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed inset-0 z-[70] bg-white flex flex-col"
+            >
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                <h3 className="font-bold text-lg text-slate-900">热门团购</h3>
+                <button onClick={() => setShowGroupBuying(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4">
+                      <div className="w-24 h-24 bg-slate-200 rounded-xl overflow-hidden shrink-0">
+                        <img src={`https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop`} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-slate-900 mb-1">超值双人餐 {i}</h4>
+                        <p className="text-xs text-slate-500 mb-2">某某餐厅 • 距离1.2km</p>
+                        <div className="flex items-end justify-between">
+                          <div className="text-red-500 font-bold text-lg">¥168 <span className="text-xs text-slate-400 font-normal line-through">¥298</span></div>
+                          <button className="px-4 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full">抢购</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
