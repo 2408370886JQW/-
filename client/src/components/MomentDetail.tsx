@@ -343,7 +343,7 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
                   </div>
                 </div>
                 
-                <div className="aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-slate-100">
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-4 bg-slate-100">
                   <img 
                     src={images[0]} 
                     className="w-full h-full object-cover"
@@ -765,7 +765,7 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute bottom-full left-0 mb-2 bg-white rounded-xl shadow-xl border border-slate-100 p-3 z-50 w-64"
+                  className="absolute bottom-full left-0 mb-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-3 z-50 w-64"
                 >
                   <div className="grid grid-cols-8 gap-2">
                     {EMOJIS.map(emoji => (
@@ -789,7 +789,7 @@ export default function MomentDetail({ moment, onClose }: MomentDetailProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50"
+                  className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50"
                 >
                   <div className="p-2 text-xs font-medium text-slate-400 bg-slate-50">选择好友提醒</div>
                   <div className="max-h-48 overflow-y-auto">

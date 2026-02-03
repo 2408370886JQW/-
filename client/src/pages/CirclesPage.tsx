@@ -103,7 +103,7 @@ export default function CirclesPage() {
           {feeds.map((feed) => (
             <div key={feed.id} className="break-inside-avoid mb-2">
               <Card 
-                  className="border-none shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300 rounded-xl active:scale-95 bg-white"
+                  className="border-none shadow-sm overflow-hidden group cursor-pointer hover:shadow-md transition-all duration-300 rounded-2xl active:scale-95 bg-white"
                   onClick={() => setSelectedFeed({
                     ...feed,
                     content: feed.title + "\n\n这里是详细内容描述...", // Mock content
