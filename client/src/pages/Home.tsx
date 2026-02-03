@@ -376,9 +376,6 @@ export default function Home() {
               <img src="${friend.avatar}" class="w-full h-full object-cover" />
             </div>
             <div class="absolute -bottom-1 -right-1 w-4 h-4 ${statusColor} border-2 border-white rounded-full"></div>
-            <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm border border-slate-100">
-              <span class="text-[10px] font-bold text-slate-700 whitespace-nowrap">好友</span>
-            </div>
           </div>
         `;
         div.onclick = () => setSelectedFriend(friend);
@@ -393,20 +390,22 @@ export default function Home() {
         div.className = 'absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10 hover:z-30';
         div.innerHTML = `
           <div class="relative transition-transform duration-300 group-hover:scale-110">
-            <div class="w-16 h-16 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-white relative">
-              <img src="${moment.image}" class="w-full h-full object-cover" />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-              
-              <!-- Likes (Bottom Left) -->
-              <div class="absolute bottom-1 left-1 text-[10px] text-white font-medium flex items-center gap-0.5">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                ${moment.likes}
-              </div>
+            <div class="w-16 h-16 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-white relative rotate-45 transform origin-center">
+              <div class="-rotate-45 w-full h-full">
+                <img src="${moment.image}" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                
+                <!-- Likes (Bottom Left) -->
+                <div class="absolute bottom-1 left-1 text-[10px] text-white font-medium flex items-center gap-0.5">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                  ${moment.likes}
+                </div>
 
-              <!-- Comments (Bottom Right) -->
-              <div class="absolute bottom-1 right-1 text-[10px] text-white font-medium flex items-center gap-0.5">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                ${moment.comments}
+                <!-- Comments (Bottom Right) -->
+                <div class="absolute bottom-1 right-1 text-[10px] text-white font-medium flex items-center gap-0.5">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  ${moment.comments}
+                </div>
               </div>
             </div>
           </div>
@@ -448,9 +447,9 @@ export default function Home() {
           {activeTab !== "meet" && (
             <motion.div 
               className="absolute top-0 left-0 right-0 z-40 pt-safe"
-              initial={{ y: -100, opacity: 0 }}
-              animate={{ y: isNavVisible ? 0 : -100, opacity: 1 }}
-              exit={{ y: -100, opacity: 0 }}
+              initial={{ y: -200, opacity: 0 }}
+              animate={{ y: isNavVisible ? 0 : -200, opacity: isNavVisible ? 1 : 0 }}
+              exit={{ y: -200, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
               <div className="mx-4 mt-2 bg-white/90 backdrop-blur-md shadow-sm rounded-2xl p-2 pb-1">
@@ -657,14 +656,7 @@ export default function Home() {
                       </div>
                       <span className="text-xs font-medium text-slate-600">关注</span>
                     </button>
-                    <Link href={`/appointment/create?userId=${selectedFriend.id}`}>
-                      <button className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                        <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-500">
-                          <ShoppingBag className="w-5 h-5" />
-                        </div>
-                        <span className="text-xs font-medium text-slate-600">约个饭</span>
-                      </button>
-                    </Link>
+                    {/* Removed '约个饭' button as requested */}
                   </div>
 
                   <div className="w-full space-y-4">
@@ -956,44 +948,47 @@ export default function Home() {
                   </div>
                   
                   <div className="space-y-3 pb-20">
-                    <Link href="/merchant/1">
-                      <div 
-                        ref={el => { shopCardRefs.current[0] = el; }}
-                        data-lat="39.9321" data-lng="116.4543"
-                        className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-                      >
-                        <div className="aspect-video relative">
-                          <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-                            <h4 className="font-bold text-lg text-white">微醺时刻</h4>
-                            <p className="text-white/90 text-sm">¥168/双人</p>
-                          </div>
+                    <div 
+                      onClick={() => {
+                        // Find the first plan (Date First) and show it
+                        const firstPlan = PLANS.date[0];
+                        setSelectedPlan(firstPlan);
+                      }}
+                      ref={el => { shopCardRefs.current[0] = el; }}
+                      data-lat="39.9321" data-lng="116.4543"
+                      className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+                    >
+                      <div className="aspect-video relative">
+                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+                          <h4 className="font-bold text-lg text-white">微醺时刻</h4>
+                          <p className="text-white/90 text-sm">¥168/双人</p>
                         </div>
-                        <div className="p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-500 text-xs rounded-md">酒吧</span>
-                            <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">鸡尾酒</span>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex gap-3">
-                              <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                                <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
-                              </div>
-                              <div className="flex-1 min-w-0 pr-2">
-                                <div className="flex justify-between items-start">
-                                  <h5 className="font-bold text-slate-900 text-sm truncate">Union</h5>
-                                  <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                    <span className="text-xs font-medium text-slate-900">4.7</span>
-                                  </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-500 text-xs rounded-md">酒吧</span>
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">鸡尾酒</span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex gap-3">
+                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                              <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <div className="flex justify-between items-start">
+                                <h5 className="font-bold text-slate-900 text-sm truncate">Union</h5>
+                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-xs font-medium text-slate-900">4.7</span>
                                 </div>
-                                <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯瑜舍酒店一层，氛围极佳的Lounge Bar。</p>
                               </div>
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯瑜舍酒店一层，氛围极佳的Lounge Bar。</p>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   </div>
                 </div>
               </div>
