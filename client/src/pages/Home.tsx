@@ -19,6 +19,9 @@ const INITIAL_MARKERS = {
   friends: [
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "online", gender: "female" },
     { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "male" },
+    { id: 9, lat: 39.910, lng: 116.400, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
+    { id: 10, lat: 39.905, lng: 116.410, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "away", gender: "male" },
+    { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "offline", gender: "female" },
   ],
   moments: [
     { 
@@ -260,7 +263,7 @@ export default function Home() {
 
   const tabs: { id: TabType; label: string; subtitle: string }[] = [
     { id: "encounter", label: "偶遇", subtitle: "身边的人" },
-    { id: "friends", label: "好友", subtitle: "匹配好友" },
+    { id: "friends", label: "好友", subtitle: "我的好友" },
     { id: "moments", label: "动态", subtitle: "看看新鲜事" },
     { id: "meet", label: "相见", subtitle: "发现美好生活" },
   ];
@@ -406,7 +409,7 @@ export default function Home() {
             className="relative group transition-transform hover:scale-105 active:scale-95"
             onClick={() => setSelectedMoment(marker)}
           >
-            <div className="w-20 h-24 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-white flex flex-col">
+            <div className="w-28 h-32 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-white flex flex-col">
               <div className="flex-1 relative overflow-hidden">
                 <img src={marker.image} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
@@ -554,11 +557,20 @@ export default function Home() {
                       </div>
                     </div>
                   ))}
-                  {/* Mock more friends */}
+                  {/* Mock more friends with mixed genders */}
                   {[1, 2, 3, 4, 5].map(i => (
                     <div key={`mock-${i}`} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
-                      <div className="w-12 h-12 rounded-full border-2 border-blue-500 overflow-hidden bg-slate-100">
-                        <User className="w-full h-full p-2 text-slate-300" />
+                      <div className={cn(
+                        "w-12 h-12 rounded-full border-2 overflow-hidden bg-slate-100",
+                        i % 2 === 0 ? "border-pink-500" : "border-blue-500"
+                      )}>
+                        <img 
+                          src={i % 2 === 0 
+                            ? `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80&id=${i}` 
+                            : `https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&q=80&id=${i}`
+                          } 
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div>
                         <div className="font-bold text-slate-900">好友 {i}</div>
@@ -816,7 +828,8 @@ export default function Home() {
                 {/* Back Button - Always Visible */}
                 <button 
                   onClick={() => setActiveTab("encounter")}
-                  className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors z-20"
+                  className="absolute top-4 left-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-colors z-50"
+                  style={{ marginTop: 'env(safe-area-inset-top)' }}
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </button>
@@ -827,13 +840,13 @@ export default function Home() {
                   animate={{ opacity: isMeetHeaderCollapsed ? 0 : 1 }}
                 >
                   <h1 className="text-2xl font-bold">发现美好生活</h1>
-                  <p className="text-sm opacity-90">探索城市中的精彩活动与团购</p>
+                  <p className="text-sm opacity-90">与你喜欢的TA一起发现美好</p>
                 </motion.div>
               </motion.div>
 
               {/* Content Area */}
               <div 
-                className="flex-1 overflow-y-auto"
+                className="flex-1 overflow-y-auto pt-4"
                 onScroll={(e) => {
                   const scrollTop = e.currentTarget.scrollTop;
                   setIsMeetHeaderCollapsed(scrollTop > 50);
@@ -991,7 +1004,8 @@ export default function Home() {
                   {/* Back Button - CHANGED to ArrowLeft */}
                   <button 
                     onClick={() => setSelectedPlan(null)}
-                    className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                    className="absolute top-4 left-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-colors z-50"
+                    style={{ marginTop: 'env(safe-area-inset-top)' }}
                   >
                     <ArrowLeft className="w-6 h-6" />
                   </button>
@@ -1105,9 +1119,10 @@ export default function Home() {
                   {/* Back Button */}
                   <button 
                     onClick={() => setSelectedShop(null)}
-                    className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                    className="absolute top-4 left-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-colors z-50"
+                    style={{ marginTop: 'env(safe-area-inset-top)' }}
                   >
-                    <X className="w-6 h-6" />
+                    <ArrowLeft className="w-6 h-6" />
                   </button>
 
                   {/* Title Area */}
