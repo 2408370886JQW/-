@@ -426,76 +426,83 @@ export default function Home() {
   return (
     <Layout showNav={true}>
       <div className="relative h-screen w-full overflow-hidden bg-slate-50">
-        {/* Top Navigation Bar - Floating */}
-        <motion.div 
-          className="absolute top-0 left-0 right-0 z-40 pt-safe"
-          animate={{ y: isNavVisible ? 0 : -100 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <div className="mx-4 mt-2 bg-white/90 backdrop-blur-md shadow-sm rounded-2xl p-2 pb-1">
-            {/* Search Bar */}
-            <div className="flex items-center gap-3 mb-3 px-1">
-              <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4 gap-2">
-                <Search className="w-4 h-4 text-slate-400" />
-                <input 
-                  type="text"
-                  placeholder="搜索好友ID、套餐名称、商户名称"
-                  className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-slate-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Link href="/profile">
-                <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors">
-                  <User className="w-5 h-5 text-slate-600" />
-                </button>
-              </Link>
-            </div>
+        {/* Top Navigation Bar - Floating - HIDDEN when activeTab is 'meet' */}
+        <AnimatePresence>
+          {activeTab !== "meet" && (
+            <motion.div 
+              className="absolute top-0 left-0 right-0 z-40 pt-safe"
+              initial={{ y: -100, opacity: 0 }}
+              animate={{ y: isNavVisible ? 0 : -100, opacity: 1 }}
+              exit={{ y: -100, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <div className="mx-4 mt-2 bg-white/90 backdrop-blur-md shadow-sm rounded-2xl p-2 pb-1">
+                {/* Search Bar */}
+                <div className="flex items-center gap-3 mb-3 px-1">
+                  <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4 gap-2">
+                    <Search className="w-4 h-4 text-slate-400" />
+                    <input 
+                      type="text"
+                      placeholder="搜索好友ID、套餐名称、商户名称"
+                      className="flex-1 bg-transparent border-none outline-none text-sm placeholder:text-slate-400"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <Link href="/profile">
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors">
+                      <User className="w-5 h-5 text-slate-600" />
+                    </button>
+                  </Link>
+                </div>
 
-            {/* Tabs with Subtitles */}
-            <div className="flex items-center justify-between px-1 relative">
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      "relative flex-1 py-2 flex flex-col items-center justify-center transition-colors duration-300 z-10",
-                      isActive ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
-                    )}
-                  >
-                    <span className={cn(
-                      "text-base font-bold relative z-10 leading-none mb-1",
-                      isActive ? "scale-110" : "scale-100"
-                    )}>
-                      {tab.label}
-                    </span>
-                    <span className={cn(
-                      "text-[10px] font-medium leading-none transition-all duration-300",
-                      isActive ? "text-slate-500 opacity-100" : "text-slate-300 opacity-0 h-0 overflow-hidden"
-                    )}>
-                      {tab.subtitle}
-                    </span>
-                    
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeTabIndicator"
-                        className="absolute bottom-0 w-8 h-1 bg-slate-900 rounded-full"
-                        transition={{ 
-                          type: "spring", 
-                          stiffness: 400, 
-                          damping: 30,
-                          mass: 0.8
-                        }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
+                {/* Tabs with Subtitles */}
+                <div className="flex items-center justify-between px-1 relative">
+                  {tabs.map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={cn(
+                          "relative flex-1 py-2 flex flex-col items-center justify-center transition-colors duration-300 z-10",
+                          isActive ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+                        )}
+                      >
+                        <span className={cn(
+                          "text-base font-bold relative z-10 leading-none mb-1",
+                          isActive ? "scale-110" : "scale-100"
+                        )}>
+                          {tab.label}
+                        </span>
+                        <span className={cn(
+                          "text-[10px] font-medium leading-none transition-all duration-300",
+                          isActive ? "text-slate-500 opacity-100" : "text-slate-300 opacity-0 h-0 overflow-hidden"
+                        )}>
+                          {tab.subtitle}
+                        </span>
+                        
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeTabIndicator"
+                            className="absolute bottom-0 w-8 h-1 bg-slate-900 rounded-full"
+                            transition={{ 
+                              type: "spring", 
+                              stiffness: 400, 
+                              damping: 30,
+                              mass: 0.8
+                            }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Friend List Popup */}
         <AnimatePresence>
           {showFriendList && (
@@ -777,7 +784,7 @@ export default function Home() {
           
           {/* --- SCENARIO-BASED MEET PAGE OVERLAY --- */}
           {activeTab === "meet" && (
-            <div className="absolute inset-0 z-20 bg-slate-50 flex flex-col pt-[120px] pb-24 overflow-hidden">
+            <div className="absolute inset-0 z-20 bg-slate-50 flex flex-col pt-safe pb-24 overflow-hidden">
               {/* Background Image Layer - Only visible when header is NOT collapsed */}
               <motion.div 
                 className="absolute inset-0 z-[-1] opacity-10"
@@ -790,21 +797,22 @@ export default function Home() {
                 />
               </motion.div>
 
-              {/* Close/Back Button */}
+              {/* Close/Back Button - Positioned at top right */}
               <button 
                 onClick={() => setActiveTab("encounter")}
-                className="absolute top-[120px] right-4 z-30 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
+                className="absolute top-safe right-4 z-30 p-2 mt-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
               >
                 <X className="w-5 h-5 text-slate-600" />
               </button>
               
               {/* 1. Scenario Selector (Entry Level) - Collapsible */}
               <motion.div 
-                className="px-4 relative z-10 overflow-hidden"
+                className="px-4 relative z-10 overflow-hidden mt-12"
                 animate={{ 
                   height: isMeetHeaderCollapsed ? 0 : "auto",
                   opacity: isMeetHeaderCollapsed ? 0 : 1,
-                  marginBottom: isMeetHeaderCollapsed ? 0 : "1.5rem"
+                  marginBottom: isMeetHeaderCollapsed ? 0 : "1.5rem",
+                  marginTop: isMeetHeaderCollapsed ? 0 : "3rem"
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
