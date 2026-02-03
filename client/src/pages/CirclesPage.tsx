@@ -17,7 +17,7 @@ export default function CirclesPage() {
       user: "Alex Chen",
       avatar: "AC",
       title: "周末看展 | 798这家新展太出片了！🎨",
-      image: "/images/category-exhibition.jpg",
+      image: "https://images.unsplash.com/photo-1561214115-f2f134cc4912?w=500&auto=format&fit=crop&q=60",
       likes: 124,
       isLiked: true,
     },
@@ -26,7 +26,7 @@ export default function CirclesPage() {
       user: "Sarah Wu",
       avatar: "SW",
       title: "三里屯这家咖啡店的拿铁绝了 ☕️",
-      image: "/images/category-coffee.jpg",
+      image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&auto=format&fit=crop&q=60",
       likes: 842,
       isLiked: false,
     },
@@ -35,7 +35,7 @@ export default function CirclesPage() {
       user: "Mike Zhang",
       avatar: "MZ",
       title: "工体保龄球局，今晚有人来吗？🎳",
-      image: "/images/category-play.jpg",
+      image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&auto=format&fit=crop&q=60",
       likes: 56,
       isLiked: false,
     },
@@ -44,7 +44,7 @@ export default function CirclesPage() {
       user: "Foodie Jane",
       avatar: "FJ",
       title: "必吃榜汉堡，汁水满满！🍔",
-      image: "/images/category-food.jpg",
+      image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60",
       likes: 230,
       isLiked: true,
     },
@@ -62,7 +62,7 @@ export default function CirclesPage() {
       user: "Art Lover",
       avatar: "AL",
       title: "沉浸式光影展，美哭了 ✨",
-      image: "/images/category-exhibition.jpg",
+      image: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=500&auto=format&fit=crop&q=60",
       likes: 45,
       isLiked: false,
     }
@@ -166,13 +166,6 @@ export default function CirclesPage() {
           />
         )}
       </AnimatePresence>
-
-      {/* Floating Action Button */}
-      <div className="fixed bottom-24 right-4 z-50">
-        <button className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform active:scale-95">
-          <Plus className="w-6 h-6" />
-        </button>
-      </div>
     </Layout>
   );
 }

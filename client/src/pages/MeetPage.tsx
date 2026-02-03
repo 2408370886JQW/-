@@ -1,21 +1,94 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Heart, MessageCircle, Filter, Users, Plus } from "lucide-react";
+import { MapPin, Calendar, Users, Plus, Search, Clock, ChevronRight, Star } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Layout from "@/components/Layout";
 
-// Mock data for nearby people
-const NEARBY_PEOPLE = [
-  { id: 1, name: "Jessica", age: 24, distance: "200m", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop", tags: ["咖啡", "摄影", "旅行"], bio: "周末想去探店，有人一起吗？" },
-  { id: 2, name: "Michael", age: 27, distance: "500m", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop", tags: ["健身", "篮球", "电影"], bio: "寻找健身搭子，坐标朝阳公园。" },
-  { id: 3, name: "Sarah", age: 22, distance: "800m", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop", tags: ["美食", "猫咪", "音乐"], bio: "刚搬来附近，求推荐好吃的！" },
-  { id: 4, name: "David", age: 29, distance: "1.2km", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop", tags: ["创业", "科技", "滑雪"], bio: "聊聊互联网创业那些事儿。" },
+// Mock data for activities/group buying
+const ACTIVITIES = [
+  {
+    id: 1,
+    title: "周末飞盘局 | 新手友好",
+    type: "outdoor",
+    image: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&h=400&fit=crop",
+    location: "朝阳公园大草坪",
+    distance: "1.2km",
+    time: "周六 14:00",
+    price: "¥49/人",
+    participants: 12,
+    maxParticipants: 20,
+    organizer: {
+      name: "飞盘俱乐部",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop"
+    },
+    tags: ["户外", "运动", "交友"]
+  },
+  {
+    id: 2,
+    title: "日式烧鸟双人餐 | 氛围感拉满",
+    type: "dining",
+    image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&h=400&fit=crop",
+    location: "鸟屋·居酒屋",
+    distance: "500m",
+    time: "随时可用",
+    price: "¥268",
+    originalPrice: "¥488",
+    rating: 4.8,
+    sold: 1200,
+    tags: ["日料", "约会", "深夜食堂"]
+  },
+  {
+    id: 3,
+    title: "剧本杀《古堡之谜》 | 缺2人",
+    type: "entertainment",
+    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop",
+    location: "迷雾侦探社",
+    distance: "2.5km",
+    time: "周日 19:00",
+    price: "¥128/人",
+    participants: 4,
+    maxParticipants: 6,
+    organizer: {
+      name: "DM小王",
+      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop"
+    },
+    tags: ["烧脑", "沉浸式", "社交"]
+  },
+  {
+    id: 4,
+    title: "精酿啤酒畅饮夜",
+    type: "dining",
+    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop",
+    location: "HopZone Taproom",
+    distance: "800m",
+    time: "周五 20:00",
+    price: "¥158/人",
+    participants: 8,
+    maxParticipants: 15,
+    organizer: {
+      name: "酒鬼阿强",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop"
+    },
+    tags: ["微醺", "音乐", "派对"]
+  }
+];
+
+const CATEGORIES = [
+  { id: "all", label: "全部" },
+  { id: "dining", label: "约饭" },
+  { id: "outdoor", label: "户外" },
+  { id: "entertainment", label: "娱乐" },
+  { id: "art", label: "看展" },
 ];
 
 export default function MeetPage() {
-  const [activeFilter, setActiveFilter] = useState<"all" | "male" | "female">("all");
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  const filteredActivities = activeCategory === "all" 
+    ? ACTIVITIES 
+    : ACTIVITIES.filter(item => item.type === activeCategory);
 
   return (
     <Layout showNav={true}>
@@ -23,100 +96,110 @@ export default function MeetPage() {
         {/* Header */}
         <div className="bg-white sticky top-0 z-10 px-4 pt-safe pb-2 shadow-sm">
           <div className="flex items-center justify-between mb-4 mt-2">
-            <h1 className="text-2xl font-bold text-slate-900">相见</h1>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Filter className="w-6 h-6 text-slate-900" />
-            </Button>
+            <h1 className="text-2xl font-bold text-slate-900">发现美好生活</h1>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Search className="w-6 h-6 text-slate-900" />
+              </Button>
+              <Link href="/appointment/create">
+                <Button variant="ghost" size="icon" className="rounded-full text-blue-600">
+                  <Plus className="w-6 h-6" />
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-            <button
-              onClick={() => setActiveFilter("all")}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
-                activeFilter === "all" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
-              )}
-            >
-              全部
-            </button>
-            <button
-              onClick={() => setActiveFilter("female")}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
-                activeFilter === "female" ? "bg-pink-500 text-white" : "bg-slate-100 text-slate-600"
-              )}
-            >
-              只看女生
-            </button>
-            <button
-              onClick={() => setActiveFilter("male")}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
-                activeFilter === "male" ? "bg-blue-500 text-white" : "bg-slate-100 text-slate-600"
-              )}
-            >
-              只看男生
-            </button>
+          {/* Category Tabs */}
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-sm font-bold transition-colors whitespace-nowrap",
+                  activeCategory === cat.id 
+                    ? "bg-slate-900 text-white" 
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                )}
+              >
+                {cat.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Content - Card Stack Style */}
+        {/* Content List */}
         <div className="px-4 py-4 space-y-4">
-          {NEARBY_PEOPLE.map((person) => (
+          {filteredActivities.map((item) => (
             <motion.div
-              key={person.id}
+              key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl overflow-hidden shadow-sm"
+              whileTap={{ scale: 0.98 }}
+              className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100"
             >
-              <div className="relative h-64">
-                <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-                  <div className="flex items-end justify-between text-white">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold">{person.name}</h3>
-                        <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs backdrop-blur-sm">
-                          {person.age}岁
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-white/80 mt-1">
-                        <MapPin className="w-3 h-3" />
-                        {person.distance}
-                      </div>
-                    </div>
-                    <Button size="icon" className="rounded-full bg-white text-blue-600 hover:bg-white/90 h-10 w-10">
-                      <Users className="w-5 h-5" />
-                    </Button>
+              {/* Image Section */}
+              <div className="relative h-48">
+                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-slate-900">
+                  {item.distance}
+                </div>
+                {item.type === "dining" && (
+                  <div className="absolute bottom-3 left-3 bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">
+                    团购特惠
+                  </div>
+                )}
+              </div>
+
+              {/* Content Section */}
+              <div className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-lg font-bold text-slate-900 flex-1 mr-2 line-clamp-1">{item.title}</h3>
+                  <div className="text-lg font-bold text-red-500">{item.price}</div>
+                </div>
+
+                <div className="flex items-center gap-4 text-sm text-slate-500 mb-3">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span className="truncate max-w-[100px]">{item.location}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{item.time}</span>
                   </div>
                 </div>
-              </div>
-              <div className="p-4">
-                <p className="text-slate-600 text-sm mb-3 line-clamp-2">{person.bio}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {person.tags.map(tag => (
-                    <span key={tag} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-md">
-                      #{tag}
-                    </span>
-                  ))}
+
+                {/* Footer Info */}
+                <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                  {item.organizer ? (
+                    <div className="flex items-center gap-2">
+                      <img src={item.organizer.avatar} className="w-6 h-6 rounded-full object-cover" />
+                      <span className="text-xs text-slate-600">发起人: {item.organizer.name}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-amber-500">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="text-xs font-bold">{item.rating}</span>
+                      <span className="text-xs text-slate-400 ml-1">已售 {item.sold}</span>
+                    </div>
+                  )}
+
+                  {item.participants && (
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{item.participants}/{item.maxParticipants}人</span>
+                    </div>
+                  )}
+                  
+                  {!item.participants && (
+                    <Button size="sm" variant="outline" className="h-7 text-xs rounded-full px-3">
+                      去看看 <ChevronRight className="w-3 h-3 ml-0.5" />
+                    </Button>
+                  )}
                 </div>
-                <Button className="w-full rounded-xl bg-slate-900 text-white font-bold h-11">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  打招呼
-                </Button>
               </div>
             </motion.div>
           ))}
-        </div>
-        
-        {/* Floating Action Button for Creating a Meetup */}
-        <div className="fixed bottom-24 right-4">
-          <Link href="/appointment/create">
-            <Button className="h-14 w-14 rounded-full bg-blue-600 shadow-lg hover:bg-blue-700 p-0 flex items-center justify-center">
-              <Plus className="w-6 h-6 text-white" />
-            </Button>
-          </Link>
         </div>
       </div>
     </Layout>
