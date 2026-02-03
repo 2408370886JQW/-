@@ -409,22 +409,22 @@ export default function Home() {
             className="relative group transition-transform hover:scale-105 active:scale-95"
             onClick={() => setSelectedMoment(marker)}
           >
-            <div className="w-48 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-white flex flex-col">
+            <div className="w-36 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-white flex flex-col">
               <div className="aspect-video relative overflow-hidden">
                 <img src={marker.image} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               </div>
-              <div className="p-2 bg-white">
-                <p className="text-xs text-slate-900 font-medium truncate mb-1.5">{marker.content}</p>
+              <div className="p-1.5 bg-white">
+                <p className="text-[10px] text-slate-900 font-medium truncate mb-1">{marker.content}</p>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
-                      <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                      <span className="text-[10px] font-bold text-slate-600">{marker.likes}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-0.5">
+                      <Heart className="w-2.5 h-2.5 fill-red-500 text-red-500" />
+                      <span className="text-[9px] font-bold text-slate-600">{marker.likes}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <MessageCircle className="w-3 h-3 text-slate-400" />
-                      <span className="text-[10px] font-medium text-slate-400">{marker.comments}</span>
+                    <div className="flex items-center gap-0.5">
+                      <MessageCircle className="w-2.5 h-2.5 text-slate-400" />
+                      <span className="text-[9px] font-medium text-slate-400">{marker.comments}</span>
                     </div>
                   </div>
                 </div>
@@ -847,7 +847,12 @@ export default function Home() {
               <div className="absolute top-0 left-0 right-0 z-50 p-4 pointer-events-none">
                 <button 
                   onClick={() => setActiveTab("encounter")}
-                  className="pointer-events-auto p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-colors shadow-sm"
+                  className={cn(
+                    "pointer-events-auto p-2 rounded-full transition-all duration-300 shadow-sm",
+                    isMeetHeaderCollapsed 
+                      ? "bg-white text-slate-900 border border-slate-200" 
+                      : "bg-black/20 backdrop-blur-md text-white hover:bg-black/30"
+                  )}
                   style={{ marginTop: 'env(safe-area-inset-top)' }}
                 >
                   <ArrowLeft className="w-6 h-6" />
@@ -856,10 +861,15 @@ export default function Home() {
 
               {/* Content Area */}
               <div 
-                className="flex-1 overflow-y-auto pt-4 pb-24"
+                className="flex-1 overflow-y-auto pt-0 pb-24"
                 onScroll={(e) => {
                   const scrollTop = e.currentTarget.scrollTop;
-                  setIsMeetHeaderCollapsed(scrollTop > 50);
+                  // More aggressive collapse threshold
+                  if (scrollTop > 10 && !isMeetHeaderCollapsed) {
+                    setIsMeetHeaderCollapsed(true);
+                  } else if (scrollTop < 5 && isMeetHeaderCollapsed) {
+                    setIsMeetHeaderCollapsed(false);
+                  }
                 }}
               >
                 {/* Scenario Tabs */}
