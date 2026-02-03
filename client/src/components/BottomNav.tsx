@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { MapPin, Users, Plus, MessageSquare, User, X, Image as ImageIcon, Video, Smile, Trash2, ShoppingBag } from "lucide-react";
+import { MapPin, Users, Plus, MessageSquare, User, X, Image as ImageIcon, Video, Smile, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef } from "react";
@@ -36,48 +36,13 @@ export default function BottomNav() {
   
   const POPULAR_HASHTAGS = ["#周末去哪儿", "#探店", "#美食", "#打卡", "#生活记录", "#OOTD"];
 
-  // New Navigation Structure
-  // 1. 偶遇 (Encounter) -> Map/Nearby -> Subtitle: "身边的人"
-  // 2. 好友 (Friends) -> Chat/Friends -> Subtitle: "匹配好友"
-  // 3. 动态 (Moments) -> Circles -> Subtitle: "看看新鲜事"
-  // 4. 相见 (Meet) -> Activities/Group Buying -> Subtitle: "发现美好生活"
-  
+  // Original Navigation Structure
   const navItems = [
-    { 
-      path: "/", 
-      icon: MapPin, 
-      label: "偶遇", 
-      subtitle: "身边的人",
-      activeColor: "text-blue-500" 
-    },
-    { 
-      path: "/chat", 
-      icon: MessageSquare, 
-      label: "好友", 
-      subtitle: "匹配好友",
-      activeColor: "text-green-500" 
-    },
-    { 
-      path: "/publish", 
-      icon: Plus, 
-      label: "发布", 
-      subtitle: "",
-      isSpecial: true 
-    },
-    { 
-      path: "/circles", 
-      icon: Users, 
-      label: "动态", 
-      subtitle: "看看新鲜事",
-      activeColor: "text-pink-500" 
-    },
-    { 
-      path: "/meet", 
-      icon: ShoppingBag, 
-      label: "相见", 
-      subtitle: "发现美好生活",
-      activeColor: "text-amber-500" 
-    },
+    { path: "/", icon: MapPin, label: "地图", isMap: true, activeColor: "text-blue-500" },
+    { path: "/circles", icon: Users, label: "圈子", activeColor: "text-pink-500" },
+    { path: "/publish", icon: Plus, label: "发动态", isSpecial: true },
+    { path: "/chat", icon: MessageSquare, label: "消息", activeColor: "text-green-500" },
+    { path: "/profile", icon: User, label: "我的", activeColor: "text-yellow-500" },
   ];
 
   const togglePublish = (e: React.MouseEvent) => {
@@ -387,9 +352,48 @@ export default function BottomNav() {
               );
             }
 
+            // Special handling for Map icon with animation
+            if (item.isMap) {
+              return (
+                <Link key={item.path} href={item.path}>
+                  <div className="flex flex-col items-center justify-center w-16 h-full pb-3 cursor-pointer relative">
+                    {/* Animated Background Effect when Active */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-blue-100/50 blur-md -z-10"
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      />
+                    )}
+                    
+                    <motion.div
+                      animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
+                      whileTap={{ scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      className="flex flex-col items-center gap-1"
+                    >
+                      <item.icon 
+                        className={cn(
+                          "w-6 h-6 transition-colors duration-300",
+                          isActive ? "text-blue-600 fill-blue-600" : "text-slate-400"
+                        )} 
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                      <span className={cn(
+                        "text-[10px] font-medium transition-colors duration-300",
+                        isActive ? "text-blue-600" : "text-slate-400"
+                      )}>
+                        {item.label}
+                      </span>
+                    </motion.div>
+                  </div>
+                </Link>
+              );
+            }
+
             return (
               <Link key={item.path} href={item.path}>
-                <div className="flex flex-col items-center justify-center w-16 h-full pb-2 cursor-pointer relative">
+                <div className="flex flex-col items-center justify-center w-16 h-full pb-3 cursor-pointer relative">
                   {isActive && (
                     <motion.div
                       className={cn(
@@ -405,7 +409,7 @@ export default function BottomNav() {
                     animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
                     whileTap={{ scale: 0.8 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    className="flex flex-col items-center gap-0.5"
+                    className="flex flex-col items-center gap-1"
                   >
                     <item.icon 
                       className={cn(
@@ -415,16 +419,10 @@ export default function BottomNav() {
                       strokeWidth={isActive ? 2.5 : 2}
                     />
                     <span className={cn(
-                      "text-[12px] font-bold transition-colors duration-300 leading-none mt-1",
-                      isActive ? item.activeColor : "text-slate-500"
+                      "text-[10px] font-medium transition-colors duration-300",
+                      isActive ? item.activeColor : "text-slate-400"
                     )}>
                       {item.label}
-                    </span>
-                    <span className={cn(
-                      "text-[9px] font-medium transition-colors duration-300 leading-none scale-90 origin-top",
-                      isActive ? "text-slate-400" : "text-slate-300"
-                    )}>
-                      {item.subtitle}
                     </span>
                   </motion.div>
                 </div>
