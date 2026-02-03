@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -449,7 +449,7 @@ export default function Home() {
         
         {/* Top Navigation Bar - Auto Hide */}
         <motion.div 
-          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-2 bg-gradient-to-b from-white/90 to-white/0 pointer-events-none"
+          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-2 bg-white shadow-sm pointer-events-none"
           animate={{ 
             y: isNavVisible && activeTab !== 'meet' ? 0 : -100,
             opacity: isNavVisible && activeTab !== 'meet' ? 1 : 0
@@ -459,7 +459,7 @@ export default function Home() {
           <div className="pointer-events-auto">
             {/* Search Bar */}
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-100 flex items-center px-4">
+              <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4">
                 <Search className="w-4 h-4 text-slate-400 mr-2" />
                 <input 
                   type="text"
@@ -470,7 +470,7 @@ export default function Home() {
                 />
               </div>
               <button 
-                className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-100 flex items-center justify-center active:scale-95 transition-transform"
+                className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
                 onClick={() => setShowFriendList(true)}
               >
                 <Users className="w-5 h-5 text-slate-600" />
@@ -498,7 +498,7 @@ export default function Home() {
                     {tab.subtitle}
                   </span>
                   {activeTab === tab.id && (
-                    <motion.div 
+                    <motion.div
                       layoutId="activeTabIndicator"
                       className="w-4 h-1 bg-blue-500 rounded-full mt-1"
                     />
@@ -781,460 +781,414 @@ export default function Home() {
                 ]
               });
             }}
-          >
-            {/* Markers are now handled by the useEffect hook with CustomOverlay */}
-          </MapView>
-          
-          {/* --- SCENARIO-BASED MEET PAGE OVERLAY --- */}
-          {activeTab === "meet" && (
-            <div className="absolute inset-0 z-20 bg-slate-50 flex flex-col pt-safe pb-24 overflow-hidden">
-              {/* Background Image Layer - Only visible when header is NOT collapsed */}
-              <motion.div 
-                className="absolute inset-0 z-[-1] opacity-10"
-                animate={{ opacity: isMeetHeaderCollapsed ? 0 : 0.1 }}
-              >
-                <img 
-                  src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=1200&fit=crop" 
-                  alt="background" 
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
-
-              {/* Close/Back Button - Positioned at top right */}
-              <button 
-                onClick={() => setActiveTab("encounter")}
-                className="absolute top-safe right-4 z-30 p-2 mt-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-colors"
-              >
-                <X className="w-5 h-5 text-slate-600" />
-              </button>
-              
-              {/* 1. Scenario Selector (Entry Level) - Collapsible */}
-              <motion.div 
-                className="px-4 relative z-10 overflow-hidden mt-12"
-                animate={{ 
-                  height: isMeetHeaderCollapsed ? 0 : "auto",
-                  opacity: isMeetHeaderCollapsed ? 0 : 1,
-                  marginBottom: isMeetHeaderCollapsed ? 0 : "1.5rem",
-                  marginTop: isMeetHeaderCollapsed ? 0 : "3rem"
-                }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              >
-                <h2 className="text-lg font-bold text-slate-900 mb-3">这次见面怎么安排？</h2>
-                <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-                  {SCENARIOS.map((scenario) => {
-                    const Icon = scenario.icon;
-                    const isActive = activeScenario === scenario.id;
-                    return (
-                      <motion.button
-                        key={scenario.id}
-                        onClick={() => setActiveScenario(scenario.id)}
-                        whileTap={{ scale: 0.9 }}
-                        className={cn(
-                          "flex flex-col items-center gap-2 min-w-[64px] transition-all",
-                          isActive ? "opacity-100 scale-105" : "opacity-60 hover:opacity-80"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors",
-                          isActive ? scenario.bg : "bg-white border border-slate-100"
-                        )}>
-                          <Icon className={cn("w-6 h-6", scenario.color)} />
-                        </div>
-                        <span className={cn(
-                          "text-xs font-medium",
-                          isActive ? "text-slate-900" : "text-slate-500"
-                        )}>
-                          {scenario.label}
-                        </span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-
-              {/* 2. Plan List (Solution Level) */}
-              <div 
-                className="flex-1 overflow-y-auto px-4 space-y-4 no-scrollbar relative z-10"
-                onScroll={(e) => {
-                  const target = e.target as HTMLElement;
-                  if (target.scrollTop > 50) {
-                    setIsMeetHeaderCollapsed(true);
-                  } else {
-                    setIsMeetHeaderCollapsed(false);
-                  }
-
-                  // Check which shop card is in view
-                  shopCardRefs.current.forEach((card) => {
-                    if (!card) return;
-                    const rect = card.getBoundingClientRect();
-                    const containerRect = target.getBoundingClientRect();
-                    
-                    // If card is near the top of the container (active area)
-                    if (rect.top >= containerRect.top && rect.top < containerRect.top + 200) {
-                      const lat = parseFloat(card.dataset.lat || "0");
-                      const lng = parseFloat(card.dataset.lng || "0");
-                      if (lat && lng && mapInstance) {
-                        mapInstance.panTo({ lat, lng });
-                        mapInstance.setZoom(16);
-                      }
-                    }
-                  });
-                }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-slate-900">推荐方案</h3>
-                  <span className="text-xs text-slate-400">基于场景智能生成</span>
-                </div>
-
-                {PLANS[activeScenario as keyof typeof PLANS]?.map((plan) => (
-                  <motion.div 
-                    key={plan.id}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      // Show plan details
-                      setSelectedPlan(plan);
-                    }}
-                    className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
-                  >
-                    <div className="flex gap-4">
-                      <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
-                        <img src={plan.image} alt={plan.title} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-slate-900 mb-1">{plan.title}</h4>
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {plan.tags.map((tag: string) => (
-                            <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                          {plan.steps.map((step: any, idx: number) => (
-                            <div key={idx} className="flex items-center gap-1">
-                              <span>{step.icon}</span>
-                              <span>{step.label}</span>
-                              {idx < plan.steps.length - 1 && <span className="text-slate-300">→</span>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {/* 3. Shop List (Execution Level) */}
-                <div className="pt-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-slate-900">热门好店</h3>
-                    <button 
-                      className="text-xs text-blue-600 font-medium"
-                      onClick={() => setShowGroupBuying(true)}
-                    >
-                      查看全部
-                    </button>
-                  </div>
-
-                  <div className="space-y-4 pb-8">
-                    {/* Shop Card 1 */}
-                    <div 
-                      onClick={() => {
-                        // Show shop details instead of plan details
-                        setSelectedShop({
-                          id: 1,
-                          name: "微醺时刻",
-                          price: 168,
-                          image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop",
-                          rating: 4.7,
-                          desc: "三里屯瑜舍酒店一层，氛围极佳的Lounge Bar。",
-                          tags: ["酒吧", "鸡尾酒"]
-                        });
-                      }}
-                      ref={el => { shopCardRefs.current[0] = el; }}
-                      data-lat="39.9321" data-lng="116.4543"
-                      className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-                    >
-                      <div className="aspect-video relative">
-                        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=400&fit=crop" className="w-full h-full object-cover" />
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-                          <h4 className="font-bold text-lg text-white">微醺时刻</h4>
-                          <p className="text-white/90 text-sm">¥168/双人</p>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="px-2 py-0.5 bg-indigo-50 text-indigo-500 text-xs rounded-md">酒吧</span>
-                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-xs rounded-md">鸡尾酒</span>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex gap-3">
-                            <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                              <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0 pr-2">
-                              <div className="flex justify-between items-start">
-                                <h5 className="font-bold text-slate-900 text-sm truncate">Union</h5>
-                                <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-xs font-medium text-slate-900">4.7</span>
-                                </div>
-                              </div>
-                              <p className="text-xs text-slate-500 mt-1 line-clamp-2 break-words">三里屯瑜舍酒店一层，氛围极佳的Lounge Bar。</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          />
         </div>
-      </div>
 
-      {/* Plan Details Modal */}
-      <AnimatePresence>
-        {selectedPlan && (
-          <>
+        {/* Meet Page Overlay */}
+        <AnimatePresence>
+          {activeTab === "meet" && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedPlan(null)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed inset-0 z-[70] bg-white flex flex-col"
+              className="absolute inset-0 z-40 bg-slate-50 flex flex-col"
             >
-              {/* Header Image */}
-              <div className="relative h-64 shrink-0">
-                <img src={selectedPlan.image} alt={selectedPlan.title} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+              {/* Header Image Area */}
+              <div className="relative h-48 shrink-0">
+                <img 
+                  src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop" 
+                  className="w-full h-full object-cover"
+                  alt="Meet Header"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
                 
-                {/* Back Button */}
+                {/* Close Button */}
                 <button 
-                  onClick={() => setSelectedPlan(null)}
-                  className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                  onClick={() => setActiveTab("encounter")}
+                  className="absolute top-safe right-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
                 >
                   <X className="w-6 h-6" />
                 </button>
 
-                {/* Title Area */}
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h2 className="text-2xl font-bold text-white mb-2">{selectedPlan.title}</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedPlan.tags.map((tag: string) => (
-                      <span key={tag} className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-medium">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                {/* Title */}
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h1 className="text-2xl font-bold">发现美好生活</h1>
+                  <p className="text-sm opacity-90">探索城市中的精彩活动与团购</p>
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto bg-slate-50">
-                <div className="p-6 space-y-6">
-                  {/* Steps */}
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                      <span className="w-1 h-4 bg-blue-500 rounded-full" />
-                      流程安排
-                    </h3>
-                    <div className="space-y-6 relative">
-                      {/* Connecting Line */}
-                      <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-100" />
-                      
-                      {selectedPlan.steps.map((step: any, idx: number) => (
-                        <div key={idx} className="relative flex gap-4">
-                          <div className="w-10 h-10 rounded-full bg-white border-2 border-blue-100 flex items-center justify-center text-lg shadow-sm z-10">
-                            {step.icon}
+              {/* Content Area */}
+              <div className="flex-1 overflow-y-auto">
+                {/* Scenario Tabs */}
+                <div className="bg-white p-4 shadow-sm sticky top-0 z-10">
+                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                    {SCENARIOS.map(scenario => (
+                      <button
+                        key={scenario.id}
+                        onClick={() => setActiveScenario(scenario.id)}
+                        className={cn(
+                          "flex flex-col items-center gap-2 min-w-[64px] transition-all",
+                          activeScenario === scenario.id ? "scale-110" : "opacity-60 hover:opacity-100"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm",
+                          scenario.bg,
+                          scenario.color,
+                          activeScenario === scenario.id && "ring-2 ring-offset-2 ring-blue-500"
+                        )}>
+                          <scenario.icon className="w-6 h-6" />
+                        </div>
+                        <span className="text-xs font-medium text-slate-600">{scenario.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-4 space-y-6 pb-24">
+                  {/* Recommended Plans */}
+                  <div>
+                    <h2 className="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
+                      <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                      推荐方案
+                    </h2>
+                    <div className="space-y-4">
+                      {(PLANS[activeScenario as keyof typeof PLANS] || []).map((plan: any) => (
+                        <div 
+                          key={plan.id}
+                          onClick={() => setSelectedPlan(plan)}
+                          className="bg-white rounded-2xl overflow-hidden shadow-sm active:scale-98 transition-transform"
+                        >
+                          <div className="h-32 relative">
+                            <img src={plan.image} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <div className="absolute bottom-3 left-3 text-white">
+                              <h3 className="font-bold text-lg">{plan.title}</h3>
+                              <div className="flex gap-2 mt-1">
+                                {plan.tags.map((tag: string) => (
+                                  <span key={tag} className="text-xs opacity-90">{tag}</span>
+                                ))}
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex-1 pt-1">
-                            <h4 className="font-bold text-slate-900">{step.label}</h4>
-                            <p className="text-sm text-slate-500 mt-1">{step.desc}</p>
-                            
-                            {/* Recommended Shop for this step */}
-                            <div className="mt-3 bg-slate-50 rounded-xl p-3 flex gap-3 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => window.location.href = `/shop/${idx + 1}`}>
-                              <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
-                                <img src={`https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop`} className="w-full h-full object-cover" />
-                              </div>
-                              <div className="flex-1 min-w-0 flex justify-between items-center">
-                                <div>
-                                  <div className="font-bold text-slate-900 text-sm">推荐店铺 {idx + 1}</div>
-                                  <div className="text-xs text-slate-400 mt-0.5">人均 ¥{100 * (idx + 1)}</div>
+                          <div className="p-3 flex justify-between items-center">
+                            <div className="flex -space-x-2">
+                              {plan.steps.map((step: any, idx: number) => (
+                                <div key={idx} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-xs shadow-sm z-10">
+                                  {step.icon}
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-slate-400" />
-                              </div>
+                              ))}
+                            </div>
+                            <span className="text-xs text-blue-500 font-bold flex items-center">
+                              查看详情 <ChevronRight className="w-3 h-3" />
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {(!PLANS[activeScenario as keyof typeof PLANS] || PLANS[activeScenario as keyof typeof PLANS].length === 0) && (
+                        <div className="text-center py-8 text-slate-400 text-sm">
+                          暂无推荐方案，敬请期待...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Popular Shops */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                        <ShoppingBag className="w-5 h-5 text-red-500" />
+                        热门好店
+                      </h2>
+                      <button 
+                        onClick={() => setShowGroupBuying(true)}
+                        className="text-xs text-slate-500 flex items-center hover:text-slate-900"
+                      >
+                        查看全部 <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      {[1, 2, 3, 4].map(i => (
+                        <div 
+                          key={i} 
+                          className="bg-white rounded-xl overflow-hidden shadow-sm active:scale-95 transition-transform"
+                          onClick={() => setSelectedShop({
+                            name: `微醺时刻 ${i}`,
+                            image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=400&fit=crop",
+                            rating: 4.8,
+                            price: 168,
+                            desc: "这里是店铺的详细介绍，环境优雅，适合约会..."
+                          })}
+                        >
+                          <div className="aspect-square bg-slate-200 relative">
+                            <img src={`https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop`} className="w-full h-full object-cover" />
+                            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md text-xs font-bold text-orange-500 flex items-center gap-0.5">
+                              <Star className="w-3 h-3 fill-orange-500" /> 4.8
+                            </div>
+                          </div>
+                          <div className="p-2">
+                            <h3 className="font-bold text-slate-900 text-sm truncate">微醺时刻 {i}</h3>
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="text-xs text-slate-500">酒吧 • 1.2km</span>
+                              <span className="text-red-500 font-bold text-sm">¥168</span>
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
-
-                  {/* Tips */}
-                  <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
-                    <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-                      <span className="text-lg">💡</span>
-                      小贴士
-                    </h3>
-                    <p className="text-sm text-blue-700 leading-relaxed">
-                      建议提前2天预订餐厅位置。如果是周末出行，记得查看路况信息，预留充足的通勤时间。
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Action Bar */}
-              <div className="bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                <div className="flex gap-4">
-                  <button className="flex-1 py-3.5 bg-slate-100 text-slate-900 font-bold rounded-2xl active:scale-95 transition-transform">
-                    分享给好友
-                  </button>
-                  <button className="flex-1 py-3.5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">
-                    一键发起
-                  </button>
                 </div>
               </div>
             </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
 
-      {/* Shop Details Modal */}
-      <AnimatePresence>
-        {selectedShop && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedShop(null)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed inset-0 z-[70] bg-white flex flex-col"
-            >
-              {/* Header Image */}
-              <div className="relative h-64 shrink-0">
-                <img src={selectedShop.image} alt={selectedShop.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
-                
-                {/* Back Button */}
-                <button 
-                  onClick={() => setSelectedShop(null)}
-                  className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+        {/* Plan Detail Modal */}
+        <AnimatePresence>
+          {selectedPlan && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedPlan(null)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed inset-0 z-[70] bg-white flex flex-col"
+              >
+                {/* Header Image */}
+                <div className="relative h-64 shrink-0">
+                  <img src={selectedPlan.image} alt={selectedPlan.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+                  
+                  {/* Back Button - CHANGED to ArrowLeft */}
+                  <button 
+                    onClick={() => setSelectedPlan(null)}
+                    className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                  >
+                    <ArrowLeft className="w-6 h-6" />
+                  </button>
 
-                {/* Title Area */}
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h2 className="text-2xl font-bold text-white mb-2">{selectedShop.name}</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedShop.tags.map((tag: string) => (
-                      <span key={tag} className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-medium">
-                        {tag}
-                      </span>
+                  {/* Title Area */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <h2 className="text-2xl font-bold text-white mb-2">{selectedPlan.title}</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPlan.tags.map((tag: string) => (
+                        <span key={tag} className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-medium">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto bg-slate-50">
+                  <div className="p-6 space-y-6">
+                    {/* Steps */}
+                    <div className="bg-white rounded-2xl p-6 shadow-sm">
+                      <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <span className="w-1 h-4 bg-blue-500 rounded-full" />
+                        流程安排
+                      </h3>
+                      <div className="space-y-6 relative">
+                        {/* Connecting Line */}
+                        <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-100" />
+                        
+                        {selectedPlan.steps.map((step: any, idx: number) => (
+                          <div key={idx} className="relative flex gap-4">
+                            <div className="w-10 h-10 rounded-full bg-white border-2 border-blue-100 flex items-center justify-center text-lg shadow-sm z-10">
+                              {step.icon}
+                            </div>
+                            <div className="flex-1 pt-1">
+                              <h4 className="font-bold text-slate-900">{step.label}</h4>
+                              <p className="text-sm text-slate-500 mt-1">{step.desc}</p>
+                              
+                              {/* Recommended Shop for this step */}
+                              <div className="mt-3 bg-slate-50 rounded-xl p-3 flex gap-3 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => window.location.href = `/shop/${idx + 1}`}>
+                                <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
+                                  <img src={`https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop`} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex-1 min-w-0 flex justify-between items-center">
+                                  <div>
+                                    <div className="font-bold text-slate-900 text-sm">推荐店铺 {idx + 1}</div>
+                                    <div className="text-xs text-slate-400 mt-0.5">人均 ¥{100 * (idx + 1)}</div>
+                                  </div>
+                                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tips */}
+                    <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
+                      <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                        <span className="text-lg">💡</span>
+                        小贴士
+                      </h3>
+                      <p className="text-sm text-blue-700 leading-relaxed">
+                        建议提前2天预订餐厅位置。如果是周末出行，记得查看路况信息，预留充足的通勤时间。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Action Bar */}
+                <div className="bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                  <div className="flex gap-4">
+                    <button className="flex-1 py-3.5 bg-slate-100 text-slate-900 font-bold rounded-2xl active:scale-95 transition-transform">
+                      分享给好友
+                    </button>
+                    <button className="flex-1 py-3.5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">
+                      一键发起
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Shop Details Modal */}
+        <AnimatePresence>
+          {selectedShop && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedShop(null)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed inset-0 z-[70] bg-white flex flex-col"
+              >
+                {/* Header Image */}
+                <div className="relative h-64 shrink-0">
+                  <img src={selectedShop.image} alt={selectedShop.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+                  
+                  {/* Back Button */}
+                  <button 
+                    onClick={() => setSelectedShop(null)}
+                    className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+
+                  {/* Title Area */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <h2 className="text-2xl font-bold text-white mb-2">{selectedShop.name}</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedShop.tags?.map((tag: string) => (
+                        <span key={tag} className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-medium">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto bg-slate-50">
+                  <div className="p-6 space-y-6">
+                    <div className="bg-white rounded-2xl p-6 shadow-sm">
+                      <h3 className="font-bold text-slate-900 mb-2">店铺介绍</h3>
+                      <p className="text-slate-600 leading-relaxed">{selectedShop.desc}</p>
+                      <div className="mt-4 flex items-center gap-2">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-bold text-slate-900">{selectedShop.rating}</span>
+                        <span className="text-slate-400 text-sm">/ 5.0</span>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-2xl p-6 shadow-sm">
+                      <h3 className="font-bold text-slate-900 mb-4">套餐详情</h3>
+                      <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl">
+                        <div>
+                          <div className="font-bold text-slate-900">双人微醺套餐</div>
+                          <div className="text-sm text-slate-500 mt-1">含2杯特调鸡尾酒 + 小食拼盘</div>
+                        </div>
+                        <div className="text-xl font-bold text-red-500">¥{selectedShop.price}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Action Bar */}
+                <div className="bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                  <button className="w-full py-3.5 bg-red-500 text-white font-bold rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-transform">
+                    立即购买
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Group Buying List Modal */}
+        <AnimatePresence>
+          {showGroupBuying && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowGroupBuying(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed inset-0 z-[70] bg-white flex flex-col"
+              >
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                  <h3 className="font-bold text-lg text-slate-900">热门团购</h3>
+                  <button onClick={() => setShowGroupBuying(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                    <X className="w-5 h-5 text-slate-500" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <div key={i} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4">
+                        <div className="w-24 h-24 bg-slate-200 rounded-xl overflow-hidden shrink-0">
+                          <img src={`https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop`} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold text-slate-900 mb-1">超值双人餐 {i}</h4>
+                          <p className="text-xs text-slate-500 mb-2">某某餐厅 • 距离1.2km</p>
+                          <div className="flex items-end justify-between">
+                            <div className="text-red-500 font-bold text-lg">¥168 <span className="text-xs text-slate-400 font-normal line-through">¥298</span></div>
+                            <button className="px-4 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full">抢购</button>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto bg-slate-50">
-                <div className="p-6 space-y-6">
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h3 className="font-bold text-slate-900 mb-2">店铺介绍</h3>
-                    <p className="text-slate-600 leading-relaxed">{selectedShop.desc}</p>
-                    <div className="mt-4 flex items-center gap-2">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-bold text-slate-900">{selectedShop.rating}</span>
-                      <span className="text-slate-400 text-sm">/ 5.0</span>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white rounded-2xl p-6 shadow-sm">
-                    <h3 className="font-bold text-slate-900 mb-4">套餐详情</h3>
-                    <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl">
-                      <div>
-                        <div className="font-bold text-slate-900">双人微醺套餐</div>
-                        <div className="text-sm text-slate-500 mt-1">含2杯特调鸡尾酒 + 小食拼盘</div>
-                      </div>
-                      <div className="text-xl font-bold text-red-500">¥{selectedShop.price}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Action Bar */}
-              <div className="bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                <button className="w-full py-3.5 bg-red-500 text-white font-bold rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-transform">
-                  立即购买
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Group Buying List Modal */}
-      <AnimatePresence>
-        {showGroupBuying && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowGroupBuying(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed inset-0 z-[70] bg-white flex flex-col"
-            >
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
-                <h3 className="font-bold text-lg text-slate-900">热门团购</h3>
-                <button onClick={() => setShowGroupBuying(false)} className="p-2 hover:bg-slate-100 rounded-full">
-                  <X className="w-5 h-5 text-slate-500" />
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-                <div className="space-y-4">
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4">
-                      <div className="w-24 h-24 bg-slate-200 rounded-xl overflow-hidden shrink-0">
-                        <img src={`https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop`} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-slate-900 mb-1">超值双人餐 {i}</h4>
-                        <p className="text-xs text-slate-500 mb-2">某某餐厅 • 距离1.2km</p>
-                        <div className="flex items-end justify-between">
-                          <div className="text-red-500 font-bold text-lg">¥168 <span className="text-xs text-slate-400 font-normal line-through">¥298</span></div>
-                          <button className="px-4 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full">抢购</button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </Layout>
   );
 }
