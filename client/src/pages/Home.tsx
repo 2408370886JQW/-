@@ -365,7 +365,7 @@ export default function Home() {
           >
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              marker.gender === "female" ? "border-pink-400" : "border-blue-500"
+              marker.gender === "female" ? "border-pink-500" : "border-blue-500"
             )}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
@@ -387,7 +387,7 @@ export default function Home() {
           >
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              marker.gender === "female" ? "border-pink-400" : "border-blue-500"
+              marker.gender === "female" ? "border-pink-500" : "border-blue-500"
             )}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
@@ -609,7 +609,7 @@ export default function Home() {
                   <div className="flex flex-col items-center">
                     <div className={cn(
                       "w-24 h-24 rounded-full border-[4px] shadow-xl overflow-hidden mb-4",
-                      selectedFriend.gender === "female" ? "border-pink-400" : "border-blue-500"
+                      selectedFriend.gender === "female" ? "border-pink-500" : "border-blue-500"
                     )}>
                       <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
                     </div>
@@ -800,8 +800,12 @@ export default function Home() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="absolute inset-0 z-40 bg-slate-50 flex flex-col"
             >
-              {/* Header Image Area */}
-              <div className="relative h-48 shrink-0">
+              {/* Header Image Area - Collapsible on Scroll */}
+              <motion.div 
+                className="relative shrink-0 overflow-hidden"
+                animate={{ height: isMeetHeaderCollapsed ? 100 : 192 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              >
                 <img 
                   src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop" 
                   className="w-full h-full object-cover"
@@ -809,23 +813,32 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
                 
-                {/* Back Button */}
+                {/* Back Button - Always Visible */}
                 <button 
                   onClick={() => setActiveTab("encounter")}
-                  className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                  className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors z-20"
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </button>
 
                 {/* Title */}
-                <div className="absolute bottom-4 left-4 text-white">
+                <motion.div 
+                  className="absolute bottom-4 left-4 text-white"
+                  animate={{ opacity: isMeetHeaderCollapsed ? 0 : 1 }}
+                >
                   <h1 className="text-2xl font-bold">发现美好生活</h1>
                   <p className="text-sm opacity-90">探索城市中的精彩活动与团购</p>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
               {/* Content Area */}
-              <div className="flex-1 overflow-y-auto">
+              <div 
+                className="flex-1 overflow-y-auto"
+                onScroll={(e) => {
+                  const scrollTop = e.currentTarget.scrollTop;
+                  setIsMeetHeaderCollapsed(scrollTop > 50);
+                }}
+              >
                 {/* Scenario Tabs */}
                 <div className="bg-white p-4 shadow-sm sticky top-0 z-10">
                   <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide px-2">
