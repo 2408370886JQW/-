@@ -17,11 +17,11 @@ const INITIAL_MARKERS = {
     { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "female", lastSeen: "15分钟前在线" },
   ],
   friends: [
-    { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "online", gender: "female" },
+    { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male" },
     { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "female" },
     { id: 9, lat: 39.910, lng: 116.400, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
     { id: 10, lat: 39.905, lng: 116.410, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "away", gender: "male" },
-    { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "offline", gender: "female" },
+    { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", status: "offline", gender: "male" },
   ],
   moments: [
     { 
@@ -409,29 +409,29 @@ export default function Home() {
             className="relative group transition-transform hover:scale-105 active:scale-95"
             onClick={() => setSelectedMoment(marker)}
           >
-            <div className="w-36 bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-white flex flex-col">
+            <div className="w-28 bg-white rounded-xl shadow-lg overflow-hidden border border-white flex flex-col">
               <div className="aspect-video relative overflow-hidden">
                 <img src={marker.image} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               </div>
-              <div className="p-1.5 bg-white">
-                <p className="text-[10px] text-slate-900 font-medium truncate mb-1">{marker.content}</p>
+              <div className="p-1 bg-white">
+                <p className="text-[9px] text-slate-900 font-medium truncate mb-0.5">{marker.content}</p>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <div className="flex items-center gap-0.5">
-                      <Heart className="w-2.5 h-2.5 fill-red-500 text-red-500" />
-                      <span className="text-[9px] font-bold text-slate-600">{marker.likes}</span>
+                      <Heart className="w-2 h-2 fill-red-500 text-red-500" />
+                      <span className="text-[8px] font-bold text-slate-600">{marker.likes}</span>
                     </div>
                     <div className="flex items-center gap-0.5">
-                      <MessageCircle className="w-2.5 h-2.5 text-slate-400" />
-                      <span className="text-[9px] font-medium text-slate-400">{marker.comments}</span>
+                      <MessageCircle className="w-2 h-2 text-slate-400" />
+                      <span className="text-[8px] font-medium text-slate-400">{marker.comments}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             {/* Triangle Pointer */}
-            <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 shadow-sm z-[-1]" />
+            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45 shadow-sm z-[-1]" />
           </div>
         );
       }
@@ -872,8 +872,15 @@ export default function Home() {
                   }
                 }}
               >
-                {/* Scenario Tabs */}
-                <div className="bg-white p-4 shadow-sm sticky top-0 z-10">
+                {/* Scenario Tabs - Also collapsible */}
+                <motion.div 
+                  className="bg-white shadow-sm sticky top-0 z-10 overflow-hidden"
+                  animate={{ 
+                    height: isMeetHeaderCollapsed ? 0 : 'auto',
+                    opacity: isMeetHeaderCollapsed ? 0 : 1,
+                    padding: isMeetHeaderCollapsed ? 0 : '1rem'
+                  }}
+                >
                   <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide px-2">
                     {SCENARIOS.map(scenario => (
                       <button
@@ -896,7 +903,7 @@ export default function Home() {
                       </button>
                     ))}
                   </div>
-                </div>
+                </motion.div>
 
                 <div className="p-4 space-y-6 pb-24">
                   {/* Recommended Plans */}
