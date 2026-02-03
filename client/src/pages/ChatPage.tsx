@@ -215,7 +215,11 @@ export default function ChatPage() {
                         alt={CONVERSATIONS.find(c => c.id === activeConversation)?.user || "User"}
                         className="w-8 h-8 rounded-full object-cover" 
                       />
-                      <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                      <div className={cn(
+                        "absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white",
+                        CONVERSATIONS.find(c => c.id === activeConversation)?.status === "online" ? "bg-green-500" : 
+                        CONVERSATIONS.find(c => c.id === activeConversation)?.status === "away" ? "bg-yellow-500" : "bg-slate-300"
+                      )} />
                     </div>
                     <span className="font-bold text-slate-900">
                       {CONVERSATIONS.find(c => c.id === activeConversation)?.user}

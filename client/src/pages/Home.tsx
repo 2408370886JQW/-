@@ -463,7 +463,7 @@ export default function Home() {
                 <Search className="w-4 h-4 text-slate-400 mr-2" />
                 <input 
                   type="text"
-                  placeholder="搜索用户、动态、地点..."
+                  placeholder="搜索好友ID、套餐名称、商户名称"
                   className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -541,7 +541,7 @@ export default function Home() {
                     }}>
                       <div className={cn(
                         "w-12 h-12 rounded-full border-2 overflow-hidden",
-                        friend.gender === "female" ? "border-pink-400" : "border-blue-500"
+                        friend.gender === "female" ? "border-pink-500" : "border-blue-500"
                       )}>
                         <img src={friend.avatar} alt="Friend" className="w-full h-full object-cover" />
                       </div>
@@ -557,7 +557,7 @@ export default function Home() {
                   {/* Mock more friends */}
                   {[1, 2, 3, 4, 5].map(i => (
                     <div key={`mock-${i}`} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
-                      <div className="w-12 h-12 rounded-full border-2 border-slate-200 overflow-hidden bg-slate-100">
+                      <div className="w-12 h-12 rounded-full border-2 border-blue-500 overflow-hidden bg-slate-100">
                         <User className="w-full h-full p-2 text-slate-300" />
                       </div>
                       <div>
@@ -687,6 +687,12 @@ export default function Home() {
               // Remove default UI controls to match wireframe clean look
               map.setOptions({
                 disableDefaultUI: true,
+                zoomControl: false,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+                clickableIcons: false,
+                gestureHandling: "greedy", // Allow single finger pan
                 styles: [
                   {
                     "featureType": "all",
@@ -803,12 +809,12 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
                 
-                {/* Close Button */}
+                {/* Back Button */}
                 <button 
                   onClick={() => setActiveTab("encounter")}
-                  className="absolute top-safe right-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
+                  className="absolute top-safe left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors"
                 >
-                  <X className="w-6 h-6" />
+                  <ArrowLeft className="w-6 h-6" />
                 </button>
 
                 {/* Title */}
@@ -822,25 +828,25 @@ export default function Home() {
               <div className="flex-1 overflow-y-auto">
                 {/* Scenario Tabs */}
                 <div className="bg-white p-4 shadow-sm sticky top-0 z-10">
-                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                  <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide px-2">
                     {SCENARIOS.map(scenario => (
                       <button
                         key={scenario.id}
                         onClick={() => setActiveScenario(scenario.id)}
                         className={cn(
-                          "flex flex-col items-center gap-2 min-w-[64px] transition-all",
+                          "flex flex-col items-center gap-2 min-w-[64px] transition-all shrink-0",
                           activeScenario === scenario.id ? "scale-110" : "opacity-60 hover:opacity-100"
                         )}
                       >
                         <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm",
+                          "w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm overflow-visible",
                           scenario.bg,
                           scenario.color,
                           activeScenario === scenario.id && "ring-2 ring-offset-2 ring-blue-500"
                         )}>
                           <scenario.icon className="w-6 h-6" />
                         </div>
-                        <span className="text-xs font-medium text-slate-600">{scenario.label}</span>
+                        <span className="text-xs font-medium text-slate-600 whitespace-nowrap">{scenario.label}</span>
                       </button>
                     ))}
                   </div>
