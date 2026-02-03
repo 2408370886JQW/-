@@ -13,8 +13,8 @@ import { createRoot } from "react-dom/client";
 const INITIAL_MARKERS = {
   encounter: [
     { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
-    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "24小时内在线" },
-    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "away", gender: "female", lastSeen: "15分钟前在线" },
+    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "24小时内在线" },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "recent", gender: "female", lastSeen: "15分钟前在线" },
   ],
   friends: [
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male" },
@@ -354,6 +354,15 @@ export default function Home() {
     const currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
     
     currentMarkers.forEach((marker: any) => {
+      // Filter out offline users > 24h (simulated by checking if status is 'offline' and not explicitly marked as recent)
+      // In a real app, we would check a timestamp. Here we assume 'offline' means > 24h unless we have other data.
+      // However, the requirement says "offline > 24h should not show".
+      // Let's assume 'offline' status in our mock data means > 24h offline, 
+      // and 'recent' means < 1h offline (yellow), and 'online' means online (green).
+      // So we should NOT show 'offline' markers on the map.
+      if ((marker.type === 'encounter' || marker.type === 'friend') && marker.status === 'offline') {
+        return;
+      }
       const div = document.createElement('div');
       div.style.cursor = 'pointer';
       
@@ -368,7 +377,7 @@ export default function Home() {
           >
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              marker.gender === "female" ? "border-pink-500" : "border-blue-500"
+              (marker.gender === "female" || marker.gender === "Woman") ? "border-pink-500" : "border-blue-500"
             )}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
@@ -376,7 +385,7 @@ export default function Home() {
             <div className={cn(
               "absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white",
               marker.status === "online" ? "bg-green-500" : 
-              marker.status === "away" ? "bg-yellow-500" : "bg-gray-400"
+              marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
             )} />
           </div>
         );
@@ -390,7 +399,7 @@ export default function Home() {
           >
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              marker.gender === "female" ? "border-pink-500" : "border-blue-500"
+              (marker.gender === "female" || marker.gender === "Woman") ? "border-pink-500" : "border-blue-500"
             )}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
@@ -549,7 +558,7 @@ export default function Home() {
                     }}>
                       <div className={cn(
                         "w-12 h-12 rounded-full border-2 overflow-hidden",
-                        friend.gender === "female" ? "border-pink-500" : "border-blue-500"
+                        (friend.gender === "female" || friend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
                       )}>
                         <img src={friend.avatar} alt="Friend" className="w-full h-full object-cover" />
                       </div>
@@ -627,10 +636,10 @@ export default function Home() {
                 {/* Scrollable Content */}
                 <div className="flex-1 overflow-y-auto p-6 pt-2 pb-32">
                   <div className="flex flex-col items-center">
-                    <div className={cn(
-                      "w-24 h-24 rounded-full border-[4px] shadow-xl overflow-hidden mb-4",
-                      selectedFriend.gender === "female" ? "border-pink-500" : "border-blue-500"
-                    )}>
+                      <div className={cn(
+                        "w-24 h-24 rounded-full border-[4px] shadow-xl overflow-hidden mb-4",
+                        (selectedFriend.gender === "female" || selectedFriend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
+                      )}>
                       <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
                     </div>
                   <h3 className="text-2xl font-bold text-slate-900 mb-1">用户 {selectedFriend.id}</h3>
