@@ -18,6 +18,11 @@ import ChatPage from "./pages/ChatPage";
 import FriendsPage from "./pages/FriendsPage";
 import MerchantDetailPage from "./pages/MerchantDetailPage";
 import PlanDetailPage from "./pages/PlanDetailPage";
+import StoreLoginPage from "./pages/StoreLoginPage";
+import StoreHomePage from "./pages/StoreHomePage";
+import StoreScenarioPage from "./pages/StoreScenarioPage";
+import StorePackageDetailPage from "./pages/StorePackageDetailPage";
+import StorePaymentSuccessPage from "./pages/StorePaymentSuccessPage";
 
 
 function Router() {
@@ -30,6 +35,11 @@ function Router() {
       <Route path="/appointment/:id" component={AppointmentDetailPage} />
       <Route path="/merchant/:id" component={MerchantDetailPage} />
       <Route path="/plan/:id" component={PlanDetailPage} />
+      <Route path="/store/login" component={StoreLoginPage} />
+      <Route path="/store/home" component={StoreHomePage} />
+      <Route path="/store/scenario" component={StoreScenarioPage} />
+      <Route path="/store/package/:id" component={StorePackageDetailPage} />
+      <Route path="/store/payment/success" component={StorePaymentSuccessPage} />
       <Route path="/circles" component={CirclesPage} />
       <Route path="/chat" component={ChatPage} />
       <Route path="/publish" component={PublishPage} />
