@@ -420,36 +420,29 @@ export default function Home() {
           </div>
         );
       } else if (marker.type === 'moment') {
-        // Moment Marker - Rounded Rectangle (Bubble) Style
+        // Moment Marker - First Version Style (Large Image + Floating Stats)
         const root = createRoot(div);
         root.render(
           <div 
             className="relative group transition-transform hover:scale-105 active:scale-95"
             onClick={() => setSelectedMoment(marker)}
           >
-            <div className="w-28 bg-white rounded-xl shadow-lg overflow-hidden border border-white flex flex-col">
-              <div className="aspect-video relative overflow-hidden">
-                <img src={marker.image} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            {/* Main Image Card */}
+            <div className="w-32 h-24 bg-white rounded-2xl shadow-xl overflow-hidden border-[4px] border-white">
+              <img src={marker.image} className="w-full h-full object-cover" />
+            </div>
+            
+            {/* Floating Stats Capsule */}
+            <div className="absolute -bottom-2 -right-2 bg-white rounded-full px-2 py-1 shadow-md flex items-center gap-2 border border-slate-100">
+              <div className="flex items-center gap-1">
+                <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                <span className="text-[10px] font-bold text-slate-700">{marker.likes}</span>
               </div>
-              <div className="p-1 bg-white">
-                <p className="text-[9px] text-slate-900 font-medium truncate mb-0.5">{marker.content}</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex items-center gap-0.5">
-                      <Heart className="w-2 h-2 fill-red-500 text-red-500" />
-                      <span className="text-[8px] font-bold text-slate-600">{marker.likes}</span>
-                    </div>
-                    <div className="flex items-center gap-0.5">
-                      <MessageCircle className="w-2 h-2 text-slate-400" />
-                      <span className="text-[8px] font-medium text-slate-400">{marker.comments}</span>
-                    </div>
-                  </div>
-                </div>
+              <div className="flex items-center gap-1">
+                <MessageCircle className="w-3 h-3 fill-blue-500 text-blue-500" />
+                <span className="text-[10px] font-bold text-slate-700">{marker.comments}</span>
               </div>
             </div>
-            {/* Triangle Pointer */}
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45 shadow-sm z-[-1]" />
           </div>
         );
       }
@@ -672,66 +665,37 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Age Filter (Mock) */}
+                  {/* Age Filter */}
                   <div>
-                    <label className="text-sm font-bold text-slate-900 mb-3 block">年龄段</label>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                      {["不限", "18-22", "23-26", "27-30", "30+"].map((age, i) => (
-                        <button 
-                          key={age}
-                          className={cn(
-                            "px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
-                            i === 0 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
-                          )}
-                        >
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">年龄</label>
+                    <div className="flex gap-3">
+                      {["18-22", "23-26", "27-35", "35+"].map(age => (
+                        <button key={age} className="flex-1 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
                           {age}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Distance Filter (Mock) */}
-                  <div>
-                    <label className="text-sm font-bold text-slate-900 mb-3 block">距离</label>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                      {["附近", "1km", "3km", "5km", "同城"].map((dist, i) => (
-                        <button 
-                          key={dist}
-                          className={cn(
-                            "px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
-                            i === 0 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
-                          )}
-                        >
-                          {dist}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Zodiac Filter (Mock) */}
+                  {/* Zodiac Filter */}
                   <div>
                     <label className="text-sm font-bold text-slate-900 mb-3 block">星座</label>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                      {["不限", "白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"].map((zodiac, i) => (
-                        <button 
-                          key={zodiac}
-                          className={cn(
-                            "px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
-                            i === 0 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
-                          )}
-                        >
+                    <div className="grid grid-cols-4 gap-2">
+                      {["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎"].map(zodiac => (
+                        <button key={zodiac} className="py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
                           {zodiac}
                         </button>
                       ))}
                     </div>
                   </div>
+                </div>
 
-                  {/* Apply Button */}
+                <div className="mt-8 pt-4 border-t border-slate-100">
                   <button 
                     onClick={() => setShowFilterModal(false)}
-                    className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform mt-4"
+                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform"
                   >
-                    确认筛选
+                    确认
                   </button>
                 </div>
               </motion.div>
@@ -739,101 +703,93 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Friend Card Popup */}
+        {/* Map View */}
+        <MapView 
+          className="w-full h-full"
+          onMapReady={(map) => {
+            setMapInstance(map);
+            // Add click listener to close popups when clicking map
+            map.addListener('click', () => {
+              setSelectedFriend(null);
+              setSelectedMoment(null);
+              setIsNavVisible(true);
+            });
+          }}
+        />
+
+        {/* Filter Button (Floating) - Only show on Encounter tab */}
+        {activeTab === "encounter" && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute top-32 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
+            onClick={() => setShowFilterModal(true)}
+          >
+            <Filter className="w-5 h-5" />
+          </motion.button>
+        )}
+
+        {/* Detail Modals */}
         <AnimatePresence>
           {selectedFriend && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSelectedFriend(null)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-              />
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                drag="y"
-                dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={0.2}
-                onDragEnd={(_, info) => {
-                  if (info.offset.y > 100) {
-                    setSelectedFriend(null);
-                  }
-                }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] border-t border-slate-100 flex flex-col"
-                style={{ height: '85vh' }}
-              >
-                {/* Drag Handle Area */}
-                <div className="w-full flex justify-center pt-4 pb-2 shrink-0 cursor-grab active:cursor-grabbing" onClick={() => setSelectedFriend(null)}>
-                  <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-safe"
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100) setSelectedFriend(null);
+              }}
+            >
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
+              <div className="px-6 pb-8">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className={cn(
+                    "w-20 h-20 rounded-full border-4 overflow-hidden shadow-lg",
+                    (selectedFriend.gender === "female" || selectedFriend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
+                  )}>
+                    <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-slate-900">用户 {selectedFriend.id}</h2>
+                      <div className={cn(
+                        "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5",
+                        selectedFriend.status === "online" ? "bg-green-100 text-green-700" : 
+                        selectedFriend.status === "recent" ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-600"
+                      )}>
+                        <div className={cn("w-2 h-2 rounded-full", 
+                          selectedFriend.status === "online" ? "bg-green-500" : 
+                          selectedFriend.status === "recent" ? "bg-yellow-500" : "bg-slate-400"
+                        )} />
+                        {selectedFriend.status === "online" ? "在线" : selectedFriend.status === "recent" ? "15分钟前" : "离线"}
+                      </div>
+                    </div>
+                    <p className="text-slate-500 mt-1">北京 · 距离 0.5km</p>
+                    <div className="flex gap-2 mt-3">
+                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">双子座</span>
+                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">摄影</span>
+                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">咖啡</span>
+                    </div>
+                  </div>
                 </div>
                 
-                {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto p-6 pt-2 pb-32">
-                  <div className="flex flex-col items-center">
-                      <div className={cn(
-                        "w-24 h-24 rounded-full border-[4px] shadow-xl overflow-hidden mb-4",
-                        (selectedFriend.gender === "female" || selectedFriend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
-                      )}>
-                      <img src={selectedFriend.avatar} alt="User" className="w-full h-full object-cover" />
-                    </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-1">用户 {selectedFriend.id}</h3>
-                  <div className="flex items-center gap-2 mb-6">
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full font-medium">
-                      {selectedFriend.gender === "female" ? "♀ 24岁" : "♂ 26岁"}
-                    </span>
-                    <span className={cn(
-                      "px-2 py-0.5 text-xs rounded-full font-medium flex items-center gap-1",
-                        selectedFriend.status === "online" ? "bg-green-100 text-green-600" : 
-                      selectedFriend.status === "recent" ? "bg-yellow-100 text-yellow-600" : "bg-gray-100 text-gray-600"
-                    )}>
-                      <div className={cn(
-                        "w-1.5 h-1.5 rounded-full",
-                        selectedFriend.status === "online" ? "bg-green-500" : 
-                        selectedFriend.status === "recent" ? "bg-yellow-500" : "bg-gray-500"
-                      )} />
-                      {selectedFriend.status === "online" ? "在线" : 
-                       selectedFriend.status === "recent" ? "15-20分钟以内在线" : "离线"}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 w-full mb-8">
-                    <button className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                      <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-600">
-                        <MessageCircle className="w-5 h-5" />
-                      </div>
-                      <span className="text-xs font-medium text-slate-600">发消息</span>
-                    </button>
-                    <button className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors">
-                      <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-pink-500">
-                        <Heart className="w-5 h-5" />
-                      </div>
-                      <span className="text-xs font-medium text-slate-600">关注</span>
-                    </button>
-                    {/* Removed '约个饭' button as requested */}
-                  </div>
-
-                  <div className="w-full space-y-4">
-                    <h4 className="font-bold text-slate-900">个人动态</h4>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[1, 2, 3, 4, 5, 6].map(i => (
-                        <div key={i} className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
-                          <img src={`https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop`} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button className="py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg active:scale-95 transition-transform">
+                    打招呼
+                  </button>
+                  <button className="py-3 rounded-xl bg-slate-100 text-slate-900 font-bold active:scale-95 transition-transform">
+                    查看主页
+                  </button>
                 </div>
-              </motion.div>
-            </>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Moment Detail Modal */}
         <AnimatePresence>
           {selectedMoment && (
             <MomentDetail 
@@ -843,149 +799,6 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Map Container - FIXED: Ensure it takes full space and has correct z-index */}
-        <div className="absolute inset-0 z-0">
-          {/* Advanced Filter Controls */}
-          {activeTab === "encounter" && (
-            <div className="absolute top-36 left-4 z-10 flex flex-col gap-2">
-              <button 
-                onClick={() => setShowFilterModal(true)}
-                className="w-10 h-10 rounded-full bg-white text-slate-600 flex items-center justify-center shadow-lg transition-all active:scale-95"
-              >
-                <div className="relative">
-                  <Users className="w-5 h-5" />
-                  {genderFilter !== "all" && (
-                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
-                  )}
-                </div>
-              </button>
-            </div>
-          )}
-
-          <MapView 
-            className="w-full h-full"
-            markers={
-              activeTab === "encounter" ? markerData.encounter.filter(m => {
-                if (genderFilter === "all") return true;
-                if (genderFilter === "male") return m.gender === "male" || m.gender === "Man";
-                if (genderFilter === "female") return m.gender === "female" || m.gender === "Woman";
-                return true;
-              }) :
-              activeTab === "friends" ? markerData.friends :
-              activeTab === "moments" ? markerData.moments :
-              markerData.meet
-            }
-            onMapReady={(map) => {
-              setMapInstance(map);
-              map.setCenter({ lat: 39.9042, lng: 116.4074 });
-              map.setZoom(14);
-              
-              // Remove default UI controls to match wireframe clean look
-              map.setOptions({
-                disableDefaultUI: true,
-                zoomControl: false,
-                mapTypeControl: false,
-                streetViewControl: false,
-                fullscreenControl: false,
-                clickableIcons: false,
-                gestureHandling: "greedy", // Allow single finger pan
-                styles: [
-                  {
-                    "featureType": "all",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#f5f5f5" }]
-                  },
-                  {
-                    "featureType": "all",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#616161" }]
-                  },
-                  {
-                    "featureType": "all",
-                    "elementType": "labels.text.stroke",
-                    "stylers": [{ "color": "#f5f5f5" }]
-                  },
-                  {
-                    "featureType": "all",
-                    "elementType": "labels.icon",
-                    "stylers": [{ "visibility": "off" }]
-                  },
-                  {
-                    "featureType": "administrative.land_parcel",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#bdbdbd" }]
-                  },
-                  {
-                    "featureType": "poi",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#eeeeee" }]
-                  },
-                  {
-                    "featureType": "poi",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#757575" }]
-                  },
-                  {
-                    "featureType": "poi.park",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#e5e5e5" }]
-                  },
-                  {
-                    "featureType": "poi.park",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#9e9e9e" }]
-                  },
-                  {
-                    "featureType": "road",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#ffffff" }]
-                  },
-                  {
-                    "featureType": "road.arterial",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#757575" }]
-                  },
-                  {
-                    "featureType": "road.highway",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#dadada" }]
-                  },
-                  {
-                    "featureType": "road.highway",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#616161" }]
-                  },
-                  {
-                    "featureType": "road.local",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#9e9e9e" }]
-                  },
-                  {
-                    "featureType": "transit.line",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#e5e5e5" }]
-                  },
-                  {
-                    "featureType": "transit.station",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#eeeeee" }]
-                  },
-                  {
-                    "featureType": "water",
-                    "elementType": "geometry",
-                    "stylers": [{ "color": "#c9c9c9" }]
-                  },
-                  {
-                    "featureType": "water",
-                    "elementType": "labels.text.fill",
-                    "stylers": [{ "color": "#9e9e9e" }]
-                  }
-                ]
-              });
-            }}
-          />
-        </div>
-
         {/* Meet Page Overlay */}
         <AnimatePresence>
           {activeTab === "meet" && (
@@ -994,437 +807,151 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="absolute inset-0 z-40 bg-slate-50 flex flex-col"
+              className="absolute inset-0 z-20 bg-slate-50 flex flex-col"
             >
-              {/* Header Image Area - Collapsible on Scroll */}
+              {/* Meet Page Header - Collapsible */}
               <motion.div 
-                className="relative shrink-0 overflow-hidden"
-                animate={{ height: isMeetHeaderCollapsed ? 0 : 200 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              >
-                <img 
-                  src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop" 
-                  className="w-full h-full object-cover"
-                  alt="Meet Header"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
-                
-                {/* Title */}
-                <motion.div 
-                  className="absolute bottom-6 left-4 text-white"
-                  animate={{ opacity: isMeetHeaderCollapsed ? 0 : 1 }}
-                >
-                  <h1 className="text-2xl font-bold mb-1">发现美好生活</h1>
-                  <p className="text-sm opacity-90">与你喜欢的TA一起发现美好</p>
-                </motion.div>
-              </motion.div>
-
-              {/* Fixed Back Button Bar */}
-              <div className="absolute top-0 left-0 right-0 z-50 p-4 pointer-events-none">
-                <button 
-                  onClick={() => setActiveTab("encounter")}
-                  className={cn(
-                    "pointer-events-auto p-2 rounded-full transition-all duration-300 shadow-sm",
-                    isMeetHeaderCollapsed 
-                      ? "bg-white text-slate-900 border border-slate-200" 
-                      : "bg-black/20 backdrop-blur-md text-white hover:bg-black/30"
-                  )}
-                  style={{ marginTop: 'env(safe-area-inset-top)' }}
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
-              </div>
-
-              {/* Content Area */}
-              <div 
-                className="flex-1 overflow-y-auto pt-0 pb-24"
-                onScroll={(e) => {
-                  const scrollTop = e.currentTarget.scrollTop;
-                  // More aggressive collapse threshold
-                  if (scrollTop > 10 && !isMeetHeaderCollapsed) {
-                    setIsMeetHeaderCollapsed(true);
-                  } else if (scrollTop < 5 && isMeetHeaderCollapsed) {
-                    setIsMeetHeaderCollapsed(false);
-                  }
+                className="bg-white z-30 shadow-sm flex-shrink-0"
+                animate={{ 
+                  height: isMeetHeaderCollapsed ? "auto" : "auto",
                 }}
               >
-                {/* Scenario Tabs - Also collapsible */}
-                <motion.div 
-                  className="bg-white shadow-sm sticky top-0 z-10 overflow-hidden"
-                  animate={{ 
-                    height: isMeetHeaderCollapsed ? 0 : 'auto',
-                    opacity: isMeetHeaderCollapsed ? 0 : 1,
-                    padding: isMeetHeaderCollapsed ? 0 : '1rem'
-                  }}
-                >
-                  <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide px-2">
-                    {SCENARIOS.map(scenario => (
-                      <button
-                        key={scenario.id}
-                        onClick={() => setActiveScenario(scenario.id)}
-                        className={cn(
-                          "flex flex-col items-center gap-2 min-w-[64px] transition-all shrink-0",
-                          activeScenario === scenario.id ? "scale-110" : "opacity-60 hover:opacity-100"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm overflow-visible",
-                          scenario.bg,
-                          scenario.color,
-                          activeScenario === scenario.id && "ring-2 ring-offset-2 ring-blue-500"
-                        )}>
-                          <scenario.icon className="w-6 h-6" />
-                        </div>
-                        <span className="text-xs font-medium text-slate-600 whitespace-nowrap">{scenario.label}</span>
+                <div className="pt-safe px-4 pb-2">
+                  {/* Search Bar */}
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4">
+                      <Search className="w-4 h-4 text-slate-400 mr-2" />
+                      <input 
+                        type="text"
+                        placeholder="搜索套餐、商户"
+                        className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-slate-600" />
                       </button>
-                    ))}
+                    </div>
                   </div>
-                </motion.div>
 
-                <div className="p-4 space-y-6 pb-24">
-                  {/* Recommended Plans */}
-                  <div>
-                    <h2 className="font-bold text-lg text-slate-900 mb-3 flex items-center gap-2">
-                      <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                      推荐方案
-                    </h2>
-                    <div className="space-y-4">
-                      {(PLANS[activeScenario as keyof typeof PLANS] || []).map((plan: any) => (
-                        <div 
-                          key={plan.id}
-                          onClick={() => setSelectedPlan(plan)}
-                          className="bg-white rounded-2xl overflow-hidden shadow-sm active:scale-98 transition-transform"
-                        >
-                          <div className="h-32 relative">
-                            <img src={plan.image} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                            <div className="absolute bottom-3 left-3 text-white">
-                              <h3 className="font-bold text-lg">{plan.title}</h3>
-                              <div className="flex gap-2 mt-1">
-                                {plan.tags.map((tag: string) => (
-                                  <span key={tag} className="text-xs opacity-90">{tag}</span>
-                                ))}
+                  {/* Scenario Tabs - Horizontal Scroll */}
+                  <div className="overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+                    <div className="flex gap-4 w-max">
+                      {SCENARIOS.map(scenario => {
+                        const Icon = scenario.icon;
+                        const isActive = activeScenario === scenario.id;
+                        return (
+                          <button
+                            key={scenario.id}
+                            onClick={() => setActiveScenario(scenario.id)}
+                            className={cn(
+                              "flex flex-col items-center gap-2 min-w-[60px] transition-all",
+                              isActive ? "scale-110" : "opacity-60 hover:opacity-100"
+                            )}
+                          >
+                            <div className={cn(
+                              "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-colors",
+                              isActive ? scenario.bg : "bg-white border border-slate-100"
+                            )}>
+                              <Icon className={cn("w-6 h-6", scenario.color)} />
+                            </div>
+                            <span className={cn(
+                              "text-xs font-medium",
+                              isActive ? "text-slate-900 font-bold" : "text-slate-500"
+                            )}>{scenario.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Meet Page Content - Scrollable */}
+              <div 
+                className="flex-1 overflow-y-auto p-4 pb-32 space-y-6"
+                onScroll={(e) => {
+                  const scrollTop = e.currentTarget.scrollTop;
+                  const isScrollingDown = scrollTop > lastScrollY.current;
+                  
+                  // Collapse header on scroll down, expand on scroll up (at top)
+                  if (scrollTop > 50 && isScrollingDown) {
+                    setIsMeetHeaderCollapsed(true);
+                  } else if (scrollTop < 20) {
+                    setIsMeetHeaderCollapsed(false);
+                  }
+                  
+                  lastScrollY.current = scrollTop;
+                }}
+              >
+                {/* Plans List */}
+                <div className="space-y-6">
+                  {PLANS[activeScenario as keyof typeof PLANS]?.map((plan: any) => (
+                    <div 
+                      key={plan.id}
+                      className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100"
+                      onClick={() => setSelectedPlan(plan)}
+                    >
+                      {/* Plan Header */}
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-slate-900 mb-1">{plan.title}</h3>
+                          <div className="flex gap-2">
+                            {plan.tags.map((tag: string) => (
+                              <span key={tag} className="text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center">
+                          <ChevronRight className="w-5 h-5 text-slate-400" />
+                        </div>
+                      </div>
+
+                      {/* Plan Steps Visual */}
+                      <div className="relative mb-4">
+                        {/* Connecting Line */}
+                        <div className="absolute top-6 left-4 right-4 h-0.5 bg-slate-100 -z-10" />
+                        
+                        <div className="flex justify-between">
+                          {plan.steps.map((step: any, index: number) => (
+                            <div key={index} className="flex flex-col items-center gap-2 bg-white px-2">
+                              <div className="w-12 h-12 rounded-full bg-white border-2 border-slate-100 shadow-sm flex items-center justify-center text-xl">
+                                {step.icon}
+                              </div>
+                              <div className="text-center">
+                                <div className="text-xs font-bold text-slate-900">{step.label}</div>
+                                <div className="text-[10px] text-slate-400">{step.desc}</div>
                               </div>
                             </div>
-                          </div>
-                          <div className="p-3 flex justify-between items-center">
-                            <div className="flex -space-x-2">
-                              {plan.steps.map((step: any, idx: number) => (
-                                <div key={idx} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-xs shadow-sm z-10">
-                                  {step.icon}
-                                </div>
-                              ))}
-                            </div>
-                            <span className="text-xs text-blue-500 font-bold flex items-center">
-                              查看详情 <ChevronRight className="w-3 h-3" />
-                            </span>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                      
-                      {(!PLANS[activeScenario as keyof typeof PLANS] || PLANS[activeScenario as keyof typeof PLANS].length === 0) && (
-                        <div className="text-center py-8 text-slate-400 text-sm">
-                          暂无推荐方案，敬请期待...
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
 
-                  {/* Popular Shops */}
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                        <ShoppingBag className="w-5 h-5 text-red-500" />
-                        热门好店
-                      </h2>
-                      <button 
-                        onClick={() => setShowGroupBuying(true)}
-                        className="text-xs text-slate-500 flex items-center hover:text-slate-900"
-                      >
-                        查看全部 <ChevronRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      {[1, 2, 3, 4].map(i => (
-                        <div 
-                          key={i} 
-                          className="bg-white rounded-xl overflow-hidden shadow-sm active:scale-95 transition-transform"
-                          onClick={() => setSelectedShop({
-                            name: `微醺时刻 ${i}`,
-                            image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=400&fit=crop",
-                            rating: 4.8,
-                            price: 168,
-                            desc: "这里是店铺的详细介绍，环境优雅，适合约会..."
-                          })}
-                        >
-                          <div className="aspect-square bg-slate-200 relative">
-                            <img src={`https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop`} className="w-full h-full object-cover" />
-                            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md text-xs font-bold text-orange-500 flex items-center gap-0.5">
-                              <Star className="w-3 h-3 fill-orange-500" /> 4.8
-                            </div>
-                          </div>
-                          <div className="p-2">
-                            <h3 className="font-bold text-slate-900 text-sm truncate">微醺时刻 {i}</h3>
-                            <div className="flex items-center justify-between mt-1">
-                              <span className="text-xs text-slate-500">酒吧 • 1.2km</span>
-                              <span className="text-red-500 font-bold text-sm">¥168</span>
-                            </div>
-                          </div>
+                      {/* Plan Preview Image */}
+                      <div className="w-full h-32 rounded-2xl overflow-hidden relative">
+                        <img src={plan.image} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4">
+                          <span className="text-white text-sm font-bold flex items-center gap-1">
+                            查看详情 <ArrowRight className="w-4 h-4" />
+                          </span>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </div>
+                  ))}
+
+                  {(!PLANS[activeScenario as keyof typeof PLANS] || PLANS[activeScenario as keyof typeof PLANS].length === 0) && (
+                    <div className="text-center py-12 text-slate-400">
+                      <p>该场景暂无推荐方案</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Plan Detail Modal */}
-        <AnimatePresence>
-          {selectedPlan && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSelectedPlan(null)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-              />
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed inset-0 z-[70] bg-white flex flex-col"
-              >
-                {/* Header Image */}
-                <div className="relative h-64 shrink-0">
-                  <img src={selectedPlan.image} alt={selectedPlan.title} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
-                  
-                  {/* Back Button - CHANGED to ArrowLeft */}
-                  <button 
-                    onClick={() => setSelectedPlan(null)}
-                    className="absolute top-4 left-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-colors z-50"
-                    style={{ marginTop: 'env(safe-area-inset-top)' }}
-                  >
-                    <ArrowLeft className="w-6 h-6" />
-                  </button>
-
-                  {/* Title Area */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h2 className="text-2xl font-bold text-white mb-2">{selectedPlan.title}</h2>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedPlan.tags.map((tag: string) => (
-                        <span key={tag} className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-medium">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto bg-slate-50">
-                  <div className="p-6 space-y-6">
-                    {/* Steps */}
-                    <div className="bg-white rounded-2xl p-6 shadow-sm">
-                      <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                        <span className="w-1 h-4 bg-blue-500 rounded-full" />
-                        流程安排
-                      </h3>
-                      <div className="space-y-6 relative">
-                        {/* Connecting Line */}
-                        <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-100" />
-                        
-                        {selectedPlan.steps.map((step: any, idx: number) => (
-                          <div key={idx} className="relative flex gap-4">
-                            <div className="w-10 h-10 rounded-full bg-white border-2 border-blue-100 flex items-center justify-center text-lg shadow-sm z-10">
-                              {step.icon}
-                            </div>
-                            <div className="flex-1 pt-1">
-                              <h4 className="font-bold text-slate-900">{step.label}</h4>
-                              <p className="text-sm text-slate-500 mt-1">{step.desc}</p>
-                              
-                              {/* Recommended Shop for this step */}
-                              <div className="mt-3 bg-slate-50 rounded-xl p-3 flex gap-3 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => window.location.href = `/shop/${idx + 1}`}>
-                                <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden shrink-0">
-                                  <img src={`https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop`} className="w-full h-full object-cover" />
-                                </div>
-                                <div className="flex-1 min-w-0 flex justify-between items-center">
-                                  <div>
-                                    <div className="font-bold text-slate-900 text-sm">推荐店铺 {idx + 1}</div>
-                                    <div className="text-xs text-slate-400 mt-0.5">人均 ¥{100 * (idx + 1)}</div>
-                                  </div>
-                                  <ChevronRight className="w-4 h-4 text-slate-400" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Tips */}
-                    <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
-                      <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
-                        <span className="text-lg">💡</span>
-                        小贴士
-                      </h3>
-                      <p className="text-sm text-blue-700 leading-relaxed">
-                        建议提前2天预订餐厅位置。如果是周末出行，记得查看路况信息，预留充足的通勤时间。
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom Action Bar */}
-                <div className="bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                  <div className="flex gap-4">
-                    <button className="flex-1 py-3.5 bg-slate-100 text-slate-900 font-bold rounded-2xl active:scale-95 transition-transform">
-                      分享给好友
-                    </button>
-                    <button className="flex-1 py-3.5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform">
-                      一键发起
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Shop Details Modal */}
-        <AnimatePresence>
-          {selectedShop && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSelectedShop(null)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-              />
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed inset-0 z-[70] bg-white flex flex-col"
-              >
-                {/* Header Image */}
-                <div className="relative h-64 shrink-0">
-                  <img src={selectedShop.image} alt={selectedShop.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
-                  
-                  {/* Back Button */}
-                  <button 
-                    onClick={() => setSelectedShop(null)}
-                    className="absolute top-4 left-4 p-2 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/30 transition-colors z-50"
-                    style={{ marginTop: 'env(safe-area-inset-top)' }}
-                  >
-                    <ArrowLeft className="w-6 h-6" />
-                  </button>
-
-                  {/* Title Area */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h2 className="text-2xl font-bold text-white mb-2">{selectedShop.name}</h2>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedShop.tags?.map((tag: string) => (
-                        <span key={tag} className="px-2 py-1 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-medium">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto bg-slate-50">
-                  <div className="p-6 space-y-6">
-                    <div className="bg-white rounded-2xl p-6 shadow-sm">
-                      <h3 className="font-bold text-slate-900 mb-2">店铺介绍</h3>
-                      <p className="text-slate-600 leading-relaxed">{selectedShop.desc}</p>
-                      <div className="mt-4 flex items-center gap-2">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-bold text-slate-900">{selectedShop.rating}</span>
-                        <span className="text-slate-400 text-sm">/ 5.0</span>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white rounded-2xl p-6 shadow-sm">
-                      <h3 className="font-bold text-slate-900 mb-4">套餐详情</h3>
-                      <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl">
-                        <div>
-                          <div className="font-bold text-slate-900">双人微醺套餐</div>
-                          <div className="text-sm text-slate-500 mt-1">含2杯特调鸡尾酒 + 小食拼盘</div>
-                        </div>
-                        <div className="text-xl font-bold text-red-500">¥{selectedShop.price}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom Action Bar */}
-                <div className="bg-white border-t border-slate-100 p-4 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                  <button className="w-full py-3.5 bg-red-500 text-white font-bold rounded-2xl shadow-lg shadow-red-200 active:scale-95 transition-transform">
-                    立即购买
-                  </button>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Group Buying List Modal */}
-        <AnimatePresence>
-          {showGroupBuying && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowGroupBuying(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-              />
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed inset-0 z-[70] bg-white flex flex-col"
-              >
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
-                  <h3 className="font-bold text-lg text-slate-900">热门团购</h3>
-                  <button onClick={() => setShowGroupBuying(false)} className="p-2 hover:bg-slate-100 rounded-full">
-                    <X className="w-5 h-5 text-slate-500" />
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-                  <div className="space-y-4">
-                    {[1, 2, 3, 4, 5].map(i => (
-                      <div key={i} className="bg-white rounded-2xl p-4 shadow-sm flex gap-4">
-                        <div className="w-24 h-24 bg-slate-200 rounded-xl overflow-hidden shrink-0">
-                          <img src={`https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=200&h=200&fit=crop`} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-slate-900 mb-1">超值双人餐 {i}</h4>
-                          <p className="text-xs text-slate-500 mb-2">某某餐厅 • 距离1.2km</p>
-                          <div className="flex items-end justify-between">
-                            <div className="text-red-500 font-bold text-lg">¥168 <span className="text-xs text-slate-400 font-normal line-through">¥298</span></div>
-                            <button className="px-4 py-1.5 bg-red-500 text-white text-xs font-bold rounded-full">抢购</button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
       </div>
     </Layout>
   );
