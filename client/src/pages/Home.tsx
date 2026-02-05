@@ -363,6 +363,22 @@ export default function Home() {
 
     // Add markers based on active tab
     let currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
+
+    // Force pan to first marker if available to ensure visibility
+    if (currentMarkers.length > 0 && mapInstance) {
+      const firstMarker = currentMarkers[0];
+      // Only pan if the map center is far away (e.g. > 1km) or on initial load
+      // For now, we'll just pan to the center of the markers to be safe
+      const bounds = new google.maps.LatLngBounds();
+      currentMarkers.forEach((m: any) => bounds.extend({ lat: m.lat, lng: m.lng }));
+      mapInstance.fitBounds(bounds);
+      
+      // Avoid zooming in too close
+      const listener = google.maps.event.addListener(mapInstance, "idle", () => { 
+        if (mapInstance.getZoom()! > 16) mapInstance.setZoom(16); 
+        google.maps.event.removeListener(listener); 
+      });
+    }
     
     // Apply gender filter for encounter tab
     if (activeTab === "encounter") {
