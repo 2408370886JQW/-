@@ -83,7 +83,7 @@ const MERCHANTS = [
     price: 320,
     distance: "500m",
     tags: ["大...", "500m"],
-    image: "/images/category-food.jpg",
+    image: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/bpRqDMEYDEAhvdIV.jpg",
     isAd: true,
     adTitle: "猜你喜欢",
     coupon: {
@@ -100,7 +100,7 @@ const MERCHANTS = [
     price: 280,
     distance: "1.2km",
     tags: ["高空", "鸡尾酒", "爵士乐"],
-    image: "/images/category-coffee.jpg",
+    image: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/XOwNESyTvDvoTIYT.jpg",
     deals: [
       { title: "云端微醺双人...", price: 398, originalPrice: 588 },
       { title: "经典鸡尾酒2杯", price: 128, originalPrice: 198 },
@@ -113,7 +113,7 @@ const MERCHANTS = [
     price: 450,
     distance: "2.1km",
     tags: ["花园", "法餐", "露台"],
-    image: "/images/category-exhibition.jpg",
+    image: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/HbmJXeYcBBinWfRt.jpg",
     deals: [
       { title: "法式浪漫双人餐", price: 888, originalPrice: 1288 },
     ],
@@ -270,7 +270,7 @@ export default function MerchantDetailPage() {
             {/* 顶部Banner与筛选 */}
             <div className="relative mb-4 rounded-xl overflow-hidden h-32">
               <img 
-                src="/images/hero-banner.jpg" 
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/XlfUrRWZauqFhOwG.jpg" 
                 alt="Banner" 
                 className="w-full h-full object-cover"
               />
