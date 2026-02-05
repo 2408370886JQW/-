@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
+import StoreMode from "./StoreMode";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter } from "lucide-react";
@@ -182,6 +183,7 @@ export default function Home() {
   // State for Nav Hiding
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [isMeetHeaderCollapsed, setIsMeetHeaderCollapsed] = useState(false);
+  const [showStoreMode, setShowStoreMode] = useState(false);
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
   const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -837,145 +839,34 @@ export default function Home() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="absolute inset-0 z-20 bg-slate-50 flex flex-col"
             >
-              {/* Meet Page Header - Collapsible */}
-              <motion.div 
-                className="bg-white z-30 shadow-sm flex-shrink-0"
-                animate={{ 
-                  height: isMeetHeaderCollapsed ? "auto" : "auto",
-                }}
-              >
-                <div className="pt-safe px-4 pb-2">
-                  {/* Search Bar */}
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4">
-                      <Search className="w-4 h-4 text-slate-400 mr-2" />
-                      <input 
-                        type="text"
-                        placeholder="搜索套餐、商户"
-                        className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-                        <MapPin className="w-5 h-5 text-slate-600" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Scenario Tabs - Horizontal Scroll */}
-                  <div className="overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
-                    <div className="flex gap-4 w-max">
-                      {SCENARIOS.map(scenario => {
-                        const Icon = scenario.icon;
-                        const isActive = activeScenario === scenario.id;
-                        return (
-                          <button
-                            key={scenario.id}
-                            onClick={() => setActiveScenario(scenario.id)}
-                            className={cn(
-                              "flex flex-col items-center gap-2 min-w-[60px] transition-all",
-                              isActive ? "scale-110" : "opacity-60 hover:opacity-100"
-                            )}
-                          >
-                            <div className={cn(
-                              "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-colors",
-                              isActive ? scenario.bg : "bg-white border border-slate-100"
-                            )}>
-                              <Icon className={cn("w-6 h-6", scenario.color)} />
-                            </div>
-                            <span className={cn(
-                              "text-xs font-medium",
-                              isActive ? "text-slate-900 font-bold" : "text-slate-500"
-                            )}>{scenario.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Meet Page Content - Scrollable */}
-              <div 
-                className="flex-1 overflow-y-auto p-4 pb-32 space-y-6"
-                onScroll={(e) => {
-                  const scrollTop = e.currentTarget.scrollTop;
-                  const isScrollingDown = scrollTop > lastScrollY.current;
-                  
-                  // Collapse header on scroll down, expand on scroll up (at top)
-                  if (scrollTop > 50 && isScrollingDown) {
-                    setIsMeetHeaderCollapsed(true);
-                  } else if (scrollTop < 20) {
-                    setIsMeetHeaderCollapsed(false);
-                  }
-                  
-                  lastScrollY.current = scrollTop;
-                }}
-              >
-                {/* Plans List */}
-                <div className="space-y-6">
-                  {PLANS[activeScenario as keyof typeof PLANS]?.map((plan: any) => (
-                    <div 
-                      key={plan.id}
-                      className="bg-white rounded-3xl p-4 shadow-sm border border-slate-100"
-                      onClick={() => setSelectedPlan(plan)}
+              {showStoreMode ? (
+                <StoreMode onExit={() => setShowStoreMode(false)} />
+              ) : (
+                <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14">
+                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6">
+                    <h2 className="text-2xl font-bold mb-2">到店相见</h2>
+                    <p className="text-blue-100 mb-6">扫码解锁专属优惠与社交玩法</p>
+                    <button 
+                      onClick={() => setShowStoreMode(true)}
+                      className="bg-white text-blue-600 font-bold px-6 py-3 rounded-full shadow-md active:scale-95 transition-transform flex items-center gap-2"
                     >
-                      {/* Plan Header */}
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-900 mb-1">{plan.title}</h3>
-                          <div className="flex gap-2">
-                            {plan.tags.map((tag: string) => (
-                              <span key={tag} className="text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center">
-                          <ChevronRight className="w-5 h-5 text-slate-400" />
-                        </div>
+                      <Camera className="w-5 h-5" />
+                      模拟扫码进店
+                    </button>
+                  </div>
+                  
+                  <h3 className="font-bold text-slate-900 mb-4">推荐店铺</h3>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+                        <div className="h-32 bg-slate-200 rounded-lg mb-3"></div>
+                        <div className="h-4 w-2/3 bg-slate-200 rounded mb-2"></div>
+                        <div className="h-3 w-1/2 bg-slate-100 rounded"></div>
                       </div>
-
-                      {/* Plan Steps Visual */}
-                      <div className="relative mb-4">
-                        {/* Connecting Line */}
-                        <div className="absolute top-6 left-4 right-4 h-0.5 bg-slate-100 -z-10" />
-                        
-                        <div className="flex justify-between">
-                          {plan.steps.map((step: any, index: number) => (
-                            <div key={index} className="flex flex-col items-center gap-2 bg-white px-2">
-                              <div className="w-12 h-12 rounded-full bg-white border-2 border-slate-100 shadow-sm flex items-center justify-center text-xl">
-                                {step.icon}
-                              </div>
-                              <div className="text-center">
-                                <div className="text-xs font-bold text-slate-900">{step.label}</div>
-                                <div className="text-[10px] text-slate-400">{step.desc}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Plan Preview Image */}
-                      <div className="w-full h-32 rounded-2xl overflow-hidden relative">
-                        <img src={plan.image} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-4">
-                          <span className="text-white text-sm font-bold flex items-center gap-1">
-                            查看详情 <ArrowRight className="w-4 h-4" />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {(!PLANS[activeScenario as keyof typeof PLANS] || PLANS[activeScenario as keyof typeof PLANS].length === 0) && (
-                    <div className="text-center py-12 text-slate-400">
-                      <p>该场景暂无推荐方案</p>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
