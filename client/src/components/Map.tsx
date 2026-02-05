@@ -120,6 +120,7 @@ interface MapViewProps {
   initialZoom?: number;
   onMapReady?: (map: google.maps.Map) => void;
   children?: React.ReactNode;
+  markers?: any[]; // Added to allow passing markers for dependency tracking if needed, though not used internally
 }
 
 export default function MapView({

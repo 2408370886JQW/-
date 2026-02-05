@@ -161,6 +161,7 @@ export default function Home() {
   
   // New state for Meet page
   const [activeScenario, setActiveScenario] = useState("date");
+  const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
 
   // State for Friend Card and Dynamics Detail
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
@@ -351,8 +352,18 @@ export default function Home() {
     }
 
     // Add markers based on active tab
-    const currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
+    let currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
     
+    // Apply gender filter for encounter tab
+    if (activeTab === "encounter") {
+      currentMarkers = currentMarkers.filter((m: any) => {
+        if (genderFilter === "all") return true;
+        if (genderFilter === "male") return m.gender === "male" || m.gender === "Man";
+        if (genderFilter === "female") return m.gender === "female" || m.gender === "Woman";
+        return true;
+      });
+    }
+
     currentMarkers.forEach((marker: any) => {
       // Filter out offline users > 24h (simulated by checking if status is 'offline' and not explicitly marked as recent)
       // In a real app, we would check a timestamp. Here we assume 'offline' means > 24h unless we have other data.
@@ -458,7 +469,7 @@ export default function Home() {
     return () => {
       newOverlays.forEach(overlay => overlay.setMap(null));
     };
-  }, [mapInstance, activeTab, markerData]);
+  }, [mapInstance, activeTab, markerData, genderFilter]);
 
   return (
     <Layout showNav={isNavVisible}>
@@ -706,8 +717,52 @@ export default function Home() {
 
         {/* Map Container - FIXED: Ensure it takes full space and has correct z-index */}
         <div className="absolute inset-0 z-0">
+          {/* Gender Filter Controls */}
+          {activeTab === "encounter" && (
+            <div className="absolute top-28 left-4 z-10 flex flex-col gap-2">
+              <button 
+                onClick={() => setGenderFilter("all")}
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all",
+                  genderFilter === "all" ? "bg-slate-900 text-white" : "bg-white text-slate-600"
+                )}
+              >
+                <Users className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => setGenderFilter("male")}
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all",
+                  genderFilter === "male" ? "bg-blue-500 text-white" : "bg-white text-blue-500"
+                )}
+              >
+                <span className="font-bold text-lg">♂</span>
+              </button>
+              <button 
+                onClick={() => setGenderFilter("female")}
+                className={cn(
+                  "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all",
+                  genderFilter === "female" ? "bg-pink-500 text-white" : "bg-white text-pink-500"
+                )}
+              >
+                <span className="font-bold text-lg">♀</span>
+              </button>
+            </div>
+          )}
+
           <MapView 
             className="w-full h-full"
+            markers={
+              activeTab === "encounter" ? markerData.encounter.filter(m => {
+                if (genderFilter === "all") return true;
+                if (genderFilter === "male") return m.gender === "male" || m.gender === "Man";
+                if (genderFilter === "female") return m.gender === "female" || m.gender === "Woman";
+                return true;
+              }) :
+              activeTab === "friends" ? markerData.friends :
+              activeTab === "moments" ? markerData.moments :
+              markerData.meet
+            }
             onMapReady={(map) => {
               setMapInstance(map);
               map.setCenter({ lat: 39.9042, lng: 116.4074 });
