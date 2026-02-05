@@ -142,10 +142,13 @@ export default function MapView({
     map.current = new window.google.maps.Map(mapContainer.current, {
       zoom: initialZoom,
       center: initialCenter,
-      mapTypeControl: true,
-      fullscreenControl: true,
-      zoomControl: true,
-      streetViewControl: true,
+      mapTypeControl: false,
+      fullscreenControl: false,
+      zoomControl: false,
+      streetViewControl: false,
+      scaleControl: false,
+      rotateControl: false,
+      panControl: false,
       mapId: "DEMO_MAP_ID",
       gestureHandling: "greedy", // Enable single-finger panning
     });
