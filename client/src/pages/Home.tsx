@@ -162,6 +162,7 @@ export default function Home() {
   // New state for Meet page
   const [activeScenario, setActiveScenario] = useState("date");
   const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
   // State for Friend Card and Dynamics Detail
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
@@ -365,15 +366,12 @@ export default function Home() {
     }
 
     currentMarkers.forEach((marker: any) => {
-      // Filter out offline users > 24h (simulated by checking if status is 'offline' and not explicitly marked as recent)
-      // In a real app, we would check a timestamp. Here we assume 'offline' means > 24h unless we have other data.
-      // However, the requirement says "offline > 24h should not show".
-      // Let's assume 'offline' status in our mock data means > 24h offline, 
-      // and 'recent' means < 1h offline (yellow), and 'online' means online (green).
-      // So we should NOT show 'offline' markers on the map.
-      if ((marker.type === 'encounter' || marker.type === 'friend') && marker.status === 'offline') {
-        return;
-      }
+      // Filter out offline users > 24h
+      // We assume 'offline' status means within 24h (gray dot), and we filter out those explicitly marked as 'inactive' or similar if we had that state.
+      // For now, we show 'offline' as gray dots as requested.
+      // if ((marker.type === 'encounter' || marker.type === 'friend') && marker.status === 'offline') {
+      //   return;
+      // }
       const div = document.createElement('div');
       div.style.cursor = 'pointer';
       
@@ -612,6 +610,133 @@ export default function Home() {
           )}
         </AnimatePresence>
 
+        {/* Filter Modal */}
+        <AnimatePresence>
+          {showFilterModal && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowFilterModal(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 pb-safe"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-slate-900">筛选</h3>
+                  <button onClick={() => setShowFilterModal(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                    <X className="w-5 h-5 text-slate-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Gender Filter */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">性别</label>
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={() => setGenderFilter("all")}
+                        className={cn(
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all",
+                          genderFilter === "all" ? "bg-slate-900 text-white shadow-lg" : "bg-slate-100 text-slate-600"
+                        )}
+                      >
+                        全部
+                      </button>
+                      <button 
+                        onClick={() => setGenderFilter("male")}
+                        className={cn(
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1",
+                          genderFilter === "male" ? "bg-blue-500 text-white shadow-lg shadow-blue-200" : "bg-slate-100 text-slate-600"
+                        )}
+                      >
+                        <span className="text-lg leading-none">♂</span> 男生
+                      </button>
+                      <button 
+                        onClick={() => setGenderFilter("female")}
+                        className={cn(
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1",
+                          genderFilter === "female" ? "bg-pink-500 text-white shadow-lg shadow-pink-200" : "bg-slate-100 text-slate-600"
+                        )}
+                      >
+                        <span className="text-lg leading-none">♀</span> 女生
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Age Filter (Mock) */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">年龄段</label>
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                      {["不限", "18-22", "23-26", "27-30", "30+"].map((age, i) => (
+                        <button 
+                          key={age}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+                            i === 0 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
+                          )}
+                        >
+                          {age}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Distance Filter (Mock) */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">距离</label>
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                      {["附近", "1km", "3km", "5km", "同城"].map((dist, i) => (
+                        <button 
+                          key={dist}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+                            i === 0 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
+                          )}
+                        >
+                          {dist}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Zodiac Filter (Mock) */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">星座</label>
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                      {["不限", "白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"].map((zodiac, i) => (
+                        <button 
+                          key={zodiac}
+                          className={cn(
+                            "px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors",
+                            i === 0 ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"
+                          )}
+                        >
+                          {zodiac}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Apply Button */}
+                  <button 
+                    onClick={() => setShowFilterModal(false)}
+                    className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform mt-4"
+                  >
+                    确认筛选
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         {/* Friend Card Popup */}
         <AnimatePresence>
           {selectedFriend && (
@@ -718,35 +843,19 @@ export default function Home() {
 
         {/* Map Container - FIXED: Ensure it takes full space and has correct z-index */}
         <div className="absolute inset-0 z-0">
-          {/* Gender Filter Controls */}
+          {/* Advanced Filter Controls */}
           {activeTab === "encounter" && (
             <div className="absolute top-36 left-4 z-10 flex flex-col gap-2">
               <button 
-                onClick={() => setGenderFilter("all")}
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all",
-                  genderFilter === "all" ? "bg-slate-900 text-white" : "bg-white text-slate-600"
-                )}
+                onClick={() => setShowFilterModal(true)}
+                className="w-10 h-10 rounded-full bg-white text-slate-600 flex items-center justify-center shadow-lg transition-all active:scale-95"
               >
-                <Users className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => setGenderFilter("male")}
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all",
-                  genderFilter === "male" ? "bg-blue-500 text-white" : "bg-white text-blue-500"
-                )}
-              >
-                <span className="font-bold text-lg leading-none flex items-center justify-center pb-0.5">♂</span>
-              </button>
-              <button 
-                onClick={() => setGenderFilter("female")}
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all",
-                  genderFilter === "female" ? "bg-pink-500 text-white" : "bg-white text-pink-500"
-                )}
-              >
-                <span className="font-bold text-lg leading-none flex items-center justify-center pb-0.5">♀</span>
+                <div className="relative">
+                  <Users className="w-5 h-5" />
+                  {genderFilter !== "all" && (
+                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                  )}
+                </div>
               </button>
             </div>
           )}
