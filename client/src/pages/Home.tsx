@@ -411,7 +411,7 @@ export default function Home() {
           >
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              "border-blue-500"
+              (marker.gender === "female" || marker.gender === "Woman") ? "border-pink-500" : "border-blue-500"
             )}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
@@ -433,7 +433,7 @@ export default function Home() {
           >
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              "border-blue-500"
+              (marker.gender === "female" || marker.gender === "Woman") ? "border-pink-500" : "border-blue-500"
             )}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
