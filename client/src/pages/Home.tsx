@@ -340,6 +340,8 @@ export default function Home() {
             this.content.style.position = 'absolute';
             this.content.style.left = pixel.x + 'px';
             this.content.style.top = pixel.y + 'px';
+            // Ensure z-index is high enough to be visible
+            this.content.style.zIndex = '100';
             this.content.style.transform = 'translate(-50%, -100%)'; // Center horizontally, anchor at bottom
           }
         }
