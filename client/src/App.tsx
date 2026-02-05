@@ -23,12 +23,14 @@ import StoreHomePage from "./pages/StoreHomePage";
 import StoreScenarioPage from "./pages/StoreScenarioPage";
 import StorePackageDetailPage from "./pages/StorePackageDetailPage";
 import StorePaymentSuccessPage from "./pages/StorePaymentSuccessPage";
+import ScanSimulationPage from "./pages/ScanSimulationPage";
 
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/scan-simulation" component={ScanSimulationPage} />
       <Route path="/search" component={SearchResults} />
       <Route path="/meet" component={MeetPage} />
       <Route path="/appointment/create" component={CreateAppointmentPage} />
