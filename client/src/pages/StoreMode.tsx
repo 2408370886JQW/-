@@ -257,14 +257,16 @@ export default function StoreMode({ onExit }: StoreModeProps) {
     );
   }
 
-  // 6. Payment (Mock)
-  if (step === "payment") {
-    // Auto advance to success after 2 seconds
-    useEffect(() => {
+  // --- 4. Payment Logic ---
+  useEffect(() => {
+    if (step === "payment") {
       const timer = setTimeout(() => setStep("success"), 2000);
       return () => clearTimeout(timer);
-    }, []);
+    }
+  }, [step]);
 
+  // 6. Payment (Mock)
+  if (step === "payment") {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center">
         <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
