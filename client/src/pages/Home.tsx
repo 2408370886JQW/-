@@ -668,7 +668,8 @@ export default function Home() {
                         selectedFriend.status === "online" ? "bg-green-500" : 
                         selectedFriend.status === "recent" ? "bg-yellow-500" : "bg-gray-500"
                       )} />
-                      {selectedFriend.lastSeen || (selectedFriend.status === "online" ? "在线" : "离线")}
+                      {selectedFriend.status === "online" ? "在线" : 
+                       selectedFriend.status === "recent" ? "15-20分钟以内在线" : "离线"}
                     </span>
                   </div>
 
@@ -719,7 +720,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           {/* Gender Filter Controls */}
           {activeTab === "encounter" && (
-            <div className="absolute top-28 left-4 z-10 flex flex-col gap-2">
+            <div className="absolute top-36 left-4 z-10 flex flex-col gap-2">
               <button 
                 onClick={() => setGenderFilter("all")}
                 className={cn(
@@ -736,7 +737,7 @@ export default function Home() {
                   genderFilter === "male" ? "bg-blue-500 text-white" : "bg-white text-blue-500"
                 )}
               >
-                <span className="font-bold text-lg">♂</span>
+                <span className="font-bold text-lg leading-none flex items-center justify-center pb-0.5">♂</span>
               </button>
               <button 
                 onClick={() => setGenderFilter("female")}
@@ -745,7 +746,7 @@ export default function Home() {
                   genderFilter === "female" ? "bg-pink-500 text-white" : "bg-white text-pink-500"
                 )}
               >
-                <span className="font-bold text-lg">♀</span>
+                <span className="font-bold text-lg leading-none flex items-center justify-center pb-0.5">♀</span>
               </button>
             </div>
           )}
