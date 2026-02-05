@@ -391,6 +391,7 @@ export default function Home() {
     }
 
     currentMarkers.forEach((marker: any) => {
+      console.log(`Rendering marker ${marker.id}: type=${marker.type}, gender=${marker.gender}`);
       // Filter out offline users > 24h
       // We assume 'offline' status means within 24h (gray dot), and we filter out those explicitly marked as 'inactive' or similar if we had that state.
       // For now, we show 'offline' as gray dots as requested.
@@ -412,7 +413,8 @@ export default function Home() {
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
               (marker.gender === "female" || marker.gender === "Woman") ? "border-pink-500" : "border-blue-500"
-            )}>
+            )}
+            style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
             {/* Status Dot */}
@@ -434,7 +436,8 @@ export default function Home() {
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
               (marker.gender === "female" || marker.gender === "Woman") ? "border-pink-500" : "border-blue-500"
-            )}>
+            )}
+            style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
             {/* Status Dot */}
