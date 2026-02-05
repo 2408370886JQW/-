@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -534,6 +534,16 @@ export default function Home() {
             </div>
           </div>
         </motion.div>
+
+        {/* Filter Buttons */}
+        <div className="absolute top-32 left-4 z-10 flex flex-col gap-2">
+          <button 
+            onClick={() => setShowFilterModal(true)}
+            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 active:scale-95 transition-transform"
+          >
+            <Filter className="w-5 h-5" />
+          </button>
+        </div>
 
         {/* Friend List Popup */}
         <AnimatePresence>
