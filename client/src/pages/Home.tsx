@@ -156,7 +156,14 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
-  const [markerData, setMarkerData] = useState(INITIAL_MARKERS);
+  const [markerData, setMarkerData] = useState<any>(INITIAL_MARKERS);
+
+  // Force reset marker data on mount to ensure it's not empty
+  useEffect(() => {
+    if (!markerData.encounter || markerData.encounter.length === 0) {
+      setMarkerData(INITIAL_MARKERS);
+    }
+  }, []);
   const [overlays, setOverlays] = useState<google.maps.OverlayView[]>([]);
   
   // New state for Meet page
@@ -185,7 +192,7 @@ export default function Home() {
       const newMoment = e.detail;
       
       // Add to local state
-      setMarkerData(prev => ({
+      setMarkerData((prev: any) => ({
         ...prev,
         moments: [
           {
@@ -275,7 +282,7 @@ export default function Home() {
     const handleNewMoment = (event: CustomEvent) => {
       const newMoment = event.detail;
       // Add new moment to marker data
-      setMarkerData(prev => ({
+      setMarkerData((prev: any) => ({
         ...prev,
         moments: [
           ...prev.moments,
