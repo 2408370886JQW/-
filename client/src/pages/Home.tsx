@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, SlidersHorizontal } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -726,15 +726,13 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Apply Button - Fixed at bottom */}
-                  <div className="sticky bottom-0 left-0 right-0 pt-4 bg-white border-t border-slate-50 mt-4">
-                    <button 
-                      onClick={() => setShowFilterModal(false)}
-                      className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform"
-                    >
-                      确认筛选
-                    </button>
-                  </div>
+                  {/* Apply Button */}
+                  <button 
+                    onClick={() => setShowFilterModal(false)}
+                    className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-transform mt-4"
+                  >
+                    确认筛选
+                  </button>
                 </div>
               </motion.div>
             </>
@@ -855,7 +853,7 @@ export default function Home() {
                 className="w-10 h-10 rounded-full bg-white text-slate-600 flex items-center justify-center shadow-lg transition-all active:scale-95"
               >
                 <div className="relative">
-                  <SlidersHorizontal className="w-5 h-5" />
+                  <Users className="w-5 h-5" />
                   {genderFilter !== "all" && (
                     <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
                   )}
