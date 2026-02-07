@@ -26,6 +26,14 @@ export default function StoreMode({ onExit }: StoreModeProps) {
 
   // --- 4. Payment Logic (Moved to top level) ---
   const [paymentState, setPaymentState] = useState<"idle" | "scanning" | "processing" | "success">("idle");
+  const [isUnfoldingMap, setIsUnfoldingMap] = useState(false);
+
+  const handleGoEncounter = () => {
+    setIsUnfoldingMap(true);
+    setTimeout(() => {
+      onExit(true);
+    }, 1500); // Wait for animation to complete
+  };
   
   useEffect(() => {
     if (step === "payment") {
@@ -408,11 +416,25 @@ export default function StoreMode({ onExit }: StoreModeProps) {
               
               <div className="flex flex-col gap-4 pt-4">
                 <button 
-                  onClick={() => onExit(true)} // Pass true to redirect to map
-                  className="w-full flex items-center justify-between bg-slate-900 text-white p-5 rounded-xl active:scale-95 transition-all shadow-lg group"
+                  onClick={handleGoEncounter}
+                  className="w-full flex items-center justify-between bg-slate-900 text-white p-5 rounded-xl active:scale-95 transition-all shadow-lg group relative overflow-hidden"
                 >
-                  <span className="font-bold tracking-widest text-lg">去偶遇</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <span className="font-bold tracking-widest text-lg relative z-10">去偶遇</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
+                  
+                  {/* Map Unfold Animation Overlay */}
+                  <AnimatePresence>
+                    {isUnfoldingMap && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0, borderRadius: "100%" }}
+                        animate={{ scale: 30, opacity: 1, borderRadius: "0%" }}
+                        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                        className="absolute inset-0 bg-blue-500 z-20 flex items-center justify-center origin-center"
+                        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80')", backgroundSize: "cover", backgroundBlendMode: "multiply" }}
+                      >
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </button>
                 <button className="w-full flex items-center justify-between bg-white text-slate-600 p-5 rounded-xl border border-slate-200 active:scale-95 transition-all group">
                   <span className="font-bold tracking-widest text-lg">发布动态</span>
