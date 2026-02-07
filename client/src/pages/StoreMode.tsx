@@ -175,12 +175,12 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                   </div>
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                      <h4 className="text-lg font-bold text-slate-900">{pkg.title}</h4>
+                      <h4 className="text-lg font-bold text-slate-900 whitespace-pre-line">{pkg.title}</h4>
                       <div className="text-right">
                         <span className="text-lg font-bold text-slate-900">{pkg.price}</span>
                       </div>
                     </div>
-                    <p className="text-sm text-slate-500 leading-relaxed">
+                    <p className="text-sm text-slate-500 leading-relaxed whitespace-pre-line">
                       {pkg.recommendReason}
                     </p>
                   </div>
@@ -214,8 +214,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             <ul className="space-y-4">
               {selectedPackage.items.map((item: string, i: number) => (
                 <li key={i} className="flex items-center justify-between text-slate-600 border-b border-slate-50 pb-4 last:border-0">
-                  <span>{item.split(' x')[0]}</span>
-                  <span className="text-slate-400 font-light">x {item.split(' x')[1]}</span>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>

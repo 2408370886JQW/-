@@ -49,64 +49,64 @@ export const SCENARIO_ADVICE = {
 export const STORE_PACKAGES = [
   {
     id: "pkg_001",
-    title: "初见·双人轻食套餐",
+    title: "初见\n双人轻食",
     price: 198,
     originalPrice: 298,
     suitableFor: ["first_date", "couple"],
-    recommendReason: "分量适中，吃相优雅，包含两杯特调饮品。",
+    recommendReason: "分量适中\n吃相优雅\n包含\n两杯特调饮品",
     image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop",
     items: [
-      "牛油果大虾沙拉 x1",
-      "黑松露奶油意面 x1",
-      "特调无酒精鸡尾酒 x2",
-      "提拉米苏 x1"
+      "牛油果大虾沙拉",
+      "黑松露奶油意面",
+      "特调无酒精鸡尾酒",
+      "提拉米苏"
     ],
     rules: ["随时退", "免预约", "仅限堂食"]
   },
   {
     id: "pkg_002",
-    title: "热恋·豪华海陆双人餐",
+    title: "热恋\n海陆双人",
     price: 520,
     originalPrice: 888,
     suitableFor: ["couple"],
-    recommendReason: "仪式感拉满，包含M5和牛与波士顿龙虾。",
+    recommendReason: "仪式感拉满\n包含\nM5和牛\n波士顿龙虾",
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop",
     items: [
-      "M5澳洲和牛牛排 x1",
-      "芝士焗波士顿龙虾 x1",
-      "法式鹅肝 x2",
-      "红酒 x2"
+      "M5澳洲和牛牛排",
+      "芝士焗波士顿龙虾",
+      "法式鹅肝",
+      "红酒"
     ],
-    rules: ["需提前2小时预约", "随时退"]
+    rules: ["需提前预约", "随时退"]
   },
   {
     id: "pkg_003",
-    title: "闺蜜·精致下午茶",
+    title: "闺蜜\n精致下午茶",
     price: 168,
     originalPrice: 258,
     suitableFor: ["bestie"],
-    recommendReason: "超高颜值，每一款都超级出片！",
+    recommendReason: "超高颜值\n每一款\n都超级出片",
     image: "https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=400&h=300&fit=crop",
     items: [
-      "三层甜品塔 x1",
-      "英式红茶/咖啡 任选2",
-      "马卡龙 x2"
+      "三层甜品塔",
+      "英式红茶或咖啡",
+      "马卡龙"
     ],
     rules: ["随时退", "免预约"]
   },
   {
     id: "pkg_004",
-    title: "兄弟·大口吃肉拼盘",
+    title: "兄弟\n大口吃肉",
     price: 328,
     originalPrice: 468,
     suitableFor: ["bros"],
-    recommendReason: "肉量十足，配啤酒绝佳。",
+    recommendReason: "肉量十足\n配啤酒\n绝佳",
     image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=300&fit=crop",
     items: [
-      "德式烤猪肘 x1",
-      "混合香肠拼盘 x1",
-      "炸薯角 x1",
-      "精酿啤酒 x4"
+      "德式烤猪肘",
+      "混合香肠拼盘",
+      "炸薯角",
+      "精酿啤酒"
     ],
     rules: ["随时退", "免预约"]
   }
