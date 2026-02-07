@@ -837,7 +837,10 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="absolute inset-0 z-20 bg-slate-50 flex flex-col"
+              className={cn(
+                "absolute inset-0 bg-slate-50 flex flex-col",
+                showStoreMode ? "z-[100]" : "z-20"
+              )}
             >
               {showStoreMode ? (
                 <StoreMode onExit={(shouldRedirectToMap) => {
