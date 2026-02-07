@@ -86,42 +86,58 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         </div>
 
         {/* Overlay Layer (Relationship Selection Card) */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center p-6 bg-black/5">
+        <div className="absolute inset-0 z-10 flex items-center justify-center p-6 bg-black/10">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full bg-white rounded-3xl shadow-2xl p-8 border border-white/50 backdrop-blur-xl"
+            className="w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/50 backdrop-blur-xl"
           >
-            <div className="text-center mb-10">
-              <p className="text-slate-400 text-xs tracking-[0.2em] uppercase mb-3">Welcome</p>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">今天</h3>
-              <h3 className="text-2xl font-bold text-slate-900">和谁相见</h3>
+            {/* Store Context Image Header */}
+            <div className="h-32 bg-slate-100 relative">
+              <img 
+                src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1000&auto=format&fit=crop" 
+                className="w-full h-full object-cover opacity-90"
+                alt="Store Context"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                <div>
+                  <p className="text-white/80 text-xs tracking-widest mb-1">当前位置</p>
+                  <h3 className="text-white font-bold text-lg">{MOCK_STORE.name}</h3>
+                </div>
+              </div>
             </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              {RELATIONSHIP_OPTIONS.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleRelationshipSelect(option.id)}
-                  className="bg-slate-50 p-5 rounded-2xl border border-slate-100 active:scale-95 transition-all hover:bg-slate-100 flex flex-col items-center gap-3 group"
-                >
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-sm",
-                    option.color
-                  )}>
-                    <option.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <span className="text-sm font-bold text-slate-700 group-hover:text-slate-900">
-                    {option.label}
-                  </span>
+
+            <div className="p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">今天</h3>
+                <h3 className="text-2xl font-bold text-slate-900">和谁相见</h3>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {RELATIONSHIP_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleRelationshipSelect(option.id)}
+                    className="bg-slate-50 p-4 rounded-2xl border border-slate-200 active:scale-95 transition-all hover:bg-slate-100 flex flex-col items-center gap-3 group shadow-sm"
+                  >
+                    <div className={cn(
+                      "w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-md",
+                      option.color
+                    )}>
+                      <option.icon className="w-6 h-6 text-white drop-shadow-md" strokeWidth={2.5} />
+                    </div>
+                    <span className="text-sm font-bold text-slate-800 group-hover:text-slate-900">
+                      {option.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              
+              <div className="mt-8 text-center">
+                <button onClick={() => onExit()} className="text-slate-400 text-xs hover:text-slate-600 transition-colors font-medium">
+                  暂不进店
                 </button>
-              ))}
-            </div>
-            
-            <div className="mt-8 text-center">
-              <button onClick={() => onExit()} className="text-slate-400 text-xs hover:text-slate-600 transition-colors">
-                暂不进店
-              </button>
+              </div>
             </div>
           </motion.div>
         </div>
