@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 type FlowStep = "entry" | "login" | "home" | "scenario" | "package" | "payment" | "success";
 
 interface StoreModeProps {
-  onExit: (shouldRedirectToMap?: boolean) => void; // Callback to return to main app, optionally redirecting to map
+  onExit: () => void; // Callback to return to main app
 }
 
 export default function StoreMode({ onExit }: StoreModeProps) {
@@ -70,7 +70,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         >
           模拟扫码 (scene=store)
         </button>
-        <button onClick={() => onExit()} className="mt-6 text-slate-500 text-sm underline">
+        <button onClick={onExit} className="mt-6 text-slate-500 text-sm underline">
           返回主应用
         </button>
       </div>
@@ -241,16 +241,15 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         </div>
 
         {/* Bottom Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 flex items-center justify-between z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 flex items-center justify-between z-50">
           <div className="flex flex-col">
             <span className="text-xs text-slate-500">总计</span>
             <span className="text-xl font-bold text-red-600">¥{selectedPackage.price}</span>
           </div>
           <button 
             onClick={() => setStep("payment")}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-full shadow-lg active:scale-95 transition-all flex items-center gap-2"
+            className="bg-blue-600 text-white font-bold px-8 py-3 rounded-full shadow-lg active:scale-95 transition-all"
           >
-            <ShoppingBag className="w-4 h-4" />
             立即下单
           </button>
         </div>
@@ -295,18 +294,13 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             
             <div className="grid grid-cols-2 gap-3">
               <button 
-                onClick={() => {
-                  // Redirect to Map Tab (index 0)
-                  // We pass true to indicate we want to redirect to the map
-                  // @ts-ignore - Ignoring TS error for now as we updated the prop type in Home.tsx but maybe not the interface here yet
-                  onExit(true);
-                }} 
-                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl active:scale-95 transition-all shadow-md shadow-blue-200"
+                onClick={onExit} // Go to map
+                className="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 rounded-xl active:scale-95 transition-all"
               >
                 <Users className="w-4 h-4" />
                 看附近的人
               </button>
-              <button className="flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 rounded-xl border border-blue-100 active:scale-95 transition-all">
+              <button className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 font-bold py-3 rounded-xl border border-blue-100 active:scale-95 transition-all">
                 <Share2 className="w-4 h-4" />
                 发相见动态
               </button>
@@ -314,7 +308,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
           </div>
         </div>
 
-        <button onClick={() => onExit()} className="text-slate-400 text-sm mt-auto mb-8">
+        <button onClick={onExit} className="text-slate-400 text-sm mt-auto mb-8">
           返回首页
         </button>
       </div>
