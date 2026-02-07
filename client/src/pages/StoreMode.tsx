@@ -45,6 +45,14 @@ export default function StoreMode({ onExit }: StoreModeProps) {
     }
   }, [step, selectedRelationship]);
 
+  // --- 4. Payment Logic (Moved to top level) ---
+  useEffect(() => {
+    if (step === "payment") {
+      const timer = setTimeout(() => setStep("success"), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   const handleRelationshipSelect = (id: string) => {
     setSelectedRelationship(id);
     setShowRelationshipModal(false);
@@ -257,13 +265,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
     );
   }
 
-  // --- 4. Payment Logic ---
-  useEffect(() => {
-    if (step === "payment") {
-      const timer = setTimeout(() => setStep("success"), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
+
 
   // 6. Payment (Mock)
   if (step === "payment") {
