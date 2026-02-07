@@ -363,6 +363,15 @@ export default function Home() {
         const panes = this.getPanes();
         if (panes) {
           panes.overlayMouseTarget.appendChild(this.content);
+          
+          // Prevent click propagation from the overlay content to the map
+          // This is crucial to stop the map's click listener from firing when clicking a marker
+          ['click', 'mousedown', 'touchstart', 'pointerdown'].forEach(eventName => {
+            google.maps.event.addDomListener(this.content, eventName, (e: Event) => {
+              e.stopPropagation();
+              // e.preventDefault(); // Do not prevent default, otherwise buttons inside might not work
+            });
+          });
         }
       }
 
@@ -724,22 +733,22 @@ export default function Home() {
                       <button 
                         onClick={() => setGenderFilter("male")}
                         className={cn(
-                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1 relative",
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2",
                           genderFilter === "male" ? "bg-blue-500 text-white shadow-lg shadow-blue-200" : "bg-slate-100 text-slate-600"
                         )}
                       >
-                        <span className="text-lg leading-none flex items-center justify-center h-full absolute left-4 top-0 bottom-0">♂</span> 
-                        <span>男生</span>
+                        <span className="text-lg flex items-center justify-center h-5 w-5">♂</span> 
+                        <span className="flex items-center h-5">男生</span>
                       </button>
                       <button 
                         onClick={() => setGenderFilter("female")}
                         className={cn(
-                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1 relative",
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-2",
                           genderFilter === "female" ? "bg-pink-500 text-white shadow-lg shadow-pink-200" : "bg-slate-100 text-slate-600"
                         )}
                       >
-                        <span className="text-lg leading-none flex items-center justify-center h-full absolute left-4 top-0 bottom-0">♀</span> 
-                        <span>女生</span>
+                        <span className="text-lg flex items-center justify-center h-5 w-5">♀</span> 
+                        <span className="flex items-center h-5">女生</span>
                       </button>
                     </div>
                   </div>
@@ -811,6 +820,17 @@ export default function Home() {
               setSelectedFriend(null);
               setSelectedMoment(null);
               setIsNavVisible(true);
+            });
+            
+            // Disable default InfoWindow behavior to prevent unwanted popups
+            map.setOptions({
+              clickableIcons: false, // Disable POI clicks
+              disableDoubleClickZoom: false,
+              disableDefaultUI: true, // Disable all default UI including InfoWindows
+              zoomControl: false, // We can re-enable specific controls if needed
+              mapTypeControl: false,
+              streetViewControl: false,
+              fullscreenControl: false,
             });
           }}
         />
