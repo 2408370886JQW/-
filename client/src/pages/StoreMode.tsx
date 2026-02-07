@@ -132,7 +132,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   // 4. Scenario Page
   if (step === "scenario") {
     const advice = SCENARIO_ADVICE[selectedRelationship as keyof typeof SCENARIO_ADVICE];
-    const packages = STORE_PACKAGES.filter(p => p.suitableFor.includes(selectedRelationship!));
+    const packages = STORE_PACKAGES.filter(p => p.suitableFor.includes(selectedRelationship!)).slice(0, 3);
     const relLabel = RELATIONSHIP_OPTIONS.find(r => r.id === selectedRelationship)?.label;
 
     return (
@@ -395,7 +395,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                   onClick={() => onExit(true)} // Pass true to redirect to map
                   className="w-full flex items-center justify-between bg-slate-900 text-white p-5 rounded-xl active:scale-95 transition-all shadow-lg group"
                 >
-                  <span className="font-bold tracking-widest text-lg">偶遇</span>
+                  <span className="font-bold tracking-widest text-lg">进入偶遇地图</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button className="w-full flex items-center justify-between bg-white text-slate-600 p-5 rounded-xl border border-slate-200 active:scale-95 transition-all group">
