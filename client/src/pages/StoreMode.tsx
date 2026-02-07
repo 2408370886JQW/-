@@ -61,33 +61,51 @@ export default function StoreMode({ onExit }: StoreModeProps) {
 
 
 
-  // 3. Store Home (Transient state mostly, but renders structure)
+  // 3. Store Home (Embedded Relationship Selection)
   if (step === "home") {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-50 font-serif">
         <StoreHeader title={MOCK_STORE.name} onBack={() => onExit()} />
-        <div className="p-4">
-          <div className="bg-white rounded-xl p-6 shadow-sm text-center">
-            <p className="text-slate-500 mb-2">你正在</p>
-            <h2 className="text-xl font-bold mb-4">{MOCK_STORE.name}</h2>
-            <div className="flex justify-center gap-2 text-sm text-slate-400">
-              <MapPin className="w-4 h-4" /> {MOCK_STORE.address}
+        
+        <div className="p-6">
+          {/* Store Info Card */}
+          <div className="bg-white rounded-2xl p-8 shadow-sm mb-10 text-center border border-slate-100">
+            <p className="text-slate-400 text-sm mb-3 tracking-widest">你正在</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">{MOCK_STORE.name}</h2>
+            <div className="flex justify-center items-center gap-2 text-xs text-slate-400">
+              <MapPin className="w-3 h-3" /> 
+              <span>{MOCK_STORE.address}</span>
             </div>
           </div>
-          
-          {/* Start Meeting Button */}
-          <div className="mt-8 px-4">
-            <button 
-              onClick={() => setShowRelationshipModal(true)}
-              className="w-full bg-slate-900 text-white font-bold py-5 rounded-xl shadow-lg active:scale-95 transition-all tracking-widest flex items-center justify-center gap-2"
-            >
-              <span>开启</span>
-              <span className="w-1 h-1 bg-white rounded-full opacity-50"></span>
-              <span>相见</span>
-            </button>
+
+          {/* Embedded Relationship Selection */}
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-slate-900">今天</h3>
+              <h3 className="text-xl font-bold text-slate-900">和谁相见</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {RELATIONSHIP_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleRelationshipSelect(option.id)}
+                  className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 active:scale-95 transition-all hover:shadow-md flex flex-col items-start gap-3 group"
+                >
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
+                    option.color
+                  )}>
+                    <option.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-lg font-bold text-slate-800 group-hover:text-slate-900">
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <RelationshipModal isOpen={showRelationshipModal} onSelect={handleRelationshipSelect} />
       </div>
     );
   }
