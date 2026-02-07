@@ -241,7 +241,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         </div>
 
         {/* Bottom Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 flex items-center justify-between z-50">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 flex items-center justify-between z-[9999] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
           <div className="flex flex-col">
             <span className="text-xs text-slate-500">总计</span>
             <span className="text-xl font-bold text-red-600">¥{selectedPackage.price}</span>
