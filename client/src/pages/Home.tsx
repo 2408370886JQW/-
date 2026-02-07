@@ -916,7 +916,7 @@ export default function Home() {
                   {/* Back Button */}
                   <button 
                     onClick={() => setActiveTab("encounter")}
-                    className="absolute top-4 left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white z-10 active:scale-95 transition-transform"
+                    className="absolute top-4 left-4 p-2 bg-white shadow-sm border border-slate-100 rounded-full text-slate-900 z-10 active:scale-95 transition-transform"
                   >
                     <ArrowLeft className="w-6 h-6" />
                   </button>

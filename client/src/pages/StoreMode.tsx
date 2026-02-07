@@ -115,12 +115,12 @@ export default function StoreMode({ onExit }: StoreModeProps) {
               </div>
             </div>
 
-            <div className="p-8">
-              <div className="text-center mb-8">
+            <div className="p-8 h-full flex flex-col">
+              <div className="text-center mb-6 flex-shrink-0">
                 <h3 className="text-2xl font-bold text-slate-900">今天和谁相见</h3>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 overflow-y-auto no-scrollbar flex-1 pb-4">
                 {RELATIONSHIP_OPTIONS.map((option) => (
                   <button
                     key={option.id}
@@ -443,7 +443,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                   onClick={() => onExit("moments")}
                   className="w-full flex items-center justify-between bg-white text-slate-600 p-5 rounded-xl border border-slate-200 active:scale-95 transition-all group"
                 >
-                  <span className="font-bold tracking-widest text-lg">记录此刻</span>
+                  <span className="font-bold tracking-widest text-lg">打发你的等待时间</span>
                   <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
