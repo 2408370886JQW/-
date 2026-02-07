@@ -135,14 +135,17 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         {/* Scenario Advice */}
         <div className="p-6">
           <div className="bg-white rounded-2xl p-8 shadow-sm mb-10 border border-slate-100">
-            <div className="space-y-2 mb-8">
-              <h3 className="text-2xl font-bold text-slate-900">{advice.title}</h3>
-              <p className="text-slate-400 text-sm">{advice.duration}</p>
+            <div className="space-y-4 mb-10">
+              <h3 className="text-3xl font-bold text-slate-900 whitespace-pre-line leading-tight">{advice.title}</h3>
+              <p className="text-slate-400 text-sm whitespace-pre-line leading-relaxed">{advice.duration}</p>
             </div>
             
-            <div className="space-y-4 text-slate-600 leading-relaxed mb-8">
-              <p>{advice.description}</p>
-              <p className="text-slate-400 text-sm pt-2">流程：{advice.flow}</p>
+            <div className="space-y-6 text-slate-600 text-lg leading-loose mb-10">
+              <p className="whitespace-pre-line">{advice.description}</p>
+              <div className="pt-4 border-t border-slate-50">
+                <p className="text-slate-400 text-xs mb-2">建议流程</p>
+                <p className="text-slate-800 whitespace-pre-line font-medium">{advice.flow}</p>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2">

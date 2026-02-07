@@ -17,32 +17,32 @@ export const RELATIONSHIP_OPTIONS = [
 
 export const SCENARIO_ADVICE = {
   first_date: {
-    title: "第一次约会建议",
-    flow: "饮品 → 正餐",
-    duration: "建议控制在 60-90 分钟",
+    title: "初次\n相见建议",
+    flow: "饮品\n正餐",
+    duration: "六十至九十分钟\n刚刚好",
     tags: ["#不尴尬", "#稳妥", "#不翻车"],
-    description: "第一次见面不宜过长，先喝点东西缓解紧张，聊得来再吃饭，进退自如。"
+    description: "初次见面\n不宜过长\n先喝点东西\n缓解紧张\n聊得来\n再吃饭\n进退自如"
   },
   couple: {
-    title: "浪漫约会建议",
-    flow: "正餐 → 散步/电影",
-    duration: "建议 2-3 小时",
+    title: "浪漫\n约会建议",
+    flow: "正餐\n散步\n电影",
+    duration: "两三小时\n慢时光",
     tags: ["#仪式感", "#升温", "#甜蜜"],
-    description: "享受二人世界，选择环境私密的座位，餐后安排散步或电影延续氛围。"
+    description: "享受\n二人世界\n选择\n环境私密的座位\n餐后\n安排散步\n或电影\n延续氛围"
   },
   bestie: {
-    title: "闺蜜聚会建议",
-    flow: "拍照 → 下午茶/正餐",
-    duration: "不限时",
+    title: "闺蜜\n聚会建议",
+    flow: "拍照\n下午茶\n正餐",
+    duration: "时光\n不限",
     tags: ["#出片", "#八卦", "#美食"],
-    description: "先找光线好的地方拍照，然后边吃边聊，尽情享受放松时光。"
+    description: "先找\n光线好的地方\n拍照\n然后\n边吃边聊\n尽情享受\n放松时光"
   },
   bros: {
-    title: "兄弟局建议",
-    flow: "正餐 → 酒吧/游戏",
-    duration: "不限时",
+    title: "兄弟\n聚会建议",
+    flow: "正餐\n酒吧\n游戏",
+    duration: "时光\n不限",
     tags: ["#放松", "#畅聊", "#痛快"],
-    description: "大口吃肉大口喝酒，不用拘束，怎么开心怎么来。"
+    description: "大口吃肉\n大口喝酒\n不用拘束\n怎么开心\n怎么来"
   }
 };
 
