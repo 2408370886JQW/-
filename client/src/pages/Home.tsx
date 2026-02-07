@@ -16,6 +16,7 @@ const INITIAL_MARKERS = {
     { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
     { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "15分钟前在线" },
     { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "2小时前在线" },
+    { id: 12, lat: 39.912, lng: 116.402, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "5小时前在线" },
   ],
   friends: [
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male" },
@@ -46,6 +47,28 @@ const INITIAL_MARKERS = {
       image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop",
       likes: 156,
       comments: 32
+    },
+    { 
+      id: 13, 
+      lat: 39.910, 
+      lng: 116.400, 
+      type: "moment", 
+      icon: ImageIcon,
+      content: "周末的快乐时光",
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=200&fit=crop",
+      likes: 45,
+      comments: 12
+    },
+    { 
+      id: 14, 
+      lat: 39.905, 
+      lng: 116.415, 
+      type: "moment", 
+      icon: ImageIcon,
+      content: "偶遇一只可爱的小猫",
+      image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop",
+      likes: 89,
+      comments: 21
     },
   ],
   meet: [ 
@@ -811,7 +834,9 @@ export default function Home() {
                         {selectedFriend.status === "online" ? "在线" : selectedFriend.status === "recent" ? "15分钟前" : "离线"}
                       </div>
                     </div>
-                    <p className="text-slate-500 mt-1">北京 · 距离 0.5km</p>
+                    <p className="text-slate-500 mt-1">
+                      {selectedFriend.status === "online" ? "北京 · 距离 0.5km" : "北京 · 离线"}
+                    </p>
                     <div className="flex gap-2 mt-3">
                       <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">双子座</span>
                       <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">摄影</span>
