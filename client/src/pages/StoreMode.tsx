@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 type FlowStep = "entry" | "login" | "home" | "scenario" | "package" | "payment" | "success";
 
 interface StoreModeProps {
-  onExit: () => void; // Callback to return to main app
+  onExit: (shouldRedirectToMap?: boolean) => void; // Callback to return to main app, optionally redirecting to map
 }
 
 export default function StoreMode({ onExit }: StoreModeProps) {
@@ -70,7 +70,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         >
           模拟扫码 (scene=store)
         </button>
-        <button onClick={onExit} className="mt-6 text-slate-500 text-sm underline">
+        <button onClick={() => onExit()} className="mt-6 text-slate-500 text-sm underline">
           返回主应用
         </button>
       </div>
@@ -294,8 +294,8 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             
             <div className="grid grid-cols-2 gap-3">
               <button 
-                onClick={onExit} // Go to map
-                className="flex items-center justify-center gap-2 bg-blue-600 text-white font-bold py-3 rounded-xl active:scale-95 transition-all"
+                onClick={() => onExit(true)} // Pass true to redirect to map
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl active:scale-95 transition-all shadow-md shadow-blue-200"
               >
                 <Users className="w-4 h-4" />
                 看附近的人
@@ -308,7 +308,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
           </div>
         </div>
 
-        <button onClick={onExit} className="text-slate-400 text-sm mt-auto mb-8">
+        <button onClick={() => onExit()} className="text-slate-400 text-sm mt-auto mb-8">
           返回首页
         </button>
       </div>

@@ -840,7 +840,12 @@ export default function Home() {
               className="absolute inset-0 z-20 bg-slate-50 flex flex-col"
             >
               {showStoreMode ? (
-                <StoreMode onExit={() => setShowStoreMode(false)} />
+                <StoreMode onExit={(shouldRedirectToMap) => {
+                  setShowStoreMode(false);
+                  if (shouldRedirectToMap) {
+                    setActiveTab("encounter");
+                  }
+                }} />
               ) : (
                 <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14">
                   <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6">
