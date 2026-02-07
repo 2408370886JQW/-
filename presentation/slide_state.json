@@ -1,0 +1,120 @@
+{
+  "project_info": {
+    "title": "FIND ME · 社交生活服务平台",
+    "created": 1770302834.8580499,
+    "last_updated": 1770303048.7385802,
+    "total_slides": 9
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "state": "edited",
+      "pageNum": 1
+    },
+    {
+      "id": "concept",
+      "state": "edited",
+      "pageNum": 2
+    },
+    {
+      "id": "journey",
+      "state": "edited",
+      "pageNum": 3
+    },
+    {
+      "id": "entry",
+      "state": "edited",
+      "pageNum": 4
+    },
+    {
+      "id": "identity",
+      "state": "edited",
+      "pageNum": 5
+    },
+    {
+      "id": "scenario",
+      "state": "edited",
+      "pageNum": 6
+    },
+    {
+      "id": "conversion",
+      "state": "edit_pending",
+      "pageNum": 7
+    },
+    {
+      "id": "social",
+      "state": "edit_pending",
+      "pageNum": 8
+    },
+    {
+      "id": "summary",
+      "state": "edit_pending",
+      "pageNum": 9
+    }
+  ],
+  "outline": [
+    {
+      "id": "cover",
+      "title": "FIND ME · 社交生活服务平台",
+      "summary": "封面页，展示产品名称、核心Slogan及汇报信息。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "concept",
+      "title": "核心理念：不仅仅是团购，更是社交的催化剂",
+      "summary": "阐述产品核心价值，对比传统团购平台，强调场景化引导、关系强绑定和社交裂变。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "journey",
+      "title": "流程概览：用户体验地图",
+      "summary": "展示从发现、入场、决策、转化到连接的完整用户旅程。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "entry",
+      "title": "入口：线上线下的无缝连接",
+      "summary": "展示首页相见Tab和模拟扫码页，强调线上线下融合体验。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "identity",
+      "title": "身份确认：让服务更懂社交关系",
+      "summary": "展示登录页和关系选择弹窗，强调强制关系选择对精准推荐的重要性。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "scenario",
+      "title": "场景化推荐：解决“怎么吃、聊什么”的痛点",
+      "summary": "展示场景建议页，强调定制化攻略和情绪价值。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "conversion",
+      "title": "转化闭环：高客单价的自然成交",
+      "summary": "展示套餐详情页，强调视觉冲击、专属定价和清晰规则。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "social",
+      "title": "社交裂变：支付即社交的开始",
+      "summary": "展示支付成功页，强调支付后的社交引导和LBS连接。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    },
+    {
+      "id": "summary",
+      "title": "总结与展望",
+      "summary": "总结产品价值，展望商家赋能、场景拓展和会员体系等未来规划。",
+      "image_plan": "Use a suitable image if needed",
+      "slide_template_key": ""
+    }
+  ]
+}

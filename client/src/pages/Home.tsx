@@ -184,6 +184,14 @@ export default function Home() {
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [isMeetHeaderCollapsed, setIsMeetHeaderCollapsed] = useState(false);
   const [showStoreMode, setShowStoreMode] = useState(false);
+  
+  // Callback for StoreMode exit
+  const handleStoreExit = (shouldRedirectToMap = false) => {
+    setShowStoreMode(false);
+    if (shouldRedirectToMap) {
+      setActiveTab("encounter");
+    }
+  };
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
   const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -830,20 +838,25 @@ export default function Home() {
         </AnimatePresence>
 
         {/* Meet Page Overlay */}
-        <AnimatePresence>
-          {activeTab === "meet" && (
-            <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="absolute inset-0 z-20 bg-slate-50 flex flex-col"
-            >
-              {showStoreMode ? (
-                <StoreMode onExit={() => setShowStoreMode(false)} />
-              ) : (
-                <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14">
-                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6">
+       {/* Store Mode Overlay */}
+      <AnimatePresence>
+        {showStoreMode && (
+          <motion.div
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[100] bg-white"
+          >
+            <StoreMode onExit={handleStoreExit} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Meet Tab Content */}
+      {activeTab === "meet" && (
+        <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14">
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6">
                     <h2 className="text-2xl font-bold mb-2">到店相见</h2>
                     <p className="text-blue-100 mb-6">扫码解锁专属优惠与社交玩法</p>
                     <button 
@@ -866,10 +879,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      )}
 
       </div>
     </Layout>

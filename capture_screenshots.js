@@ -26,6 +26,14 @@ if (!fs.existsSync(OUTPUT_DIR)) {
     console.log('Navigating to app...');
     await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
 
+    // Check for error overlay and reload if present
+    const errorOverlay = await page.$('xpath///button[contains(., "Reload Page")]');
+    if (errorOverlay) {
+        console.log('Error overlay detected, reloading...');
+        await errorOverlay.click();
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    }
+
     // 0. Initial State (Home)
     // Click "Meet" tab (assuming it's the 4th tab based on icon count, or find by text/icon)
     // The tabs are at the bottom. Let's look for the text "相见"
