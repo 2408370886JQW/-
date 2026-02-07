@@ -779,12 +779,13 @@ export default function Home() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-safe"
+              className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-3xl shadow-2xl pb-safe"
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               onDragEnd={(_, info) => {
                 if (info.offset.y > 100) setSelectedFriend(null);
               }}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
               <div className="px-6 pb-8">
@@ -820,10 +821,24 @@ export default function Home() {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg active:scale-95 transition-transform">
+                  <button 
+                    className="py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg active:scale-95 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Add interaction logic here
+                      console.log("Say Hi clicked");
+                    }}
+                  >
                     打招呼
                   </button>
-                  <button className="py-3 rounded-xl bg-slate-100 text-slate-900 font-bold active:scale-95 transition-transform">
+                  <button 
+                    className="py-3 rounded-xl bg-slate-100 text-slate-900 font-bold active:scale-95 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Add navigation logic here
+                      console.log("View Profile clicked");
+                    }}
+                  >
                     查看主页
                   </button>
                 </div>

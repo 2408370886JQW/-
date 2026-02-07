@@ -443,7 +443,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                   onClick={() => onExit("moments")}
                   className="w-full flex items-center justify-between bg-white text-slate-600 p-5 rounded-xl border border-slate-200 active:scale-95 transition-all group"
                 >
-                  <span className="font-bold tracking-widest text-lg">发布动态</span>
+                  <span className="font-bold tracking-widest text-lg">记录此刻</span>
                   <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 </button>
               </div>
