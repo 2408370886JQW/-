@@ -14,18 +14,13 @@ interface StoreModeProps {
 }
 
 export default function StoreMode({ onExit }: StoreModeProps) {
-  const [step, setStep] = useState<FlowStep>("entry");
+  const [step, setStep] = useState<FlowStep>("home");
   const [selectedRelationship, setSelectedRelationship] = useState<string | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // --- 1. Entry / Scan Simulation ---
-  const handleScan = () => {
-    // Skip login, go directly to home (relationship selection)
-    setIsLoggedIn(true);
-    setStep("home");
-  };
+
 
   // --- 3. Home Logic ---
   useEffect(() => {
@@ -68,38 +63,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
 
   // --- Render Functions ---
 
-  // 1. Entry Page (Simulation)
-  if (step === "entry") {
-    return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-start justify-center p-10 text-white font-serif">
-        <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-12 border border-white/20">
-          <Camera className="w-8 h-8 text-white" />
-        </div>
-        
-        <div className="space-y-4 mb-16">
-          <h1 className="text-4xl font-bold leading-tight">此刻</h1>
-          <h1 className="text-4xl font-bold leading-tight text-slate-400">就在门外</h1>
-        </div>
 
-        <div className="space-y-2 mb-16 text-lg text-slate-400 font-light">
-          <p>扫码</p>
-          <p>开启相见</p>
-          <p>进入 {MOCK_STORE.name}</p>
-        </div>
-
-        <button 
-          onClick={handleScan}
-          className="w-full bg-white text-slate-900 font-bold py-5 rounded-xl shadow-lg active:scale-95 transition-all mb-6 tracking-widest"
-        >
-          模拟扫码
-        </button>
-        
-        <button onClick={() => onExit()} className="text-slate-500 text-sm hover:text-white transition-colors">
-          返回
-        </button>
-      </div>
-    );
-  }
 
 
 
@@ -107,7 +71,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   if (step === "home") {
     return (
       <div className="min-h-screen bg-slate-50">
-        <StoreHeader title={MOCK_STORE.name} onBack={() => setStep("entry")} />
+        <StoreHeader title={MOCK_STORE.name} onBack={() => onExit()} />
         <div className="p-4">
           <div className="bg-white rounded-xl p-6 shadow-sm text-center">
             <p className="text-slate-500 mb-2">你正在</p>
