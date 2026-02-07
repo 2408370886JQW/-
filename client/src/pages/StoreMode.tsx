@@ -22,13 +22,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
 
 
 
-  // --- 3. Home Logic ---
-  useEffect(() => {
-    if (step === "home" && !selectedRelationship) {
-      // Show modal immediately
-      setShowRelationshipModal(true);
-    }
-  }, [step, selectedRelationship]);
+
 
   // --- 4. Payment Logic (Moved to top level) ---
   const [paymentState, setPaymentState] = useState<"idle" | "scanning" | "processing" | "success">("idle");
@@ -79,6 +73,18 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             <div className="flex justify-center gap-2 text-sm text-slate-400">
               <MapPin className="w-4 h-4" /> {MOCK_STORE.address}
             </div>
+          </div>
+          
+          {/* Start Meeting Button */}
+          <div className="mt-8 px-4">
+            <button 
+              onClick={() => setShowRelationshipModal(true)}
+              className="w-full bg-slate-900 text-white font-bold py-5 rounded-xl shadow-lg active:scale-95 transition-all tracking-widest flex items-center justify-center gap-2"
+            >
+              <span>开启</span>
+              <span className="w-1 h-1 bg-white rounded-full opacity-50"></span>
+              <span>相见</span>
+            </button>
           </div>
         </div>
         <RelationshipModal isOpen={showRelationshipModal} onSelect={handleRelationshipSelect} />
