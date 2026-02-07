@@ -843,10 +843,10 @@ export default function Home() {
               )}
             >
               {showStoreMode ? (
-                <StoreMode onExit={(shouldRedirectToMap) => {
+                <StoreMode onExit={(targetTab) => {
                   setShowStoreMode(false);
-                  if (shouldRedirectToMap) {
-                    setActiveTab("encounter");
+                  if (targetTab) {
+                    setActiveTab(targetTab as TabType);
                   }
                 }} />
               ) : (

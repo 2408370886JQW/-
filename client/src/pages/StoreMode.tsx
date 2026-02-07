@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 type FlowStep = "entry" | "login" | "home" | "scenario" | "package" | "payment" | "success";
 
 interface StoreModeProps {
-  onExit: (shouldRedirectToMap?: boolean) => void; // Callback to return to main app, optionally redirecting to map
+  onExit: (targetTab?: string) => void; // Callback to return to main app, optionally redirecting to a specific tab
 }
 
 export default function StoreMode({ onExit }: StoreModeProps) {
@@ -31,7 +31,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   const handleGoEncounter = () => {
     setIsUnfoldingMap(true);
     setTimeout(() => {
-      onExit(true);
+      onExit("encounter");
     }, 1500); // Wait for animation to complete
   };
   
@@ -440,7 +440,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                   </AnimatePresence>
                 </button>
                 <button 
-                  onClick={() => onExit(true)}
+                  onClick={() => onExit("moments")}
                   className="w-full flex items-center justify-between bg-white text-slate-600 p-5 rounded-xl border border-slate-200 active:scale-95 transition-all group"
                 >
                   <span className="font-bold tracking-widest text-lg">发布动态</span>
@@ -450,7 +450,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             </div>
           </div>
 
-          <button onClick={() => setStep("home")} className="text-slate-400 text-sm mt-auto mb-8 hover:text-slate-600 transition-colors">
+          <button onClick={() => onExit()} className="text-slate-400 text-sm mt-auto mb-8 hover:text-slate-600 transition-colors">
             返回相见
           </button>
         </motion.div>
