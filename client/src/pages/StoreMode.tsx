@@ -122,28 +122,20 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             <h2 className="text-3xl font-bold text-slate-400">陌生人</h2>
           </div>
           
-          <div className="space-y-2 mb-12 text-slate-500 text-lg">
-            <p>留下号码</p>
-            <p>建立连接</p>
+          <div className="space-y-2 mb-16 text-slate-500 text-lg leading-relaxed">
+            <p>微信</p>
+            <p>一键</p>
+            <p>开启连接</p>
             <p>查看 {MOCK_STORE.name} 的故事</p>
           </div>
           
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <input type="tel" placeholder="手机号" className="w-full py-4 bg-transparent border-b border-slate-200 outline-none focus:border-slate-900 transition-colors text-lg placeholder:text-slate-300" />
-              <div className="flex gap-4">
-                <input type="text" placeholder="验证码" className="flex-1 py-4 bg-transparent border-b border-slate-200 outline-none focus:border-slate-900 transition-colors text-lg placeholder:text-slate-300" />
-                <button className="text-slate-400 text-sm hover:text-slate-900 transition-colors">获取</button>
-              </div>
-            </div>
-            
-            <button 
-              onClick={handleLogin}
-              className="w-full bg-slate-900 text-white font-bold py-5 rounded-xl shadow-lg mt-8 active:scale-95 transition-all tracking-widest"
-            >
-              登录
-            </button>
-          </div>
+          <button 
+            onClick={handleLogin}
+            className="w-full bg-[#07C160] text-white font-bold py-5 rounded-xl shadow-lg active:scale-95 transition-all tracking-widest flex items-center justify-center gap-3"
+          >
+            <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.752 15.49c-.01-.01-.02-.02-.03-.03.09.6.5 1.19 1.16 1.63 1.55 1.04 4.01 1.06 5.62.11.21-.12.41-.26.6-.41.38.39 1.03.97 1.6 1.3-.04-.25-.05-.56-.05-.85 0-.32.06-.62.16-.89.01-.03.02-.05.03-.08 1.64-.98 2.73-2.5 2.73-4.21 0-2.9-2.73-5.25-6.1-5.25-3.37 0-6.1 2.35-6.1 5.25 0 1.34.58 2.57 1.53 3.49-.06.27-.19.82-.35 1.25.48-.19 1.03-.55 1.5-.95zm-3.7 2.15c-.03.14-.1.43-.18.66.25-.1.54-.29.79-.5.05-.04.1-.08.14-.12-.49-.48-.79-1.12-.79-1.82 0-1.52 1.43-2.75 3.2-2.75 1.77 0 3.2 1.23 3.2 2.75 0 1.52-1.43 2.75-3.2 2.75-.86 0-1.64-.29-2.21-.77zm13.68-9.11c-1.37-1.02-3.46-1.63-5.73-1.63-4.99 0-9.04 3.03-9.04 6.77 0 2.22 1.43 4.2 3.66 5.45-.16.54-.52 1.4-.87 1.95 1.11-.46 2.25-1.18 3.04-1.8.94.33 1.97.52 3.05.52.16 0 .32 0 .48-.01.01.01.02.02.03.03 1.08.83 2.52 1.34 4.09 1.34 3.68 0 6.66-2.2 6.66-4.91 0-2.71-2.98-4.91-6.66-4.91z"/></svg>
+            微信一键登录
+          </button>
         </div>
       </div>
     );
@@ -419,21 +411,21 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             <div className="relative z-10 space-y-6">
               <div className="space-y-3 text-slate-600 text-lg leading-relaxed">
                 <p>此刻</p>
-                <p>也在附近用餐的人</p>
-                <p>或许</p>
-                <p>会有意想不到的惊喜</p>
+                <p>附近</p>
+                <p>有趣的灵魂</p>
+                <p>正在游荡</p>
               </div>
               
               <div className="flex flex-col gap-4 pt-4">
                 <button 
                   onClick={() => onExit(true)} // Pass true to redirect to map
-                  className="w-full flex items-center justify-between bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl active:scale-95 transition-all shadow-md shadow-blue-200 group"
+                  className="w-full flex items-center justify-between bg-slate-900 text-white p-5 rounded-xl active:scale-95 transition-all shadow-lg group"
                 >
-                  <span className="font-medium tracking-wide">看附近的人</span>
+                  <span className="font-bold tracking-widest text-lg">偶遇</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
-                <button className="w-full flex items-center justify-between bg-white text-slate-600 p-4 rounded-xl border border-slate-200 active:scale-95 transition-all group">
-                  <span className="font-medium tracking-wide">发相见动态</span>
+                <button className="w-full flex items-center justify-between bg-white text-slate-600 p-5 rounded-xl border border-slate-200 active:scale-95 transition-all group">
+                  <span className="font-bold tracking-widest text-lg">发布动态</span>
                   <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 </button>
               </div>

@@ -27,9 +27,15 @@ export default function RelationshipModal({ isOpen, onSelect }: RelationshipModa
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[70] bg-white rounded-2xl p-6 shadow-2xl"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-xl font-bold text-slate-900 mb-2">你今天是和谁来吃饭？</h2>
-              <p className="text-sm text-slate-500">选择关系，获取专属相见建议</p>
+            <div className="text-left mb-10 font-serif">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4 leading-tight">
+                今天<br/>
+                和谁相见
+              </h2>
+              <div className="text-sm text-slate-400 space-y-1">
+                <p>选择关系</p>
+                <p>获取专属建议</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -40,22 +46,18 @@ export default function RelationshipModal({ isOpen, onSelect }: RelationshipModa
                     key={option.id}
                     onClick={() => onSelect(option.id)}
                     className={cn(
-                      "flex flex-col items-center justify-center p-4 rounded-xl border-2 border-transparent transition-all active:scale-95",
+                      "flex flex-col items-start justify-center p-5 rounded-xl border border-transparent transition-all active:scale-95",
                       option.bg,
-                      "hover:border-current hover:shadow-md"
+                      "hover:shadow-md"
                     )}
                   >
-                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center mb-2 bg-white/80", option.color)}>
-                      <Icon className="w-6 h-6" />
+                    <div className={cn("w-10 h-10 rounded-full flex items-center justify-center mb-3 bg-white/80", option.color)}>
+                      <Icon className="w-5 h-5" />
                     </div>
-                    <span className={cn("font-bold", option.color)}>{option.label}</span>
+                    <span className={cn("font-bold text-lg tracking-wide", option.color)}>{option.label}</span>
                   </button>
                 );
               })}
-            </div>
-            
-            <div className="mt-6 text-center">
-              <p className="text-xs text-slate-400">* 必选项目，以便提供更好的服务</p>
             </div>
           </motion.div>
         </>
