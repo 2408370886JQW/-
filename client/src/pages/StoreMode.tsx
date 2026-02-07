@@ -61,28 +61,41 @@ export default function StoreMode({ onExit }: StoreModeProps) {
 
 
 
-  // 3. Store Home (Embedded Relationship Selection)
+  // 3. Store Home (Blurred Background + Overlay Card)
   if (step === "home") {
     return (
-      <div className="min-h-screen bg-slate-50 font-serif">
-        <StoreHeader title={MOCK_STORE.name} onBack={() => onExit()} />
-        
-        <div className="p-6">
-          {/* Store Info Card */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm mb-10 text-center border border-slate-100">
-            <p className="text-slate-400 text-sm mb-3 tracking-widest">你正在</p>
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">{MOCK_STORE.name}</h2>
-            <div className="flex justify-center items-center gap-2 text-xs text-slate-400">
-              <MapPin className="w-3 h-3" /> 
-              <span>{MOCK_STORE.address}</span>
+      <div className="min-h-screen bg-slate-50 font-serif relative overflow-hidden">
+        {/* Background Layer (Blurred Store Content) */}
+        <div className="absolute inset-0 filter blur-md scale-105 pointer-events-none z-0">
+          <StoreHeader title={MOCK_STORE.name} onBack={() => {}} />
+          <div className="p-6">
+            <div className="bg-white rounded-2xl p-8 shadow-sm mb-10 text-center border border-slate-100">
+              <p className="text-slate-400 text-sm mb-3 tracking-widest">你正在</p>
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">{MOCK_STORE.name}</h2>
+              <div className="flex justify-center items-center gap-2 text-xs text-slate-400">
+                <MapPin className="w-3 h-3" /> 
+                <span>{MOCK_STORE.address}</span>
+              </div>
+            </div>
+            {/* Mock Content to fill background */}
+            <div className="space-y-4 opacity-50">
+              <div className="h-40 bg-slate-200 rounded-2xl"></div>
+              <div className="h-40 bg-slate-200 rounded-2xl"></div>
             </div>
           </div>
+        </div>
 
-          {/* Embedded Relationship Selection */}
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold text-slate-900">今天</h3>
-              <h3 className="text-xl font-bold text-slate-900">和谁相见</h3>
+        {/* Overlay Layer (Relationship Selection Card) */}
+        <div className="absolute inset-0 z-10 flex items-center justify-center p-6 bg-black/5">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full bg-white rounded-3xl shadow-2xl p-8 border border-white/50 backdrop-blur-xl"
+          >
+            <div className="text-center mb-10">
+              <p className="text-slate-400 text-xs tracking-[0.2em] uppercase mb-3">Welcome</p>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">今天</h3>
+              <h3 className="text-2xl font-bold text-slate-900">和谁相见</h3>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
@@ -90,21 +103,27 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                 <button
                   key={option.id}
                   onClick={() => handleRelationshipSelect(option.id)}
-                  className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 active:scale-95 transition-all hover:shadow-md flex flex-col items-start gap-3 group"
+                  className="bg-slate-50 p-5 rounded-2xl border border-slate-100 active:scale-95 transition-all hover:bg-slate-100 flex flex-col items-center gap-3 group"
                 >
                   <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
+                    "w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-sm",
                     option.color
                   )}>
-                    <option.icon className="w-5 h-5 text-white" />
+                    <option.icon className="w-6 h-6 text-white" />
                   </div>
-                  <span className="text-lg font-bold text-slate-800 group-hover:text-slate-900">
+                  <span className="text-sm font-bold text-slate-700 group-hover:text-slate-900">
                     {option.label}
                   </span>
                 </button>
               ))}
             </div>
-          </div>
+            
+            <div className="mt-8 text-center">
+              <button onClick={() => onExit()} className="text-slate-400 text-xs hover:text-slate-600 transition-colors">
+                暂不进店
+              </button>
+            </div>
+          </motion.div>
         </div>
       </div>
     );
