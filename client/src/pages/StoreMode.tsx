@@ -130,7 +130,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
     const relLabel = RELATIONSHIP_OPTIONS.find(r => r.id === selectedRelationship)?.label;
 
     return (
-      <div className="min-h-screen bg-slate-50 pb-20">
+      <div className="min-h-screen bg-slate-50 pb-20 overflow-y-auto h-screen">
         <StoreHeader title={`${relLabel} · 建议`} onBack={() => setStep("home")} />
         
         {/* Scenario Advice */}
@@ -199,7 +199,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   // 5. Package Detail Page
   if (step === "package" && selectedPackage) {
     return (
-      <div className="min-h-screen bg-white pb-24">
+      <div className="min-h-screen bg-white pb-32 overflow-y-auto h-screen">
         <StoreHeader title="套餐详情" onBack={() => setStep("scenario")} />
         
         <div className="h-64 bg-slate-200 relative">
@@ -278,7 +278,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   // 7. Success Page (Social Guide)
   if (step === "success") {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center pt-12">
+      <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center pt-12 overflow-y-auto h-screen">
         <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-200">
           <CheckCircle className="w-10 h-10 text-white" />
         </div>
