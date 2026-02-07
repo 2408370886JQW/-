@@ -117,8 +117,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
 
             <div className="p-8">
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">今天</h3>
-                <h3 className="text-2xl font-bold text-slate-900">和谁相见</h3>
+                <h3 className="text-2xl font-bold text-slate-900">今天和谁相见</h3>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -126,15 +125,19 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                   <button
                     key={option.id}
                     onClick={() => handleRelationshipSelect(option.id)}
-                    className="bg-slate-50 p-4 rounded-2xl border border-slate-200 active:scale-95 transition-all hover:bg-slate-100 flex flex-col items-center gap-3 group shadow-sm"
+                    className={cn(
+                      "p-4 rounded-2xl border active:scale-95 transition-all flex flex-col items-center gap-3 group shadow-sm",
+                      option.bg,
+                      "border-transparent hover:border-slate-200"
+                    )}
                   >
                     <div className={cn(
-                      "w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-md",
+                      "w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-md bg-white",
                       option.color
                     )}>
-                      <option.icon className="w-6 h-6 text-white drop-shadow-md" strokeWidth={2.5} />
+                      <option.icon className="w-6 h-6" strokeWidth={2.5} />
                     </div>
-                    <span className="text-sm font-bold text-slate-800 group-hover:text-slate-900">
+                    <span className={cn("text-sm font-bold group-hover:text-slate-900", option.color.replace('text-', 'text-slate-700/80 '))}>
                       {option.label}
                     </span>
                   </button>

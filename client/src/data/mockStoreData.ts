@@ -1,4 +1,4 @@
-import { Heart, Camera, Beer, Star } from "lucide-react";
+import { Heart, Camera, Beer, Star, User, Users } from "lucide-react";
 
 export const MOCK_STORE = {
   id: "store_001",
@@ -9,10 +9,12 @@ export const MOCK_STORE = {
 };
 
 export const RELATIONSHIP_OPTIONS = [
-  { id: "first_date", label: "第一次见面", icon: Star, color: "text-pink-500", bg: "bg-pink-50" },
-  { id: "couple", label: "情侣/暧昧", icon: Heart, color: "text-red-500", bg: "bg-red-50" },
-  { id: "bestie", label: "闺蜜", icon: Camera, color: "text-purple-500", bg: "bg-purple-50" },
-  { id: "bros", label: "兄弟", icon: Beer, color: "text-blue-500", bg: "bg-blue-50" },
+  { id: "first_date", label: "第一次见面", icon: Star, color: "text-pink-500", bg: "bg-pink-50", theme: "pink" },
+  { id: "couple", label: "情侣/暧昧", icon: Heart, color: "text-rose-500", bg: "bg-rose-50", theme: "rose" },
+  { id: "bestie", label: "闺蜜", icon: Camera, color: "text-purple-500", bg: "bg-purple-50", theme: "purple" },
+  { id: "bros", label: "兄弟", icon: Beer, color: "text-blue-500", bg: "bg-blue-50", theme: "blue" },
+  { id: "solitary", label: "独处时光", icon: User, color: "text-slate-500", bg: "bg-slate-50", theme: "slate" },
+  { id: "family", label: "阖家团圆", icon: Users, color: "text-orange-500", bg: "bg-orange-50", theme: "orange" },
 ];
 
 export const SCENARIO_ADVICE = {
@@ -43,6 +45,20 @@ export const SCENARIO_ADVICE = {
     duration: "时光\n不限",
     tags: ["#放松", "#畅聊", "#痛快"],
     description: "大口吃肉\n大口喝酒\n不用拘束\n怎么开心\n怎么来"
+  },
+  solitary: {
+    title: "独处\n时光建议",
+    flow: "阅读\n轻食\n发呆",
+    duration: "随心\n所欲",
+    tags: ["#安静", "#自在", "#充电"],
+    description: "找个角落\n戴上耳机\n享受美食\n与自己\n对话"
+  },
+  family: {
+    title: "阖家\n团圆建议",
+    flow: "大餐\n合影\n闲聊",
+    duration: "温馨\n时刻",
+    tags: ["#温馨", "#热闹", "#亲情"],
+    description: "点满一桌\n好菜\n照顾好\n老人小孩\n享受\n天伦之乐"
   }
 };
 
@@ -109,5 +125,37 @@ export const STORE_PACKAGES = [
       "精酿啤酒"
     ],
     rules: ["随时退", "免预约"]
+  },
+  {
+    id: "pkg_005",
+    title: "独享\n静谧单人餐",
+    price: 88,
+    originalPrice: 128,
+    suitableFor: ["solitary"],
+    recommendReason: "一人食\n也要\n精致",
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
+    items: [
+      "经典肉酱面",
+      "凯撒沙拉",
+      "柠檬茶"
+    ],
+    rules: ["随时退", "免预约"]
+  },
+  {
+    id: "pkg_006",
+    title: "阖家\n欢聚套餐",
+    price: 688,
+    originalPrice: 988,
+    suitableFor: ["family"],
+    recommendReason: "菜量大\n口味老少皆宜\n适合\n全家共享",
+    image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&h=300&q=80",
+    items: [
+      "烤全鸡",
+      "清蒸鲈鱼",
+      "时蔬大拼盘",
+      "海鲜炒饭",
+      "水果拼盘"
+    ],
+    rules: ["需提前预约", "随时退"]
   }
 ];
