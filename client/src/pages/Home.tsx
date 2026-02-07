@@ -15,7 +15,7 @@ const INITIAL_MARKERS = {
   encounter: [
     { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
     { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "15分钟前在线" },
-    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "2小时前在线" },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male", lastSeen: "在线" },
     { id: 12, lat: 39.912, lng: 116.402, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "5小时前在线" },
   ],
   friends: [
@@ -193,6 +193,8 @@ export default function Home() {
   // New state for Meet page
   const [activeScenario, setActiveScenario] = useState("date");
   const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
+  const [ageFilter, setAgeFilter] = useState<string | null>(null);
+  const [zodiacFilter, setZodiacFilter] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
 
   // State for Friend Card and Dynamics Detail
@@ -435,6 +437,7 @@ export default function Home() {
             className="relative group"
             onClick={(e) => {
               e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
               setSelectedFriend(marker);
             }}
           >
@@ -466,6 +469,7 @@ export default function Home() {
             className="relative group"
             onClick={(e) => {
               e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
               setSelectedFriend(marker);
             }}
           >
@@ -494,7 +498,11 @@ export default function Home() {
         root.render(
           <div 
             className="relative group transition-transform hover:scale-105 active:scale-95"
-            onClick={() => setSelectedMoment(marker)}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              setSelectedMoment(marker);
+            }}
           >
             {/* Main Image Card */}
             <div className="w-32 h-24 bg-white rounded-2xl shadow-xl overflow-hidden border-[4px] border-white">
@@ -716,20 +724,22 @@ export default function Home() {
                       <button 
                         onClick={() => setGenderFilter("male")}
                         className={cn(
-                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1",
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1 relative",
                           genderFilter === "male" ? "bg-blue-500 text-white shadow-lg shadow-blue-200" : "bg-slate-100 text-slate-600"
                         )}
                       >
-                        <span className="text-lg leading-none flex items-center h-full">♂</span> 男生
+                        <span className="text-lg leading-none flex items-center justify-center h-full absolute left-4 top-0 bottom-0">♂</span> 
+                        <span>男生</span>
                       </button>
                       <button 
                         onClick={() => setGenderFilter("female")}
                         className={cn(
-                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1",
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1 relative",
                           genderFilter === "female" ? "bg-pink-500 text-white shadow-lg shadow-pink-200" : "bg-slate-100 text-slate-600"
                         )}
                       >
-                        <span className="text-lg leading-none flex items-center h-full">♀</span> 女生
+                        <span className="text-lg leading-none flex items-center justify-center h-full absolute left-4 top-0 bottom-0">♀</span> 
+                        <span>女生</span>
                       </button>
                     </div>
                   </div>
@@ -741,7 +751,11 @@ export default function Home() {
                       {["18-22", "23-26", "27-35", "35+"].map(age => (
                         <button 
                           key={age} 
-                          className="flex-1 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors focus:bg-slate-900 focus:text-white"
+                          onClick={() => setAgeFilter(age === ageFilter ? null : age)}
+                          className={cn(
+                            "flex-1 py-2 rounded-lg text-xs font-medium transition-colors",
+                            age === ageFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
                         >
                           {age}
                         </button>
@@ -756,7 +770,11 @@ export default function Home() {
                       {["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"].map(zodiac => (
                         <button 
                           key={zodiac} 
-                          className="py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors focus:bg-slate-900 focus:text-white"
+                          onClick={() => setZodiacFilter(zodiac === zodiacFilter ? null : zodiac)}
+                          className={cn(
+                            "py-2 rounded-lg text-xs font-medium transition-colors",
+                            zodiac === zodiacFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
                         >
                           {zodiac}
                         </button>
@@ -785,6 +803,11 @@ export default function Home() {
             setMapInstance(map);
             // Add click listener to close popups when clicking map
             map.addListener('click', () => {
+              // Only close if clicking on the map background, not markers
+              // But markers have their own click handlers which stop propagation
+              // So this is fine, but we need to make sure marker clicks don't bubble up to map click
+              // The CustomOverlay implementation might be letting clicks through
+              // We will handle this in the marker click handler
               setSelectedFriend(null);
               setSelectedMoment(null);
               setIsNavVisible(true);
@@ -845,7 +868,7 @@ export default function Home() {
                       </div>
                     </div>
                     <p className="text-slate-500 mt-1">
-                      {selectedFriend.status === "online" ? "北京 · 距离 0.5km" : "北京 · 离线"}
+                      {selectedFriend.status === "online" ? "距离 0.5km" : "离线"}
                     </p>
                     <div className="flex gap-2 mt-3">
                       <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">双子座</span>
