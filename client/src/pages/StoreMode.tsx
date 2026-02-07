@@ -439,7 +439,10 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                     )}
                   </AnimatePresence>
                 </button>
-                <button className="w-full flex items-center justify-between bg-white text-slate-600 p-5 rounded-xl border border-slate-200 active:scale-95 transition-all group">
+                <button 
+                  onClick={() => onExit(true)}
+                  className="w-full flex items-center justify-between bg-white text-slate-600 p-5 rounded-xl border border-slate-200 active:scale-95 transition-all group"
+                >
                   <span className="font-bold tracking-widest text-lg">发布动态</span>
                   <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 </button>
@@ -447,8 +450,8 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             </div>
           </div>
 
-          <button onClick={() => onExit()} className="text-slate-400 text-sm mt-auto mb-8 hover:text-slate-600 transition-colors">
-            返回首页
+          <button onClick={() => setStep("home")} className="text-slate-400 text-sm mt-auto mb-8 hover:text-slate-600 transition-colors">
+            返回相见
           </button>
         </motion.div>
       </div>

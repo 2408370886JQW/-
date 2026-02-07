@@ -15,14 +15,14 @@ const INITIAL_MARKERS = {
   encounter: [
     { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
     { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "15分钟前在线" },
-    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", status: "offline", gender: "female", lastSeen: "2小时前在线" },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "2小时前在线" },
   ],
   friends: [
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male" },
     { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "female" },
     { id: 9, lat: 39.910, lng: 116.400, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
     { id: 10, lat: 39.905, lng: 116.410, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male" },
-    { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", status: "offline", gender: "male" },
+    { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male" },
   ],
   moments: [
     { 
@@ -651,7 +651,7 @@ export default function Home() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl p-6 pb-safe"
+                className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-3xl p-6 pb-safe max-h-[85vh] overflow-y-auto flex flex-col"
               >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-slate-900">筛选</h3>
@@ -711,7 +711,7 @@ export default function Home() {
                   <div>
                     <label className="text-sm font-bold text-slate-900 mb-3 block">星座</label>
                     <div className="grid grid-cols-4 gap-2">
-                      {["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎"].map(zodiac => (
+                      {["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"].map(zodiac => (
                         <button key={zodiac} className="py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
                           {zodiac}
                         </button>
@@ -720,7 +720,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="mt-8 pt-4 border-t border-slate-100">
+                <div className="mt-8 pt-4 border-t border-slate-100 sticky bottom-0 bg-white pb-4">
                   <button 
                     onClick={() => setShowFilterModal(false)}
                     className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform"
