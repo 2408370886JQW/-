@@ -30,9 +30,8 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   // --- 3. Home Logic ---
   useEffect(() => {
     if (step === "home" && !selectedRelationship) {
-      // Show modal after a short delay
-      const timer = setTimeout(() => setShowRelationshipModal(true), 500);
-      return () => clearTimeout(timer);
+      // Show modal immediately
+      setShowRelationshipModal(true);
     }
   }, [step, selectedRelationship]);
 
