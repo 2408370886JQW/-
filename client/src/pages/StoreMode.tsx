@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, MapPin, ShoppingBag, Users, CheckCircle, Share2, Camera } from "lucide-react";
+import { ArrowRight, MapPin, ShoppingBag, Users, CheckCircle, Share2, Camera, ScanFace, Fingerprint, Wallet } from "lucide-react";
 import { MOCK_STORE, RELATIONSHIP_OPTIONS, SCENARIO_ADVICE, STORE_PACKAGES } from "@/data/mockStoreData";
 import StoreHeader from "@/components/StoreHeader";
 import RelationshipModal from "@/components/RelationshipModal";
@@ -46,10 +46,27 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   }, [step, selectedRelationship]);
 
   // --- 4. Payment Logic (Moved to top level) ---
+  const [paymentState, setPaymentState] = useState<"idle" | "scanning" | "processing" | "success">("idle");
+  
   useEffect(() => {
     if (step === "payment") {
-      const timer = setTimeout(() => setStep("success"), 2000);
-      return () => clearTimeout(timer);
+      setPaymentState("scanning");
+      
+      // Sequence: Scanning (1.5s) -> Processing (1.5s) -> Success
+      const scanTimer = setTimeout(() => {
+        setPaymentState("processing");
+        
+        const processTimer = setTimeout(() => {
+          setPaymentState("success");
+          setTimeout(() => setStep("success"), 500);
+        }, 1500);
+        
+        return () => clearTimeout(processTimer);
+      }, 1500);
+      
+      return () => clearTimeout(scanTimer);
+    } else {
+      setPaymentState("idle");
     }
   }, [step]);
 
@@ -267,12 +284,99 @@ export default function StoreMode({ onExit }: StoreModeProps) {
 
 
 
-  // 6. Payment (Mock)
+  // 6. Payment (Simulated Cashier)
   if (step === "payment") {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-        <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <p className="text-slate-500 font-medium">正在发起微信支付...</p>
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-end pb-0 relative overflow-hidden">
+        {/* Background Overlay */}
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
+        
+        {/* Cashier Panel */}
+        <motion.div 
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          className="w-full bg-white rounded-t-3xl p-6 z-10 relative pb-12"
+        >
+          <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+          
+          <div className="flex justify-between items-center mb-8 border-b border-slate-100 pb-4">
+            <span className="text-slate-500 font-medium">订单金额</span>
+            <span className="text-3xl font-bold text-slate-900">¥{selectedPackage?.price || "0.00"}</span>
+          </div>
+
+          <div className="flex flex-col items-center justify-center py-8 min-h-[200px]">
+            <AnimatePresence mode="wait">
+              {paymentState === "scanning" && (
+                <motion.div 
+                  key="scanning"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="relative w-24 h-24 mb-4">
+                    <motion.div 
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-0 border-2 border-blue-100 rounded-full border-t-blue-500"
+                    ></motion.div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ScanFace className="w-10 h-10 text-blue-600" />
+                    </div>
+                    <motion.div 
+                      animate={{ y: [0, 24, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute top-1/4 left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                    ></motion.div>
+                  </div>
+                  <p className="text-slate-600 font-medium">正在验证面容 ID...</p>
+                </motion.div>
+              )}
+
+              {paymentState === "processing" && (
+                <motion.div 
+                  key="processing"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.8, opacity: 0 }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4 relative">
+                    <Wallet className="w-8 h-8 text-blue-600" />
+                    <motion.div 
+                      className="absolute -right-1 -top-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <CheckCircle className="w-3 h-3 text-white" />
+                    </motion.div>
+                  </div>
+                  <p className="text-slate-600 font-medium">支付处理中...</p>
+                </motion.div>
+              )}
+
+              {paymentState === "success" && (
+                <motion.div 
+                  key="success"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="flex flex-col items-center"
+                >
+                  <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-200">
+                    <CheckCircle className="w-10 h-10 text-white" />
+                  </div>
+                  <p className="text-slate-900 font-bold text-lg">支付成功</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 text-slate-400 text-sm mt-4">
+            <Fingerprint className="w-4 h-4" />
+            <span>安全支付保障中</span>
+          </div>
+        </motion.div>
       </div>
     );
   }
