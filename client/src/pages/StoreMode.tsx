@@ -81,22 +81,31 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   // 1. Entry Page (Simulation)
   if (step === "entry") {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-white">
-        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6">
-          <Camera className="w-10 h-10 text-slate-900" />
+      <div className="min-h-screen bg-slate-900 flex flex-col items-start justify-center p-10 text-white font-serif">
+        <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-12 border border-white/20">
+          <Camera className="w-8 h-8 text-white" />
         </div>
-        <h1 className="text-2xl font-bold mb-2">模拟扫码进店</h1>
-        <p className="text-slate-400 text-center mb-8">
-          点击下方按钮模拟扫描桌贴/台卡二维码<br/>进入 {MOCK_STORE.name}
-        </p>
+        
+        <div className="space-y-4 mb-16">
+          <h1 className="text-4xl font-bold leading-tight">此刻</h1>
+          <h1 className="text-4xl font-bold leading-tight text-slate-400">就在门外</h1>
+        </div>
+
+        <div className="space-y-2 mb-16 text-lg text-slate-400 font-light">
+          <p>扫码</p>
+          <p>开启相见</p>
+          <p>进入 {MOCK_STORE.name}</p>
+        </div>
+
         <button 
           onClick={handleScan}
-          className="w-full max-w-xs bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-full shadow-lg active:scale-95 transition-all"
+          className="w-full bg-white text-slate-900 font-bold py-5 rounded-xl shadow-lg active:scale-95 transition-all mb-6 tracking-widest"
         >
-          模拟扫码 (scene=store)
+          模拟扫码
         </button>
-        <button onClick={() => onExit()} className="mt-6 text-slate-500 text-sm underline">
-          返回主应用
+        
+        <button onClick={() => onExit()} className="text-slate-500 text-sm hover:text-white transition-colors">
+          返回
         </button>
       </div>
     );
@@ -105,23 +114,34 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   // 2. Login Page
   if (step === "login") {
     return (
-      <div className="min-h-screen bg-white p-6 flex flex-col">
+      <div className="min-h-screen bg-white p-8 flex flex-col font-serif">
         <StoreHeader title="登录" onBack={() => setStep("entry")} />
         <div className="flex-1 flex flex-col justify-center">
-          <h2 className="text-2xl font-bold mb-2">欢迎来到 {MOCK_STORE.name}</h2>
-          <p className="text-slate-500 mb-8">登录后可查看本店推荐套餐 + 相见玩法</p>
+          <div className="space-y-3 mb-12">
+            <h2 className="text-3xl font-bold text-slate-900">你好</h2>
+            <h2 className="text-3xl font-bold text-slate-400">陌生人</h2>
+          </div>
           
-          <div className="space-y-4">
-            <input type="tel" placeholder="请输入手机号" className="w-full p-4 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500" />
-            <div className="flex gap-4">
-              <input type="text" placeholder="验证码" className="flex-1 p-4 bg-slate-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-blue-500" />
-              <button className="px-6 py-4 bg-slate-100 text-slate-600 font-bold rounded-xl">获取验证码</button>
+          <div className="space-y-2 mb-12 text-slate-500 text-lg">
+            <p>留下号码</p>
+            <p>建立连接</p>
+            <p>查看 {MOCK_STORE.name} 的故事</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <input type="tel" placeholder="手机号" className="w-full py-4 bg-transparent border-b border-slate-200 outline-none focus:border-slate-900 transition-colors text-lg placeholder:text-slate-300" />
+              <div className="flex gap-4">
+                <input type="text" placeholder="验证码" className="flex-1 py-4 bg-transparent border-b border-slate-200 outline-none focus:border-slate-900 transition-colors text-lg placeholder:text-slate-300" />
+                <button className="text-slate-400 text-sm hover:text-slate-900 transition-colors">获取</button>
+              </div>
             </div>
+            
             <button 
               onClick={handleLogin}
-              className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg mt-4 active:scale-95 transition-all"
+              className="w-full bg-slate-900 text-white font-bold py-5 rounded-xl shadow-lg mt-8 active:scale-95 transition-all tracking-widest"
             >
-              登录并绑定门店
+              登录
             </button>
           </div>
         </div>
@@ -155,28 +175,25 @@ export default function StoreMode({ onExit }: StoreModeProps) {
     const relLabel = RELATIONSHIP_OPTIONS.find(r => r.id === selectedRelationship)?.label;
 
     return (
-      <div className="min-h-screen bg-slate-50 pb-20 overflow-y-auto h-screen">
+      <div className="min-h-screen bg-slate-50 pb-20 overflow-y-auto h-screen font-serif">
         <StoreHeader title={`${relLabel} · 建议`} onBack={() => setStep("home")} />
         
         {/* Scenario Advice */}
-        <div className="p-4">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100 shadow-sm mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-slate-800">{advice.title}</h3>
-              <span className="text-xs font-bold px-2 py-1 bg-white rounded-full text-blue-600 border border-blue-200">
-                {advice.duration}
-              </span>
+        <div className="p-6">
+          <div className="bg-white rounded-2xl p-8 shadow-sm mb-10 border border-slate-100">
+            <div className="space-y-2 mb-8">
+              <h3 className="text-2xl font-bold text-slate-900">{advice.title}</h3>
+              <p className="text-slate-400 text-sm">{advice.duration}</p>
             </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-1 bg-blue-200 rounded-full overflow-hidden">
-                <div className="h-full w-1/2 bg-blue-500"></div>
-              </div>
-              <span className="text-sm font-bold text-slate-700">{advice.flow}</span>
+            
+            <div className="space-y-4 text-slate-600 leading-relaxed mb-8">
+              <p>{advice.description}</p>
+              <p className="text-slate-400 text-sm pt-2">流程：{advice.flow}</p>
             </div>
-            <p className="text-sm text-slate-600 mb-4 leading-relaxed">{advice.description}</p>
+
             <div className="flex flex-wrap gap-2">
               {advice.tags.map(tag => (
-                <span key={tag} className="text-xs px-2 py-1 bg-white text-slate-500 rounded-md border border-slate-100">
+                <span key={tag} className="text-xs px-3 py-1.5 bg-slate-50 text-slate-500 rounded-full">
                   {tag}
                 </span>
               ))}
@@ -184,37 +201,35 @@ export default function StoreMode({ onExit }: StoreModeProps) {
           </div>
 
           {/* Package List */}
-          <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-blue-600" />
-            推荐套餐
-          </h3>
-          <div className="space-y-4">
-            {packages.map(pkg => (
-              <div 
-                key={pkg.id}
-                onClick={() => { setSelectedPackage(pkg); setStep("package"); }}
-                className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 active:scale-[0.98] transition-transform"
-              >
-                <div className="h-32 bg-slate-200 relative">
-                  <img src={pkg.image} className="w-full h-full object-cover" />
-                  <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
-                    {pkg.suitableFor.length > 1 ? "通用" : relLabel}专属
-                  </div>
-                </div>
-                <div className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-bold text-slate-900">{pkg.title}</h4>
-                    <div className="text-right">
-                      <span className="text-lg font-bold text-red-500">¥{pkg.price}</span>
-                      <span className="text-xs text-slate-400 line-through ml-1">¥{pkg.originalPrice}</span>
+          <div className="mb-6">
+            <h3 className="text-xl font-bold text-slate-900 mb-6">精选</h3>
+            <div className="space-y-6">
+              {packages.map(pkg => (
+                <div 
+                  key={pkg.id}
+                  onClick={() => { setSelectedPackage(pkg); setStep("package"); }}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 active:scale-[0.98] transition-transform group"
+                >
+                  <div className="h-48 bg-slate-200 relative overflow-hidden">
+                    <img src={pkg.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-slate-900 text-xs px-3 py-1.5 rounded-full font-medium">
+                      {pkg.suitableFor.length > 1 ? "通用" : relLabel}
                     </div>
                   </div>
-                  <p className="text-sm text-slate-500 bg-slate-50 p-2 rounded-lg">
-                    💡 {pkg.recommendReason}
-                  </p>
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="text-lg font-bold text-slate-900">{pkg.title}</h4>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-slate-900">{pkg.price}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      {pkg.recommendReason}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -224,58 +239,52 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   // 5. Package Detail Page
   if (step === "package" && selectedPackage) {
     return (
-      <div className="min-h-screen bg-white pb-32 overflow-y-auto h-screen">
-        <StoreHeader title="套餐详情" onBack={() => setStep("scenario")} />
+      <div className="min-h-screen bg-white pb-32 overflow-y-auto h-screen font-serif">
+        <StoreHeader title="详情" onBack={() => setStep("scenario")} />
         
-        <div className="h-64 bg-slate-200 relative">
+        <div className="h-80 bg-slate-200 relative">
           <img src={selectedPackage.image} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 p-8 text-white">
+            <h1 className="text-3xl font-bold mb-2">{selectedPackage.title}</h1>
+            <p className="text-white/80 text-lg">{selectedPackage.price}</p>
+          </div>
         </div>
         
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">{selectedPackage.title}</h1>
-          <div className="flex items-end gap-2 mb-6">
-            <span className="text-3xl font-bold text-red-600">¥{selectedPackage.price}</span>
-            <span className="text-sm text-slate-400 line-through mb-1">原价 ¥{selectedPackage.originalPrice}</span>
-            <span className="ml-auto px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full">
-              FIND ME 专享价
-            </span>
-          </div>
+        <div className="p-8 space-y-12">
+          <section>
+            <h3 className="text-lg font-bold text-slate-900 mb-6">包含</h3>
+            <ul className="space-y-4">
+              {selectedPackage.items.map((item: string, i: number) => (
+                <li key={i} className="flex items-center justify-between text-slate-600 border-b border-slate-50 pb-4 last:border-0">
+                  <span>{item.split(' x')[0]}</span>
+                  <span className="text-slate-400 font-light">x {item.split(' x')[1]}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-          <div className="space-y-6">
-            <section>
-              <h3 className="font-bold text-slate-900 mb-3">套餐内容</h3>
-              <ul className="space-y-2">
-                {selectedPackage.items.map((item: string, i: number) => (
-                  <li key={i} className="flex items-center justify-between text-sm text-slate-600 border-b border-slate-50 pb-2">
-                    <span>{item.split(' x')[0]}</span>
-                    <span className="font-medium">x{item.split(' x')[1]}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section>
-              <h3 className="font-bold text-slate-900 mb-3">使用规则</h3>
-              <ul className="list-disc list-inside text-sm text-slate-500 space-y-1">
-                {selectedPackage.rules.map((rule: string, i: number) => (
-                  <li key={i}>{rule}</li>
-                ))}
-              </ul>
-            </section>
-          </div>
+          <section>
+            <h3 className="text-lg font-bold text-slate-900 mb-6">须知</h3>
+            <div className="space-y-3 text-slate-500">
+              {selectedPackage.rules.map((rule: string, i: number) => (
+                <p key={i}>{rule}</p>
+              ))}
+            </div>
+          </section>
         </div>
 
         {/* Bottom Action Bar */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 flex items-center justify-between z-[9999] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-slate-100 flex items-center justify-between z-[9999]">
           <div className="flex flex-col">
-            <span className="text-xs text-slate-500">总计</span>
-            <span className="text-xl font-bold text-red-600">¥{selectedPackage.price}</span>
+            <span className="text-xs text-slate-400 mb-1">总计</span>
+            <span className="text-2xl font-bold text-slate-900">{selectedPackage.price}</span>
           </div>
           <button 
             onClick={() => setStep("payment")}
-            className="bg-blue-600 text-white font-bold px-8 py-3 rounded-full shadow-lg active:scale-95 transition-all"
+            className="bg-slate-900 text-white font-bold px-10 py-4 rounded-xl shadow-lg active:scale-95 transition-all tracking-widest"
           >
-            立即下单
+            下单
           </button>
         </div>
       </div>
@@ -381,42 +390,60 @@ export default function StoreMode({ onExit }: StoreModeProps) {
     );
   }
 
-  // 7. Success Page (Social Guide)
+  // 7. Success Page (Social Guid  // 7. Success Page (Social Guide)
   if (step === "success") {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center pt-12 overflow-y-auto h-screen">
-        <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-200">
-          <CheckCircle className="w-10 h-10 text-white" />
-        </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">支付成功</h2>
-        <p className="text-slate-500 mb-8">核销码: <span className="font-mono font-bold text-slate-800">8392 1029</span></p>
+      <div className="min-h-screen bg-slate-50 p-8 flex flex-col items-start pt-20 overflow-y-auto h-screen font-serif">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="w-full"
+        >
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-green-200">
+            <CheckCircle className="w-8 h-8 text-white" />
+          </div>
+          
+          <div className="space-y-2 mb-12">
+            <h2 className="text-3xl font-bold text-slate-900">支付</h2>
+            <h2 className="text-3xl font-bold text-slate-900">已完成</h2>
+          </div>
 
-        {/* Social Guide Card */}
-        <div className="w-full bg-white rounded-2xl p-6 shadow-lg border border-slate-100 mb-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-full -mr-10 -mt-10 z-0"></div>
-          <div className="relative z-10">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">要不要看看...</h3>
-            <p className="text-slate-600 mb-6">现在也在附近吃饭的人？说不定有惊喜哦！</p>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => onExit(true)} // Pass true to redirect to map
-                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl active:scale-95 transition-all shadow-md shadow-blue-200"
-              >
-                <Users className="w-4 h-4" />
-                看附近的人
-              </button>
-              <button className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 font-bold py-3 rounded-xl border border-blue-100 active:scale-95 transition-all">
-                <Share2 className="w-4 h-4" />
-                发相见动态
-              </button>
+          <div className="mb-16 space-y-2">
+            <p className="text-slate-400 text-sm">您的核销码</p>
+            <p className="font-mono text-2xl text-slate-800 tracking-widest">8392 1029</p>
+          </div>
+
+          {/* Social Guide Card */}
+          <div className="w-full relative overflow-hidden mb-12">
+            <div className="relative z-10 space-y-6">
+              <div className="space-y-3 text-slate-600 text-lg leading-relaxed">
+                <p>此刻</p>
+                <p>也在附近用餐的人</p>
+                <p>或许</p>
+                <p>会有意想不到的惊喜</p>
+              </div>
+              
+              <div className="flex flex-col gap-4 pt-4">
+                <button 
+                  onClick={() => onExit(true)} // Pass true to redirect to map
+                  className="w-full flex items-center justify-between bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-xl active:scale-95 transition-all shadow-md shadow-blue-200 group"
+                >
+                  <span className="font-medium tracking-wide">看附近的人</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button className="w-full flex items-center justify-between bg-white text-slate-600 p-4 rounded-xl border border-slate-200 active:scale-95 transition-all group">
+                  <span className="font-medium tracking-wide">发相见动态</span>
+                  <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <button onClick={() => onExit()} className="text-slate-400 text-sm mt-auto mb-8">
-          返回首页
-        </button>
+          <button onClick={() => onExit()} className="text-slate-400 text-sm mt-auto mb-8 hover:text-slate-600 transition-colors">
+            返回首页
+          </button>
+        </motion.div>
       </div>
     );
   }
