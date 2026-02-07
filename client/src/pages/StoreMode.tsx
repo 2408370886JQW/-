@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, MapPin, ShoppingBag, Users, CheckCircle, Share2, Camera, ScanFace, Fingerprint, Wallet } from "lucide-react";
+import { ArrowRight, MapPin, ShoppingBag, Users, CheckCircle, Share2, Camera, ScanFace, Fingerprint, Wallet, QrCode } from "lucide-react";
 import { MOCK_STORE, RELATIONSHIP_OPTIONS, SCENARIO_ADVICE, STORE_PACKAGES } from "@/data/mockStoreData";
 import StoreHeader from "@/components/StoreHeader";
 import RelationshipModal from "@/components/RelationshipModal";
@@ -66,7 +66,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
     return (
       <div className="min-h-screen bg-slate-50 font-serif relative overflow-hidden">
         {/* Background Layer (Blurred Store Content) */}
-        <div className="absolute inset-0 filter blur-md scale-105 pointer-events-none z-0">
+        <div className="absolute inset-0 filter blur-sm scale-105 pointer-events-none z-0">
           <StoreHeader title={MOCK_STORE.name} onBack={() => {}} />
           <div className="p-6">
             <div className="bg-white rounded-2xl p-8 shadow-sm mb-10 text-center border border-slate-100">
@@ -372,9 +372,12 @@ export default function StoreMode({ onExit }: StoreModeProps) {
             <h2 className="text-3xl font-bold text-slate-900">已完成</h2>
           </div>
 
-          <div className="mb-16 space-y-2">
-            <p className="text-slate-400 text-sm">您的核销码</p>
-            <p className="font-mono text-2xl text-slate-800 tracking-widest">8392 1029</p>
+          <div className="mb-16 space-y-4">
+            <p className="text-slate-400 text-sm">请向店员出示核销码</p>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 inline-block">
+              <QrCode className="w-32 h-32 text-slate-900" />
+            </div>
+            <p className="font-mono text-xl text-slate-800 tracking-widest mt-2">8392 1029</p>
           </div>
 
           {/* Social Guide Card */}
