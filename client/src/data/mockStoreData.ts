@@ -23,42 +23,42 @@ export const SCENARIO_ADVICE = {
     flow: "饮品\n正餐",
     duration: "六十至九十分钟\n刚刚好",
     tags: ["#不尴尬", "#稳妥", "#不翻车"],
-    description: "初次见面\n不宜过长\n先喝点东西\n缓解紧张\n聊得来\n再吃饭\n进退自如"
+    description: "初次见面不宜过长\n先喝点东西缓解紧张\n聊得来再吃饭\n进退自如"
   },
   couple: {
     title: "浪漫\n约会建议",
     flow: "正餐\n散步\n电影",
     duration: "两三小时\n慢时光",
     tags: ["#仪式感", "#升温", "#甜蜜"],
-    description: "享受\n二人世界\n选择\n环境私密的座位\n餐后\n安排散步\n或电影\n延续氛围"
+    description: "享受二人世界\n选择环境私密的座位\n餐后安排散步或电影\n延续氛围"
   },
   bestie: {
     title: "闺蜜\n聚会建议",
     flow: "拍照\n下午茶\n正餐",
     duration: "时光\n不限",
     tags: ["#出片", "#八卦", "#美食"],
-    description: "先找\n光线好的地方\n拍照\n然后\n边吃边聊\n尽情享受\n放松时光"
+    description: "先找光线好的地方拍照\n然后边吃边聊\n尽情享受放松时光"
   },
   bros: {
     title: "兄弟\n聚会建议",
     flow: "正餐\n酒吧\n游戏",
     duration: "时光\n不限",
     tags: ["#放松", "#畅聊", "#痛快"],
-    description: "大口吃肉\n大口喝酒\n不用拘束\n怎么开心\n怎么来"
+    description: "大口吃肉大口喝酒\n不用拘束\n怎么开心怎么来"
   },
   solitary: {
     title: "独处\n时光建议",
     flow: "阅读\n轻食\n发呆",
     duration: "随心\n所欲",
     tags: ["#安静", "#自在", "#充电"],
-    description: "找个角落\n戴上耳机\n享受美食\n与自己\n对话"
+    description: "找个角落戴上耳机\n享受美食\n与自己对话"
   },
   family: {
     title: "阖家\n团圆建议",
     flow: "大餐\n合影\n闲聊",
     duration: "温馨\n时刻",
     tags: ["#温馨", "#热闹", "#亲情"],
-    description: "点满一桌\n好菜\n照顾好\n老人小孩\n享受\n天伦之乐"
+    description: "点满一桌好菜\n照顾好老人小孩\n享受天伦之乐"
   }
 };
 
@@ -69,7 +69,7 @@ export const STORE_PACKAGES = [
     price: 198,
     originalPrice: 298,
     suitableFor: ["first_date", "couple"],
-    recommendReason: "分量适中\n吃相优雅\n包含\n两杯特调饮品",
+    recommendReason: "分量适中吃相优雅\n包含两杯特调饮品",
     image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop",
     items: [
       "牛油果大虾沙拉",
@@ -85,7 +85,7 @@ export const STORE_PACKAGES = [
     price: 520,
     originalPrice: 888,
     suitableFor: ["couple"],
-    recommendReason: "仪式感拉满\n包含\nM5和牛\n波士顿龙虾",
+    recommendReason: "仪式感拉满\n包含M5和牛与波士顿龙虾",
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop",
     items: [
       "M5澳洲和牛牛排",
@@ -101,7 +101,7 @@ export const STORE_PACKAGES = [
     price: 168,
     originalPrice: 258,
     suitableFor: ["bestie"],
-    recommendReason: "超高颜值\n每一款\n都超级出片",
+    recommendReason: "超高颜值\n每一款都超级出片",
     image: "https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=400&h=300&fit=crop",
     items: [
       "三层甜品塔",
@@ -116,7 +116,7 @@ export const STORE_PACKAGES = [
     price: 328,
     originalPrice: 468,
     suitableFor: ["bros"],
-    recommendReason: "肉量十足\n配啤酒\n绝佳",
+    recommendReason: "肉量十足\n配啤酒绝佳",
     image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=300&fit=crop",
     items: [
       "德式烤猪肘",
@@ -132,7 +132,7 @@ export const STORE_PACKAGES = [
     price: 88,
     originalPrice: 128,
     suitableFor: ["solitary"],
-    recommendReason: "一人食\n也要\n精致",
+    recommendReason: "一人食也要精致",
     image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
     items: [
       "经典肉酱面",
@@ -147,7 +147,7 @@ export const STORE_PACKAGES = [
     price: 688,
     originalPrice: 988,
     suitableFor: ["family"],
-    recommendReason: "菜量大\n口味老少皆宜\n适合\n全家共享",
+    recommendReason: "菜量大口味老少皆宜\n适合全家共享",
     image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&h=300&q=80",
     items: [
       "烤全鸡",

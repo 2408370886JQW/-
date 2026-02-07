@@ -410,7 +410,10 @@ export default function Home() {
         root.render(
           <div 
             className="relative group"
-            onClick={() => setSelectedFriend(marker)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedFriend(marker);
+            }}
           >
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
@@ -433,7 +436,10 @@ export default function Home() {
         root.render(
           <div 
             className="relative group"
-            onClick={() => setSelectedFriend(marker)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedFriend(marker);
+            }}
           >
             <div className={cn(
               "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
@@ -681,7 +687,7 @@ export default function Home() {
                           genderFilter === "male" ? "bg-blue-500 text-white shadow-lg shadow-blue-200" : "bg-slate-100 text-slate-600"
                         )}
                       >
-                        <span className="text-lg leading-none">♂</span> 男生
+                        <span className="text-lg leading-none flex items-center h-full">♂</span> 男生
                       </button>
                       <button 
                         onClick={() => setGenderFilter("female")}
@@ -690,7 +696,7 @@ export default function Home() {
                           genderFilter === "female" ? "bg-pink-500 text-white shadow-lg shadow-pink-200" : "bg-slate-100 text-slate-600"
                         )}
                       >
-                        <span className="text-lg leading-none">♀</span> 女生
+                        <span className="text-lg leading-none flex items-center h-full">♀</span> 女生
                       </button>
                     </div>
                   </div>
@@ -700,7 +706,10 @@ export default function Home() {
                     <label className="text-sm font-bold text-slate-900 mb-3 block">年龄</label>
                     <div className="flex gap-3">
                       {["18-22", "23-26", "27-35", "35+"].map(age => (
-                        <button key={age} className="flex-1 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
+                        <button 
+                          key={age} 
+                          className="flex-1 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors focus:bg-slate-900 focus:text-white"
+                        >
                           {age}
                         </button>
                       ))}
@@ -712,7 +721,10 @@ export default function Home() {
                     <label className="text-sm font-bold text-slate-900 mb-3 block">星座</label>
                     <div className="grid grid-cols-4 gap-2">
                       {["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"].map(zodiac => (
-                        <button key={zodiac} className="py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors">
+                        <button 
+                          key={zodiac} 
+                          className="py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors focus:bg-slate-900 focus:text-white"
+                        >
                           {zodiac}
                         </button>
                       ))}
@@ -850,8 +862,16 @@ export default function Home() {
                   }
                 }} />
               ) : (
-                <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14">
-                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6">
+                <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14 relative">
+                  {/* Back Button */}
+                  <button 
+                    onClick={() => setActiveTab("encounter")}
+                    className="absolute top-4 left-4 p-2 bg-white/20 backdrop-blur-md rounded-full text-white z-10 active:scale-95 transition-transform"
+                  >
+                    <ArrowLeft className="w-6 h-6" />
+                  </button>
+
+                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6 pt-16">
                     <h2 className="text-2xl font-bold mb-2">到店相见</h2>
                     <p className="text-blue-100 mb-6">扫码解锁专属优惠与社交玩法</p>
                     <button 
