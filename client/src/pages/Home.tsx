@@ -438,8 +438,13 @@ export default function Home() {
               setSelectedFriend(marker);
             }}
           >
+            {/* Online Halo Effect */}
+            {marker.status === "online" && (
+              <div className="absolute -inset-2 bg-green-400/30 rounded-full animate-pulse z-0" />
+            )}
+            
             <div className={cn(
-              "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
+              "relative z-10 w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
               (marker.gender === "female" || marker.gender === "Woman") ? "!border-pink-500" : "!border-blue-500"
             )}
             style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
@@ -447,7 +452,7 @@ export default function Home() {
             </div>
             {/* Status Dot */}
             <div className={cn(
-              "absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white",
+              "absolute bottom-0 right-0 z-20 w-3.5 h-3.5 rounded-full border-2 border-white",
               marker.status === "online" ? "bg-green-500" : 
               marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
             )} />
@@ -464,8 +469,13 @@ export default function Home() {
               setSelectedFriend(marker);
             }}
           >
+            {/* Online Halo Effect */}
+            {marker.status === "online" && (
+              <div className="absolute -inset-2 bg-green-400/30 rounded-full animate-pulse z-0" />
+            )}
+
             <div className={cn(
-              "w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
+              "relative z-10 w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
               (marker.gender === "female" || marker.gender === "Woman") ? "!border-pink-500" : "!border-blue-500"
             )}
             style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
@@ -473,7 +483,7 @@ export default function Home() {
             </div>
             {/* Status Dot */}
             <div className={cn(
-              "absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white",
+              "absolute bottom-0 right-0 z-20 w-3.5 h-3.5 rounded-full border-2 border-white",
               marker.status === "online" ? "bg-green-500" : marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
             )} />
           </div>
