@@ -188,6 +188,29 @@ export default function Home() {
       setMarkerData(INITIAL_MARKERS);
     }
   }, []);
+
+  // Manage map click listener separately to ensure proper cleanup and prevent duplicates
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    const listener = mapInstance.addListener('click', () => {
+      // Check timestamp lock to prevent map click from interfering with toggle button
+      // If less than 1000ms has passed since the last toggle, ignore this click
+      if (Date.now() - lastToggleTimeRef.current < 1000) {
+        console.log("Map click ignored due to lock");
+        return;
+      }
+
+      console.log("Map clicked, resetting UI state");
+      setSelectedFriend(null);
+      setSelectedMoment(null);
+      setIsNavVisible(true);
+    });
+
+    return () => {
+      if (listener) google.maps.event.removeListener(listener);
+    };
+  }, [mapInstance]);
   const [overlays, setOverlays] = useState<google.maps.OverlayView[]>([]);
   
   // New state for Meet page
@@ -808,21 +831,6 @@ export default function Home() {
           className="w-full h-full"
           onMapReady={(map) => {
             setMapInstance(map);
-            // Add click listener to close popups when clicking map
-            map.addListener('click', () => {
-              // Check timestamp lock to prevent map click from interfering with toggle button
-              // If less than 1000ms has passed since the last toggle, ignore this click
-              if (Date.now() - lastToggleTimeRef.current < 1000) return;
-
-              // Only close if clicking on the map background, not markers
-              // But markers have their own click handlers which stop propagation
-              // So this is fine, but we need to make sure marker clicks don't bubble up to map click
-              // The CustomOverlay implementation might be letting clicks through
-              // We will handle this in the marker click handler
-              setSelectedFriend(null);
-              setSelectedMoment(null);
-              setIsNavVisible(true);
-            });
           }}
         />
 
@@ -832,7 +840,7 @@ export default function Home() {
             <motion.button
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
+              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900 border border-slate-100"
               onClick={() => setShowFilterModal(true)}
             >
               <Filter className="w-5 h-5" />
@@ -841,7 +849,7 @@ export default function Home() {
             <motion.button
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
+              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900 border border-slate-100"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
