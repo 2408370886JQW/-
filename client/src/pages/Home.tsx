@@ -212,7 +212,7 @@ export default function Home() {
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
   const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const interactionLockRef = useRef(false);
+  const lastToggleTimeRef = useRef(0);
 
   // Listen for new moment posted event
   useEffect(() => {
@@ -810,8 +810,9 @@ export default function Home() {
             setMapInstance(map);
             // Add click listener to close popups when clicking map
             map.addListener('click', () => {
-              // Check interaction lock to prevent map click from interfering with toggle button
-              if (interactionLockRef.current) return;
+              // Check timestamp lock to prevent map click from interfering with toggle button
+              // If less than 500ms has passed since the last toggle, ignore this click
+              if (Date.now() - lastToggleTimeRef.current < 500) return;
 
               // Only close if clicking on the map background, not markers
               // But markers have their own click handlers which stop propagation
@@ -846,12 +847,8 @@ export default function Home() {
                 e.stopPropagation();
                 e.nativeEvent.stopImmediatePropagation();
                 
-                // Interaction lock to prevent map interference
-                if (interactionLockRef.current) return;
-                interactionLockRef.current = true;
-                setTimeout(() => {
-                  interactionLockRef.current = false;
-                }, 500);
+                // Update timestamp lock
+                lastToggleTimeRef.current = Date.now();
 
                 setIsNavVisible(prev => !prev);
               }}
