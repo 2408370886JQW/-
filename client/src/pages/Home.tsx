@@ -853,12 +853,23 @@ export default function Home() {
                 setIsNavVisible(prev => !prev);
               }}
               onMouseDown={(e) => {
+                // Aggressive blocking on mouse down
+                e.preventDefault();
                 e.stopPropagation();
                 e.nativeEvent.stopImmediatePropagation();
+                lastToggleTimeRef.current = Date.now();
               }}
               onTouchStart={(e) => {
+                // Aggressive blocking on touch start
                 e.stopPropagation();
                 e.nativeEvent.stopImmediatePropagation();
+                lastToggleTimeRef.current = Date.now();
+              }}
+              onPointerDown={(e) => {
+                // Aggressive blocking on pointer down (covers both mouse and touch)
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+                lastToggleTimeRef.current = Date.now();
               }}
             >
               <ChevronsUpDown className="w-5 h-5" />
