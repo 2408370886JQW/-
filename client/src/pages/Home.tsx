@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import StoreMode from "./StoreMode";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -817,14 +817,29 @@ export default function Home() {
 
         {/* Filter Button (Floating) - Only show on Encounter tab */}
         {activeTab === "encounter" && (
-          <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute top-32 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
-            onClick={() => setShowFilterModal(true)}
-          >
-            <Filter className="w-5 h-5" />
-          </motion.button>
+          <div className="absolute top-32 right-4 z-10 flex flex-col gap-3">
+            <motion.button
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
+              onClick={() => setShowFilterModal(true)}
+            >
+              <Filter className="w-5 h-5" />
+            </motion.button>
+
+            <motion.button
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
+              onClick={() => setIsNavVisible(!isNavVisible)}
+            >
+              {isNavVisible ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
+            </motion.button>
+          </div>
         )}
 
         {/* Detail Modals */}
