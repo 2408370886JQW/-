@@ -183,9 +183,11 @@ export default function MeetPage() {
 
   // Filter logic
   const filteredMerchants = MERCHANTS.filter(m => {
+    // If a subcategory is selected, show items matching that subcategory
     if (activeSubCategory) {
-      return m.subCategory === activeSubCategory || m.category === activeCategory;
+      return m.subCategory === activeSubCategory;
     }
+    // Otherwise, show all items in the main category
     return m.category === activeCategory;
   });
 
