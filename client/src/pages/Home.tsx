@@ -212,6 +212,11 @@ export default function Home() {
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
   const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [isFallback, setIsFallback] = useState(false);
+
+  useEffect(() => {
+    setIsFallback(new URLSearchParams(window.location.search).get("fallback") === "true");
+  }, []);
 
   // Listen for new moment posted event
   useEffect(() => {
@@ -548,6 +553,17 @@ export default function Home() {
     };
   }, [mapInstance, activeTab, markerData, genderFilter]);
 
+  // Calculate markers for fallback view
+  let displayMarkers = markerData[activeTab as keyof typeof markerData] || [];
+  if (activeTab === "encounter") {
+    displayMarkers = displayMarkers.filter((m: any) => {
+      if (genderFilter === "all") return true;
+      if (genderFilter === "male") return m.gender === "male" || m.gender === "Man";
+      if (genderFilter === "female") return m.gender === "female" || m.gender === "Woman";
+      return true;
+    });
+  }
+
   return (
     <Layout showNav={isNavVisible}>
       <div className="relative w-full h-screen overflow-hidden bg-slate-50">
@@ -805,7 +821,81 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Map View */}
+        {/* Map View or Fallback */}
+        {isFallback ? (
+          <div className="w-full h-full relative overflow-hidden bg-slate-50">
+            {/* Static Map Background */}
+            <div className="absolute inset-0 opacity-80" 
+                 style={{
+                   backgroundImage: "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1000&q=80')",
+                   backgroundSize: 'cover',
+                   backgroundPosition: 'center'
+                 }} 
+            />
+            
+            {/* Fallback Markers */}
+            {displayMarkers.map((marker: any, index: number) => {
+               // Simple distribution logic based on ID to be deterministic
+               const idNum = parseInt(marker.id.toString().replace(/\D/g, '') || '0');
+               const offsetX = ((idNum * 137) % 100) - 50; // -50 to 50
+               const offsetY = ((idNum * 293) % 100) - 50; // -50 to 50
+               
+               // Clamp to view (keep away from edges)
+               const left = 50 + offsetX * 0.6;
+               const top = 50 + offsetY * 0.6;
+               
+               return (
+                 <div 
+                   key={marker.id}
+                   className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                   style={{ left: `${left}%`, top: `${top}%` }}
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     if(marker.type === 'moment') setSelectedMoment(marker);
+                     else setSelectedFriend(marker);
+                   }}
+                 >
+                   {(marker.type === 'encounter' || marker.type === 'friend') && (
+                      <div className="relative group">
+                        {marker.status === "online" && (
+                          <div className="absolute -inset-2 bg-green-400/30 rounded-full animate-pulse z-0" />
+                        )}
+                        <div className={cn(
+                          "relative z-10 w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
+                          (marker.gender === "female" || marker.gender === "Woman") ? "!border-pink-500" : "!border-blue-500"
+                        )}
+                        style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
+                          <img src={marker.avatar} className="w-full h-full object-cover" />
+                        </div>
+                        <div className={cn(
+                          "absolute bottom-0 right-0 z-20 w-3.5 h-3.5 rounded-full border-2 border-white",
+                          marker.status === "online" ? "bg-green-500" : 
+                          marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
+                        )} />
+                      </div>
+                   )}
+                   {marker.type === 'moment' && (
+                      <div className="relative group transition-transform hover:scale-105 active:scale-95">
+                        <div className="w-32 h-24 bg-white rounded-2xl shadow-xl overflow-hidden border-[4px] border-white">
+                          <img src={marker.image} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="absolute -bottom-2 -right-2 bg-white rounded-full px-2 py-1 shadow-md flex items-center gap-2 border border-slate-100">
+                          <div className="flex items-center gap-1">
+                            <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                            <span className="text-[10px] font-bold text-slate-700">{marker.likes}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MessageCircle className="w-3 h-3 fill-blue-500 text-blue-500" />
+                            <span className="text-[10px] font-bold text-slate-700">{marker.comments}</span>
+                          </div>
+                        </div>
+                      </div>
+                   )}
+                 </div>
+               );
+            })}
+          </div>
+        ) : (
         <MapView 
           className="w-full h-full"
           onMapReady={(map) => {
@@ -834,6 +924,7 @@ export default function Home() {
             });
           }}
         />
+        )}
 
         {/* Filter Button (Floating) - Only show on Encounter tab */}
         {activeTab === "encounter" && (
