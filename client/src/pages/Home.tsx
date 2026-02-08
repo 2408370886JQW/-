@@ -1,283 +1,515 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import { useLocation } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Search, Users, MapPin, MessageCircle, User, Plus, 
-  Filter, Heart, Navigation, X, ChevronRight, Camera,
-  Calendar, Coffee, Utensils, Moon, Gift, Star, ArrowLeft,
-  CheckCircle, ShoppingBag, Clock, MapPin as MapPinIcon
-} from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import Layout from "@/components/Layout";
+import StoreMode from "./StoreMode";
+import MomentDetail from "@/components/MomentDetail";
+import { Input } from "@/components/ui/input";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
+import { Link } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
 import { createRoot } from "react-dom/client";
 
-// --- Mock Data ---
+// Mock data for map markers
 const INITIAL_MARKERS = {
   encounter: [
-    { id: 1, lat: 31.2304, lng: 121.4737, avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&q=80", gender: "male", status: "online" },
-    { id: 2, lat: 31.2354, lng: 121.4787, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80", gender: "female", status: "recent" },
-    { id: 3, lat: 31.2254, lng: 121.4687, avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100&h=100&fit=crop&q=80", gender: "male", status: "offline" },
-    { id: 4, lat: 31.2404, lng: 121.4837, avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&q=80", gender: "female", status: "online" },
+    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
+    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "15分钟前在线" },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male", lastSeen: "在线" },
+    { id: 12, lat: 39.912, lng: 116.402, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "5小时前在线" },
   ],
   friends: [
-    { id: 5, lat: 31.2324, lng: 121.4757, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80", gender: "male", status: "online", name: "Bob" },
-    { id: 6, lat: 31.2284, lng: 121.4707, avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&q=80", gender: "female", status: "recent", name: "Alice" },
+    { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male" },
+    { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "female" },
+    { id: 9, lat: 39.910, lng: 116.400, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female" },
+    { id: 10, lat: 39.905, lng: 116.410, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male" },
+    { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male" },
   ],
   moments: [
-    { id: 7, lat: 31.2314, lng: 121.4767, image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=200&fit=crop&q=80", likes: 89, comments: 21, type: "moment" },
-    { id: 8, lat: 31.2364, lng: 121.4717, image: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=300&h=200&fit=crop&q=80", likes: 45, comments: 12, type: "moment" },
-    { id: 9, lat: 31.2294, lng: 121.4817, image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300&h=200&fit=crop&q=80", likes: 156, comments: 32, type: "moment" },
-    { id: 10, lat: 31.2334, lng: 121.4667, image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=200&fit=crop&q=80", likes: 24, comments: 5, type: "moment" },
-  ]
+    { 
+      id: 5, 
+      lat: 39.902, 
+      lng: 116.395, 
+      type: "moment", 
+      icon: ImageIcon,
+      content: "今天天气真好！",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
+      likes: 24,
+      comments: 5
+    },
+    { 
+      id: 6, 
+      lat: 39.918, 
+      lng: 116.408, 
+      type: "moment", 
+      icon: ImageIcon,
+      content: "打卡网红咖啡店",
+      image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop",
+      likes: 156,
+      comments: 32
+    },
+    { 
+      id: 13, 
+      lat: 39.910, 
+      lng: 116.400, 
+      type: "moment", 
+      icon: ImageIcon,
+      content: "周末的快乐时光",
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=200&fit=crop",
+      likes: 45,
+      comments: 12
+    },
+    { 
+      id: 14, 
+      lat: 39.905, 
+      lng: 116.415, 
+      type: "moment", 
+      icon: ImageIcon,
+      content: "偶遇一只可爱的小猫",
+      image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop",
+      likes: 89,
+      comments: 21
+    },
+  ],
+  meet: [ 
+    { id: 7, lat: 39.906, lng: 116.412, type: "meet", icon: ShoppingBag },
+    { id: 8, lat: 39.910, lng: 116.402, type: "meet", icon: ShoppingBag },
+  ],
+
 };
 
-const MEET_RECOMMENDATIONS = [
-  {
-    id: 1,
-    title: "周末看展 | 798这家新展太出片了！🎨",
-    author: "Alex Chen",
-    likes: 124,
-    image: "https://images.unsplash.com/photo-1563089145-599997674d42?w=400&h=500&fit=crop&q=80"
-  },
-  {
-    id: 2,
-    title: "必吃榜汉堡，汁水满满！🍔",
-    author: "Foodie Jane",
-    likes: 230,
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=500&fit=crop&q=80"
-  },
-  {
-    id: 3,
-    title: "隐藏在胡同里的宝藏咖啡馆 ☕️",
-    author: "Coffee Lover",
-    likes: 89,
-    image: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=400&h=500&fit=crop&q=80"
-  },
-  {
-    id: 4,
-    title: "落日飞车，海边兜风指南 🚗",
-    author: "Travel Bug",
-    likes: 456,
-    image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&h=500&fit=crop&q=80"
-  }
-];
+// --- NEW DATA STRUCTURES FOR SCENARIO-BASED MEET PAGE ---
 
-const STORE_PACKAGES = [
-  {
-    id: 1,
-    title: "双人浪漫晚餐套餐",
-    price: 298,
-    originalPrice: 598,
-    sold: 1205,
-    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=300&fit=crop&q=80",
-    tags: ["约会首选", "氛围感", "免预约"]
-  },
-  {
-    id: 2,
-    title: "闺蜜下午茶套餐",
-    price: 168,
-    originalPrice: 298,
-    sold: 856,
-    image: "https://images.unsplash.com/photo-1563089145-599997674d42?w=400&h=300&fit=crop&q=80",
-    tags: ["拍照出片", "甜点", "无限续杯"]
-  },
-  {
-    id: 3,
-    title: "4人聚会超值套餐",
-    price: 498,
-    originalPrice: 888,
-    sold: 432,
-    image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=400&h=300&fit=crop&q=80",
-    tags: ["量大管饱", "包间可用", "周末通用"]
-  }
-];
-
+// 1. Scenarios (Entry Level)
 const SCENARIOS = [
-  { id: 'date', label: '约会', icon: Heart, color: 'text-pink-500', bg: 'bg-pink-50' },
-  { id: 'friends', label: '闺蜜', icon: Users, color: 'text-purple-500', bg: 'bg-purple-50' },
-  { id: 'bros', label: '哥们', icon: Coffee, color: 'text-blue-500', bg: 'bg-blue-50' },
-  { id: 'anniversary', label: '纪念日', icon: Gift, color: 'text-red-500', bg: 'bg-red-50' },
-  { id: 'night', label: '深夜', icon: Moon, color: 'text-indigo-500', bg: 'bg-indigo-50' },
+  { id: "date", label: "约会", icon: Heart, color: "text-pink-500", bg: "bg-pink-50" },
+  { id: "bestie", label: "闺蜜", icon: Camera, color: "text-purple-500", bg: "bg-purple-50" },
+  { id: "bros", label: "兄弟", icon: Beer, color: "text-blue-500", bg: "bg-blue-50" },
+  { id: "birthday", label: "生日", icon: Cake, color: "text-red-500", bg: "bg-red-50" },
+  { id: "business", label: "商务", icon: Briefcase, color: "text-slate-600", bg: "bg-slate-100" },
+  { id: "chill", label: "坐坐", icon: Coffee, color: "text-amber-500", bg: "bg-amber-50" },
+  { id: "night", label: "深夜", icon: Moon, color: "text-indigo-500", bg: "bg-indigo-50" },
 ];
 
-// --- Layout Component ---
-const Layout = ({ children, showNav = true }: { children: React.ReactNode, showNav?: boolean }) => {
-  const [location, setLocation] = useLocation();
-  
-  const navItems = [
-    { id: '/', label: '地图', icon: MapPin },
-    { id: '/circles', label: '圈子', icon: Users },
-    { id: '/publish', label: '发布动态', icon: Plus, isFab: true },
-    { id: '/messages', label: '消息', icon: MessageCircle },
-    { id: '/profile', label: '我的', icon: User },
-  ];
-
-  return (
-    <div className="h-screen w-full flex flex-col bg-white overflow-hidden">
-      <div className="flex-1 relative overflow-hidden">
-        {children}
-      </div>
-      
-      {/* Bottom Navigation */}
-      <AnimatePresence>
-        {showNav && (
-          <motion.div 
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            exit={{ y: 100 }}
-            className="h-[88px] bg-white border-t border-slate-100 flex items-end justify-around pb-6 px-2 relative z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]"
-          >
-            {navItems.map((item) => {
-              const isActive = location === item.id;
-              
-              if (item.isFab) {
-                return (
-                  <button 
-                    key={item.id}
-                    onClick={() => setLocation(item.id)}
-                    className="relative -top-6"
-                  >
-                    <div className="w-16 h-16 bg-[#0F172A] rounded-full flex items-center justify-center shadow-lg shadow-slate-900/20 active:scale-95 transition-transform">
-                      <Plus className="w-8 h-8 text-white" />
-                    </div>
-                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium text-slate-400 whitespace-nowrap">
-                      {item.label}
-                    </span>
-                  </button>
-                );
-              }
-
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setLocation(item.id)}
-                  className="flex flex-col items-center gap-1 w-12"
-                >
-                  <item.icon 
-                    className={cn(
-                      "w-6 h-6 transition-colors",
-                      isActive ? "text-blue-600 fill-blue-600" : "text-slate-400"
-                    )} 
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  <span className={cn(
-                    "text-[10px] font-medium transition-colors",
-                    isActive ? "text-blue-600" : "text-slate-400"
-                  )}>
-                    {item.label}
-                  </span>
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+// 2. Plans (Solution Level)
+const PLANS = {
+  date: [
+    {
+      id: "date-first",
+      title: "第一次约会标准流程",
+      tags: ["#不尴尬", "#氛围感", "#高成功率"],
+      steps: [
+        { icon: "🍽", label: "吃饭", desc: "安静适合聊天" },
+        { icon: "🎬", label: "看电影", desc: "拉近距离" },
+        { icon: "☕️", label: "咖啡", desc: "意犹未尽" }
+      ],
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=200&fit=crop"
+    },
+    {
+      id: "date-anniversary",
+      title: "纪念日浪漫之夜",
+      tags: ["#仪式感", "#高端", "#难忘"],
+      steps: [
+        { icon: "🌹", label: "送花", desc: "惊喜开场" },
+        { icon: "🍽", label: "法餐", desc: "烛光晚餐" },
+        { icon: "🌃", label: "江景", desc: "浪漫散步" }
+      ],
+      image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=200&fit=crop"
+    }
+  ],
+  bestie: [
+    {
+      id: "bestie-photo",
+      title: "闺蜜出片一日游",
+      tags: ["#超好拍", "#网红店", "#精致"],
+      steps: [
+        { icon: "🍰", label: "下午茶", desc: "高颜值甜点" },
+        { icon: "📸", label: "拍照", desc: "艺术展/公园" },
+        { icon: "🍸", label: "小酌", desc: "微醺时刻" }
+      ],
+      image: "https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=400&h=200&fit=crop"
+    }
+  ],
+  bros: [
+    {
+      id: "bros-hangout",
+      title: "兄弟聚一聚",
+      tags: ["#放松", "#畅聊", "#解压"],
+      steps: [
+        { icon: "🍺", label: "烧烤", desc: "大口吃肉" },
+        { icon: "🎱", label: "台球", desc: "切磋球技" },
+        { icon: "🎮", label: "网咖", desc: "开黑一把" }
+      ],
+      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop"
+    }
+  ],
+  birthday: [
+    {
+      id: "birthday-party",
+      title: "难忘生日趴",
+      tags: ["#狂欢", "#仪式感", "#多人"],
+      steps: [
+        { icon: "🍽", label: "大餐", desc: "聚会首选" },
+        { icon: "🎤", label: "KTV", desc: "嗨唱整晚" },
+        { icon: "🎂", label: "许愿", desc: "切蛋糕" }
+      ],
+      image: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=400&h=200&fit=crop"
+    }
+  ],
+  business: [
+    {
+      id: "business-banquet",
+      title: "高端商务局",
+      tags: ["#私密", "#排面", "#谈事"],
+      steps: [
+        { icon: "🍵", label: "茶室", desc: "静心叙旧" },
+        { icon: "🥢", label: "私房菜", desc: "精致位上" },
+        { icon: "🥃", label: "Lounge", desc: "雪茄威士忌" }
+      ],
+      image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=200&fit=crop"
+    }
+  ],
+  chill: [],
+  night: []
 };
 
-// --- Main Home Component ---
-export default function Home() {
-  const [activeTab, setActiveTab] = useState("encounter"); // encounter, friends, moments, meet
-  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const [overlays, setOverlays] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  
-  // Store Mode States
-  const [storeModeStep, setStoreModeStep] = useState<"none" | "scenario" | "store_home" | "package_detail" | "payment_success">("none");
-  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<any | null>(null);
+type TabType = "encounter" | "friends" | "moments" | "meet";
 
-  const tabs = [
+export default function Home() {
+  const [activeTab, setActiveTab] = useState<TabType>("encounter");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const [markerData, setMarkerData] = useState<any>(INITIAL_MARKERS);
+
+  // Force reset marker data on mount to ensure it's not empty
+  useEffect(() => {
+    if (!markerData.encounter || markerData.encounter.length === 0) {
+      setMarkerData(INITIAL_MARKERS);
+    }
+  }, []);
+  const [overlays, setOverlays] = useState<google.maps.OverlayView[]>([]);
+  
+  // New state for Meet page
+  const [activeScenario, setActiveScenario] = useState("date");
+  const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
+  const [ageFilter, setAgeFilter] = useState<string | null>(null);
+  const [zodiacFilter, setZodiacFilter] = useState<string | null>(null);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // State for Friend Card and Dynamics Detail
+  const [selectedFriend, setSelectedFriend] = useState<any>(null);
+  const [selectedMoment, setSelectedMoment] = useState<any>(null);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [showGroupBuying, setShowGroupBuying] = useState(false);
+  const [showFriendList, setShowFriendList] = useState(false);
+  const [selectedShop, setSelectedShop] = useState<any>(null);
+
+  // State for Nav Hiding
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isMeetHeaderCollapsed, setIsMeetHeaderCollapsed] = useState(false);
+  const [showStoreMode, setShowStoreMode] = useState(false);
+  const lastScrollY = useRef(0);
+  const navRef = useRef<HTMLDivElement>(null);
+  const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Listen for new moment posted event
+  useEffect(() => {
+    const handleNewMoment = (e: CustomEvent) => {
+      const newMoment = e.detail;
+      
+      // Add to local state
+      setMarkerData((prev: any) => ({
+        ...prev,
+        moments: [
+          {
+            id: newMoment.id,
+            lat: 39.9042 + (Math.random() - 0.5) * 0.01, // Random nearby location if not specified
+            lng: 116.4074 + (Math.random() - 0.5) * 0.01,
+            type: "moment",
+            icon: ImageIcon,
+            content: newMoment.content,
+            image: newMoment.media[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
+            likes: 0,
+            comments: 0,
+            hashtags: newMoment.hashtags
+          },
+          ...prev.moments
+        ]
+      }));
+
+      // Switch to moments tab to show the new post
+      setActiveTab("moments");
+      
+      // If map instance exists, pan to the new moment
+      if (mapInstance) {
+        // Use a slight delay to ensure marker is rendered
+        setTimeout(() => {
+          mapInstance.panTo({ lat: 39.9042, lng: 116.4074 });
+          mapInstance.setZoom(16);
+        }, 500);
+      }
+    };
+
+    window.addEventListener('new-moment-posted', handleNewMoment as EventListener);
+    return () => {
+      window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
+    };
+  }, [mapInstance]);
+
+  // Handle scroll/drag to hide nav
+  useEffect(() => {
+    let startY = 0;
+    let isDragging = false;
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+      isDragging = true;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      const currentY = e.touches[0].clientY;
+      const diff = startY - currentY;
+
+      // Hide nav when dragging map (swiping up/down significantly)
+      if (Math.abs(diff) > 10) {
+        setIsNavVisible(false);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isDragging = false;
+      // Show nav when dragging stops
+      setTimeout(() => {
+        setIsNavVisible(true);
+      }, 300);
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
+
+  const tabs: { id: TabType; label: string; subtitle: string }[] = [
     { id: "encounter", label: "偶遇", subtitle: "身边的人" },
     { id: "friends", label: "好友", subtitle: "我的好友" },
     { id: "moments", label: "动态", subtitle: "看看新鲜事" },
     { id: "meet", label: "相见", subtitle: "发现美好生活" },
   ];
 
-  // --- Custom Overlay Logic ---
+  // Listen for new moment posts
   useEffect(() => {
-    if (!mapInstance || !window.google) return;
+    const handleNewMoment = (event: CustomEvent) => {
+      const newMoment = event.detail;
+      // Add new moment to marker data
+      setMarkerData((prev: any) => ({
+        ...prev,
+        moments: [
+          ...prev.moments,
+          {
+            id: Date.now(),
+            lat: 39.9042 + (Math.random() - 0.5) * 0.01, // Random location near center
+            lng: 116.4074 + (Math.random() - 0.5) * 0.01,
+            type: "moment",
+            icon: ImageIcon,
+            content: newMoment.content,
+            image: newMoment.media[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
+            likes: 0,
+            comments: 0,
+            hashtags: newMoment.hashtags
+          }
+        ]
+      }));
+      
+      // Switch to moments tab
+      setActiveTab("moments");
+    };
+
+    window.addEventListener('new-moment-posted', handleNewMoment as EventListener);
+    return () => {
+      window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
+    };
+  }, []);
+
+  // Update markers when active tab changes
+  useEffect(() => {
+    if (!mapInstance) return;
 
     // Clear existing overlays
-    overlays.forEach(o => o.setMap(null));
-    
-    // If we are in 'meet' tab, we don't show map markers
-    if (activeTab === 'meet') {
-      setOverlays([]);
-      return;
-    }
+    overlays.forEach(overlay => overlay.setMap(null));
+    setOverlays([]);
 
-    const newOverlays: any[] = [];
+    const newOverlays: google.maps.OverlayView[] = [];
 
-    // Define CustomOverlay Class
+    // Define CustomOverlay class
     class CustomOverlay extends google.maps.OverlayView {
       position: google.maps.LatLng;
-      container: HTMLDivElement;
-      root: any;
-
-      constructor(position: google.maps.LatLng, content: HTMLDivElement) {
+      content: HTMLElement;
+      
+      constructor(position: google.maps.LatLng, content: HTMLElement) {
         super();
         this.position = position;
-        this.container = content;
-        this.root = createRoot(this.container);
+        this.content = content;
       }
 
       onAdd() {
         const panes = this.getPanes();
         if (panes) {
-          panes.overlayMouseTarget.appendChild(this.container);
+          panes.overlayMouseTarget.appendChild(this.content);
         }
       }
 
       draw() {
         const projection = this.getProjection();
-        if (!projection) return;
-
-        const point = projection.fromLatLngToDivPixel(this.position);
-        if (point) {
-          this.container.style.left = point.x + 'px';
-          this.container.style.top = point.y + 'px';
+        if (projection) {
+          const pixel = projection.fromLatLngToDivPixel(this.position);
+          if (pixel) {
+            this.content.style.position = 'absolute';
+            this.content.style.left = pixel.x + 'px';
+            this.content.style.top = pixel.y + 'px';
+            // Ensure z-index is high enough to be visible
+            this.content.style.zIndex = '100';
+            this.content.style.transform = 'translate(-50%, -100%)'; // Center horizontally, anchor at bottom
+          }
         }
       }
 
       onRemove() {
-        if (this.container.parentElement) {
-          this.container.parentElement.removeChild(this.container);
+        if (this.content.parentElement) {
+          this.content.parentElement.removeChild(this.content);
         }
-        setTimeout(() => this.root.unmount(), 0);
       }
     }
 
-    // Determine which markers to show
-    let markersToShow: any[] = [];
-    if (activeTab === 'encounter') markersToShow = INITIAL_MARKERS.encounter;
-    else if (activeTab === 'friends') markersToShow = INITIAL_MARKERS.friends;
-    else if (activeTab === 'moments') markersToShow = INITIAL_MARKERS.moments;
+    // Add markers based on active tab
+    let currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
 
-    // Create markers
-    markersToShow.forEach(marker => {
-      const div = document.createElement('div');
-      div.style.position = 'absolute';
-      div.style.cursor = 'pointer';
-      div.style.transform = 'translate(-50%, -50%)';
+    // Force pan to first marker if available to ensure visibility
+    if (currentMarkers.length > 0 && mapInstance) {
+      const firstMarker = currentMarkers[0];
+      // Only pan if the map center is far away (e.g. > 1km) or on initial load
+      // For now, we'll just pan to the center of the markers to be safe
+      const bounds = new google.maps.LatLngBounds();
+      currentMarkers.forEach((m: any) => bounds.extend({ lat: m.lat, lng: m.lng }));
+      mapInstance.fitBounds(bounds);
       
-      div.addEventListener('click', (e) => {
-        e.stopPropagation();
-        console.log('Marker clicked:', marker.id);
+      // Avoid zooming in too close
+      const listener = google.maps.event.addListener(mapInstance, "idle", () => { 
+        if (mapInstance.getZoom()! > 16) mapInstance.setZoom(16); 
+        google.maps.event.removeListener(listener); 
       });
+    }
+    
+    // Apply gender filter for encounter tab
+    if (activeTab === "encounter") {
+      currentMarkers = currentMarkers.filter((m: any) => {
+        if (genderFilter === "all") return true;
+        if (genderFilter === "male") return m.gender === "male" || m.gender === "Man";
+        if (genderFilter === "female") return m.gender === "female" || m.gender === "Woman";
+        return true;
+      });
+    }
 
-      const overlay = new CustomOverlay(
-        new google.maps.LatLng(marker.lat, marker.lng),
-        div
-      );
+    currentMarkers.forEach((marker: any) => {
+      console.log(`Rendering marker ${marker.id}: type=${marker.type}, gender=${marker.gender}`);
+      // Filter out offline users > 24h
+      // We assume 'offline' status means within 24h (gray dot), and we filter out those explicitly marked as 'inactive' or similar if we had that state.
+      // For now, we show 'offline' as gray dots as requested.
+      // if ((marker.type === 'encounter' || marker.type === 'friend') && marker.status === 'offline') {
+      //   return;
+      // }
+      const div = document.createElement('div');
+      div.style.cursor = 'pointer';
+      
+      // Render different markers based on type
+      if (marker.type === 'encounter') {
+        // Encounter Marker
+        const root = createRoot(div);
+        root.render(
+          <div 
+            className="relative group"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              setSelectedFriend(marker);
+            }}
+          >
+            {/* Online Halo Effect */}
+            {marker.status === "online" && (
+              <div className="absolute -inset-2 bg-green-400/30 rounded-full animate-pulse z-0" />
+            )}
+            
+            <div className={cn(
+              "relative z-10 w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
+              (marker.gender === "female" || marker.gender === "Woman") ? "!border-pink-500" : "!border-blue-500"
+            )}
+            style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
+              <img src={marker.avatar} className="w-full h-full object-cover" />
+            </div>
+            {/* Status Dot */}
+            <div className={cn(
+              "absolute bottom-0 right-0 z-20 w-3.5 h-3.5 rounded-full border-2 border-white",
+              marker.status === "online" ? "bg-green-500" : 
+              marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
+            )} />
+          </div>
+        );
+      } else if (marker.type === 'friend') {
+        // Friend Marker
+        const root = createRoot(div);
+        root.render(
+          <div 
+            className="relative group"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              setSelectedFriend(marker);
+            }}
+          >
+            {/* Online Halo Effect */}
+            {marker.status === "online" && (
+              <div className="absolute -inset-2 bg-green-400/30 rounded-full animate-pulse z-0" />
+            )}
 
-      if (marker.type === 'moment') {
-        overlay.root.render(
-          <div className="relative group transition-transform hover:scale-105 active:scale-95">
+            <div className={cn(
+              "relative z-10 w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
+              (marker.gender === "female" || marker.gender === "Woman") ? "!border-pink-500" : "!border-blue-500"
+            )}
+            style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
+              <img src={marker.avatar} className="w-full h-full object-cover" />
+            </div>
+            {/* Status Dot */}
+            <div className={cn(
+              "absolute bottom-0 right-0 z-20 w-3.5 h-3.5 rounded-full border-2 border-white",
+              marker.status === "online" ? "bg-green-500" : marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
+            )} />
+          </div>
+        );
+      } else if (marker.type === 'moment') {
+        // Moment Marker - First Version Style (Large Image + Floating Stats)
+        const root = createRoot(div);
+        root.render(
+          <div 
+            className="relative group transition-transform hover:scale-105 active:scale-95"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              setSelectedMoment(marker);
+            }}
+          >
+            {/* Main Image Card */}
             <div className="w-32 h-24 bg-white rounded-2xl shadow-xl overflow-hidden border-[4px] border-white">
               <img src={marker.image} className="w-full h-full object-cover" />
             </div>
+            
+            {/* Floating Stats Capsule */}
             <div className="absolute -bottom-2 -right-2 bg-white rounded-full px-2 py-1 shadow-md flex items-center gap-2 border border-slate-100">
               <div className="flex items-center gap-1">
                 <Heart className="w-3 h-3 fill-red-500 text-red-500" />
@@ -290,27 +522,12 @@ export default function Home() {
             </div>
           </div>
         );
-      } else {
-        const borderColor = marker.gender === 'female' ? 'border-pink-500' : 'border-blue-500';
-        const statusColor = marker.status === 'online' ? 'bg-green-500' : 
-                           marker.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-300';
-        
-        overlay.root.render(
-          <div className="relative group transition-transform hover:scale-110 active:scale-95">
-            <div className={cn(
-              "w-14 h-14 rounded-full p-[3px] bg-white shadow-lg",
-              "border-[3px]", borderColor
-            )}>
-              <img src={marker.avatar} className="w-full h-full rounded-full object-cover" />
-            </div>
-            <div className={cn(
-              "absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border-[2px] border-white",
-              statusColor
-            )} />
-          </div>
-        );
       }
 
+      const overlay = new CustomOverlay(
+        new google.maps.LatLng(marker.lat, marker.lng),
+        div
+      );
       overlay.setMap(mapInstance);
       newOverlays.push(overlay);
     });
@@ -318,425 +535,443 @@ export default function Home() {
     setOverlays(newOverlays);
 
     return () => {
-      newOverlays.forEach(o => o.setMap(null));
+      newOverlays.forEach(overlay => overlay.setMap(null));
     };
-  }, [mapInstance, activeTab]);
-
-  // --- Store Mode Handlers ---
-  const handleScanCode = () => {
-    setStoreModeStep("scenario");
-  };
-
-  const handleSelectScenario = (scenarioId: string) => {
-    setSelectedScenario(scenarioId);
-    setStoreModeStep("store_home");
-  };
-
-  const handleSelectPackage = (pkg: any) => {
-    setSelectedPackage(pkg);
-    setStoreModeStep("package_detail");
-  };
-
-  const handlePayment = () => {
-    setStoreModeStep("payment_success");
-  };
-
-  const handleCloseStoreMode = () => {
-    setStoreModeStep("none");
-    setSelectedScenario(null);
-    setSelectedPackage(null);
-  };
+  }, [mapInstance, activeTab, markerData, genderFilter]);
 
   return (
-    <Layout showNav={storeModeStep === "none"}>
-      <div className="relative w-full h-full bg-slate-50">
+    <Layout showNav={isNavVisible}>
+      <div className="relative w-full h-screen overflow-hidden bg-slate-50">
         
-        {/* --- Top Navigation Bar (Hidden in Store Mode) --- */}
-        {storeModeStep === "none" && (
-          <div className="absolute top-0 left-0 right-0 z-20 bg-white/90 backdrop-blur-md pt-12 pb-2 px-4 shadow-sm">
+        {/* Top Navigation Bar - Auto Hide */}
+        <motion.div 
+          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-2 bg-white shadow-sm pointer-events-none"
+          animate={{ 
+            y: isNavVisible && activeTab !== 'meet' ? 0 : -100,
+            opacity: isNavVisible && activeTab !== 'meet' ? 1 : 0
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        >
+          <div className="pointer-events-auto">
             {/* Search Bar */}
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4 gap-2">
-                <Search className="w-4 h-4 text-slate-400" />
+              <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4">
+                <Search className="w-4 h-4 text-slate-400 mr-2" />
                 <input 
                   type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="搜索好友ID、套餐名称、商户名称"
                   className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition-colors">
-                <User className="w-6 h-6 text-slate-700" />
+              <button 
+                className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                onClick={() => setShowFriendList(true)}
+              >
+                <Users className="w-5 h-5 text-slate-600" />
               </button>
             </div>
 
-            {/* Tabs */}
+            {/* Tab Switcher */}
             <div className="flex items-center justify-between px-2">
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className="flex flex-col items-center gap-1 relative py-2"
-                  >
-                    <span className={cn(
-                      "text-base font-bold transition-colors",
-                      isActive ? "text-slate-900" : "text-slate-400"
-                    )}>
-                      {tab.label}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      {tab.subtitle}
-                    </span>
-                    {isActive && (
-                      <motion.div 
-                        layoutId="activeTabIndicator"
-                        className="absolute bottom-0 w-4 h-1 bg-blue-600 rounded-full"
-                      />
-                    )}
-                  </button>
-                );
-              })}
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="flex flex-col items-center gap-0.5 group"
+                >
+                  <span className={cn(
+                    "text-base font-bold transition-colors",
+                    activeTab === tab.id ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
+                  )}>
+                    {tab.label}
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-medium transition-colors",
+                    activeTab === tab.id ? "text-blue-500" : "text-slate-300"
+                  )}>
+                    {tab.subtitle}
+                  </span>
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className="w-4 h-1 bg-blue-500 rounded-full mt-1"
+                    />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
+        </motion.div>
+
+
+
+        {/* Friend List Popup */}
+        <AnimatePresence>
+          {showFriendList && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowFriendList(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed inset-y-0 right-0 z-50 w-3/4 max-w-sm bg-white shadow-2xl flex flex-col"
+              >
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="font-bold text-lg text-slate-900">好友列表</h3>
+                  <button onClick={() => setShowFriendList(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                    <X className="w-5 h-5 text-slate-500" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain h-full touch-pan-y">
+                  {INITIAL_MARKERS.friends.map(friend => (
+                    <div key={friend.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer" onClick={() => {
+                      setShowFriendList(false);
+                      setSelectedFriend(friend);
+                    }}>
+                      <div className={cn(
+                        "w-12 h-12 rounded-full border-2 overflow-hidden",
+                        (friend.gender === "female" || friend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
+                      )}>
+                        <img src={friend.avatar} alt="Friend" className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">用户 {friend.id}</div>
+                        <div className="text-xs text-slate-500 flex items-center gap-1">
+                          <div className={cn("w-2 h-2 rounded-full", friend.status === "online" ? "bg-green-500" : "bg-gray-400")} />
+                          {friend.status === "online" ? "在线" : friend.status === "recent" ? "1小时内在线" : "离线"}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {/* Mock more friends with mixed genders */}
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(i => {
+                    const isFemale = i % 2 === 0;
+                    return (
+                      <div key={`mock-${i}`} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
+                        <div className={cn(
+                          "w-12 h-12 rounded-full border-2 overflow-hidden bg-slate-100",
+                          isFemale ? "border-pink-500" : "border-blue-500"
+                        )}>
+                          <img 
+                            src={isFemale
+                              ? `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80&id=${i}` 
+                              : `https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&q=80&id=${i}`
+                            } 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900">好友 {i}</div>
+                          <div className="text-xs text-slate-500">离线</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Filter Modal */}
+        <AnimatePresence>
+          {showFilterModal && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowFilterModal(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-3xl p-6 pb-safe max-h-[85vh] overflow-y-auto flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-bold text-slate-900">筛选</h3>
+                  <button onClick={() => setShowFilterModal(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                    <X className="w-5 h-5 text-slate-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Gender Filter */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">性别</label>
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={() => setGenderFilter("all")}
+                        className={cn(
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all",
+                          genderFilter === "all" ? "bg-slate-900 text-white shadow-lg" : "bg-slate-100 text-slate-600"
+                        )}
+                      >
+                        全部
+                      </button>
+                      <button 
+                        onClick={() => setGenderFilter("male")}
+                        className={cn(
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1 relative",
+                          genderFilter === "male" ? "bg-blue-500 text-white shadow-lg shadow-blue-200" : "bg-slate-100 text-slate-600"
+                        )}
+                      >
+                        <span className="text-lg leading-none flex items-center justify-center h-full absolute left-4 top-0 bottom-0">♂</span> 
+                        <span>男生</span>
+                      </button>
+                      <button 
+                        onClick={() => setGenderFilter("female")}
+                        className={cn(
+                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1 relative",
+                          genderFilter === "female" ? "bg-pink-500 text-white shadow-lg shadow-pink-200" : "bg-slate-100 text-slate-600"
+                        )}
+                      >
+                        <span className="text-lg leading-none flex items-center justify-center h-full absolute left-4 top-0 bottom-0">♀</span> 
+                        <span>女生</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Age Filter */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">年龄</label>
+                    <div className="flex gap-3">
+                      {["18-22", "23-26", "27-35", "35+"].map(age => (
+                        <button 
+                          key={age} 
+                          onClick={() => setAgeFilter(age === ageFilter ? null : age)}
+                          className={cn(
+                            "flex-1 py-2 rounded-lg text-xs font-medium transition-colors",
+                            age === ageFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {age}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Zodiac Filter */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">星座</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"].map(zodiac => (
+                        <button 
+                          key={zodiac} 
+                          onClick={() => setZodiacFilter(zodiac === zodiacFilter ? null : zodiac)}
+                          className={cn(
+                            "py-2 rounded-lg text-xs font-medium transition-colors",
+                            zodiac === zodiacFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {zodiac}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-4 border-t border-slate-100 sticky bottom-0 bg-white pb-4">
+                  <button 
+                    onClick={() => setShowFilterModal(false)}
+                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform"
+                  >
+                    确认
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Map View */}
+        <MapView 
+          className="w-full h-full"
+          onMapReady={(map) => {
+            setMapInstance(map);
+            // Add click listener to close popups when clicking map
+            map.addListener('click', () => {
+              // Only close if clicking on the map background, not markers
+              // But markers have their own click handlers which stop propagation
+              // So this is fine, but we need to make sure marker clicks don't bubble up to map click
+              // The CustomOverlay implementation might be letting clicks through
+              // We will handle this in the marker click handler
+              setSelectedFriend(null);
+              setSelectedMoment(null);
+              setIsNavVisible(true);
+            });
+          }}
+        />
+
+        {/* Filter Button (Floating) - Only show on Encounter tab */}
+        {activeTab === "encounter" && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute top-32 right-4 z-10 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
+            onClick={() => setShowFilterModal(true)}
+          >
+            <Filter className="w-5 h-5" />
+          </motion.button>
         )}
 
-        {/* --- Main Content Area --- */}
-        <div className={cn(
-          "absolute inset-0",
-          storeModeStep === "none" ? "pt-[140px] pb-[88px]" : "pt-0 pb-0 z-50 bg-white"
-        )}>
-          
-          {/* Map View (Visible for Encounter, Friends, Moments) */}
-          <div className={cn(
-            "absolute inset-0 w-full h-full transition-opacity duration-300 z-0",
-            (activeTab === 'meet' || storeModeStep !== "none") ? "opacity-0 pointer-events-none" : "opacity-100"
-          )}>
-            <MapView className="w-full h-full" onMapReady={setMapInstance} />
-            
-            {/* Filter Button (Only on Map Tabs) */}
-            {activeTab !== 'meet' && (
-              <button className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center z-10 active:scale-95 transition-transform">
-                <Filter className="w-5 h-5 text-slate-700" />
-              </button>
-            )}
-          </div>
-
-          {/* Meet View (Visible only for Meet tab) */}
-          {activeTab === 'meet' && storeModeStep === "none" && (
-            <div className="absolute inset-0 bg-slate-50 overflow-y-auto z-10">
-              <div className="p-4 space-y-6 pb-24">
+        {/* Detail Modals */}
+        <AnimatePresence>
+          {selectedFriend && (
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-3xl shadow-2xl pb-safe"
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100) setSelectedFriend(null);
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
+              <div className="px-6 pb-8">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className={cn(
+                    "w-20 h-20 rounded-full border-4 overflow-hidden shadow-lg",
+                    (selectedFriend.gender === "female" || selectedFriend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
+                  )}>
+                    <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-bold text-slate-900">用户 {selectedFriend.id}</h2>
+                      <div className={cn(
+                        "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5",
+                        selectedFriend.status === "online" ? "bg-green-100 text-green-700" : 
+                        selectedFriend.status === "recent" ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-600"
+                      )}>
+                        <div className={cn("w-2 h-2 rounded-full", 
+                          selectedFriend.status === "online" ? "bg-green-500" : 
+                          selectedFriend.status === "recent" ? "bg-yellow-500" : "bg-slate-400"
+                        )} />
+                        {selectedFriend.status === "online" ? "在线" : selectedFriend.status === "recent" ? "15分钟前" : "离线"}
+                      </div>
+                    </div>
+                    <p className="text-slate-500 mt-1">
+                      {selectedFriend.status === "online" ? "距离 0.5km" : "离线"}
+                    </p>
+                    <div className="flex gap-2 mt-3">
+                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">双子座</span>
+                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">摄影</span>
+                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">咖啡</span>
+                    </div>
+                  </div>
+                </div>
                 
-                {/* Back Button (Visual only as per screenshot) */}
-                <button className="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center mb-2">
-                  <ArrowLeft className="w-5 h-5 text-slate-700" />
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    className="py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg active:scale-95 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Add interaction logic here
+                      console.log("Say Hi clicked");
+                    }}
+                  >
+                    打招呼
+                  </button>
+                  <button 
+                    className="py-3 rounded-xl bg-slate-100 text-slate-900 font-bold active:scale-95 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Add navigation logic here
+                      console.log("View Profile clicked");
+                    }}
+                  >
+                    查看主页
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-                {/* Store Mode Card */}
-                <div className="w-full bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl p-6 text-white shadow-xl shadow-blue-900/20 relative overflow-hidden">
-                  <div className="relative z-10">
+        <AnimatePresence>
+          {selectedMoment && (
+            <MomentDetail 
+              moment={selectedMoment} 
+              onClose={() => setSelectedMoment(null)} 
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Meet Page Overlay */}
+        <AnimatePresence>
+          {activeTab === "meet" && (
+            <motion.div
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className={cn(
+                "absolute inset-0 bg-slate-50 flex flex-col",
+                showStoreMode ? "z-[100]" : "z-20"
+              )}
+            >
+              {showStoreMode ? (
+                <StoreMode onExit={(targetTab) => {
+                  setShowStoreMode(false);
+                  if (targetTab) {
+                    setActiveTab(targetTab as TabType);
+                  }
+                }} />
+              ) : (
+                <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14 relative">
+                  {/* Back Button */}
+                  <button 
+                    onClick={() => setActiveTab("encounter")}
+                    className="absolute top-4 left-4 p-2 bg-white shadow-sm border border-slate-100 rounded-full text-slate-900 z-10 active:scale-95 transition-transform"
+                  >
+                    <ArrowLeft className="w-6 h-6" />
+                  </button>
+
+                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6 pt-16">
                     <h2 className="text-2xl font-bold mb-2">到店相见</h2>
-                    <p className="text-blue-100 text-sm mb-6">扫码解锁专属优惠与社交玩法</p>
-                    
+                    <p className="text-blue-100 mb-6">扫码解锁专属优惠与社交玩法</p>
                     <button 
-                      onClick={handleScanCode}
-                      className="bg-white text-blue-600 px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg active:scale-95 transition-transform"
+                      onClick={() => setShowStoreMode(true)}
+                      className="bg-white text-blue-600 font-bold px-6 py-3 rounded-full shadow-md active:scale-95 transition-transform flex items-center gap-2"
                     >
-                      <Camera className="w-4 h-4" />
+                      <Camera className="w-5 h-5" />
                       模拟扫码进店
                     </button>
                   </div>
                   
-                  {/* Decorative Circles */}
-                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-                  <div className="absolute bottom-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-xl" />
-                </div>
-
-                {/* Recommended Stores Section */}
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-4">推荐店铺</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {MEET_RECOMMENDATIONS.map((item) => (
-                      <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                        <div className="aspect-[4/5] relative bg-slate-100">
-                          <img src={item.image} className="w-full h-full object-cover" />
-                          <div className="absolute top-2 right-2 bg-black/20 backdrop-blur-md px-2 py-1 rounded-full flex items-center gap-1">
-                            <Heart className="w-3 h-3 text-white fill-white" />
-                            <span className="text-[10px] font-medium text-white">{item.likes}</span>
-                          </div>
-                        </div>
-                        <div className="p-3">
-                          <h4 className="text-sm font-bold text-slate-900 line-clamp-2 mb-2 leading-snug">
-                            {item.title}
-                          </h4>
-                          <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-full bg-slate-200 overflow-hidden">
-                              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.author}`} className="w-full h-full" />
-                            </div>
-                            <span className="text-xs text-slate-500 truncate">{item.author}</span>
-                          </div>
-                        </div>
+                  <h3 className="font-bold text-slate-900 mb-4">推荐店铺</h3>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+                        <div className="h-32 bg-slate-200 rounded-lg mb-3"></div>
+                        <div className="h-4 w-2/3 bg-slate-200 rounded mb-2"></div>
+                        <div className="h-3 w-1/2 bg-slate-100 rounded"></div>
                       </div>
                     ))}
                   </div>
                 </div>
-
-              </div>
-            </div>
+              )}
+            </motion.div>
           )}
+        </AnimatePresence>
 
-          {/* --- Store Mode: Scenario Selection --- */}
-          {storeModeStep === "scenario" && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
-              <div className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300">
-                <div className="flex justify-between items-center mb-8">
-                  <div>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-1">这次和谁来？</h3>
-                    <p className="text-sm text-slate-500">选择同行伙伴，解锁专属玩法</p>
-                  </div>
-                  <button onClick={handleCloseStoreMode} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors">
-                    <X className="w-5 h-5 text-slate-500" />
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  {SCENARIOS.map((scenario) => (
-                    <button
-                      key={scenario.id}
-                      onClick={() => handleSelectScenario(scenario.id)}
-                      className="group flex flex-col items-center gap-3"
-                    >
-                      <div className={cn(
-                        "w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm transition-all duration-300 group-active:scale-95",
-                        scenario.bg,
-                        "group-hover:shadow-md"
-                      )}>
-                        <scenario.icon className={cn("w-7 h-7 transition-transform group-hover:scale-110", scenario.color)} strokeWidth={2} />
-                      </div>
-                      <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">{scenario.label}</span>
-                    </button>
-                  ))}
-                </div>
-                
-                <div className="bg-blue-50 rounded-xl p-4 flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <Star className="w-3 h-3 text-blue-600 fill-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-blue-800 mb-1">为什么选择场景？</h4>
-                    <p className="text-[10px] text-blue-600 leading-relaxed">
-                      不同的社交场景会触发不同的店铺优惠和互动玩法。比如“约会”场景下，我们会为您推荐更私密、氛围感更强的座位和双人套餐。
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- Store Mode: Store Home --- */}
-          {storeModeStep === "store_home" && (
-            <div className="absolute inset-0 bg-slate-50 z-50 overflow-y-auto">
-              {/* Header Image */}
-              <div className="relative h-48">
-                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop&q=80" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <button 
-                  onClick={() => setStoreModeStep("scenario")}
-                  className="absolute top-12 left-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h1 className="text-2xl font-bold mb-1">Blue Bottle Coffee</h1>
-                  <div className="flex items-center gap-2 text-sm text-white/80">
-                    <MapPinIcon className="w-4 h-4" />
-                    <span>静安嘉里中心店</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-4 -mt-4 relative z-10 bg-slate-50 rounded-t-3xl min-h-[calc(100vh-180px)]">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-bold text-slate-900">超值套餐</h2>
-                  <span className="text-xs text-slate-500">已售 2345</span>
-                </div>
-
-                <div className="space-y-4">
-                  {STORE_PACKAGES.map((pkg) => (
-                    <div 
-                      key={pkg.id}
-                      onClick={() => handleSelectPackage(pkg)}
-                      className="bg-white p-3 rounded-2xl shadow-sm flex gap-4 active:scale-[0.98] transition-transform"
-                    >
-                      <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 shrink-0">
-                        <img src={pkg.image} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 flex flex-col justify-between py-1">
-                        <div>
-                          <h3 className="font-bold text-slate-900 mb-1">{pkg.title}</h3>
-                          <div className="flex gap-2">
-                            {pkg.tags.map(tag => (
-                              <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded-md">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex items-end justify-between">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-bold text-red-500">¥{pkg.price}</span>
-                            <span className="text-xs text-slate-400 line-through">¥{pkg.originalPrice}</span>
-                          </div>
-                          <button className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-bold">
-                            抢购
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* --- Store Mode: Package Detail --- */}
-          {storeModeStep === "package_detail" && selectedPackage && (
-            <div className="absolute inset-0 bg-white z-50 overflow-y-auto flex flex-col">
-              {/* Header */}
-              <div className="relative h-64 shrink-0">
-                <img src={selectedPackage.image} className="w-full h-full object-cover" />
-                <button 
-                  onClick={() => setStoreModeStep("store_home")}
-                  className="absolute top-12 left-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 p-6 -mt-6 bg-white rounded-t-3xl relative z-10">
-                <h1 className="text-2xl font-bold text-slate-900 mb-2">{selectedPackage.title}</h1>
-                <div className="flex items-baseline gap-3 mb-6">
-                  <span className="text-3xl font-bold text-red-500">¥{selectedPackage.price}</span>
-                  <span className="text-sm text-slate-400 line-through">¥{selectedPackage.originalPrice}</span>
-                  <span className="ml-auto text-sm text-slate-500">已售 {selectedPackage.sold}</span>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="p-4 bg-slate-50 rounded-2xl">
-                    <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      套餐内容
-                    </h3>
-                    <div className="space-y-2 text-sm text-slate-600">
-                      <div className="flex justify-between">
-                        <span>主食任选 x2</span>
-                        <span>¥128</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>特色饮品 x2</span>
-                        <span>¥68</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>精美甜点 x1</span>
-                        <span>¥48</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-slate-50 rounded-2xl">
-                    <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      使用规则
-                    </h3>
-                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
-                      <li>有效期：购买后30天内有效</li>
-                      <li>使用时间：10:00 - 22:00</li>
-                      <li>无需预约，消费高峰期可能需要等位</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Action Bar */}
-              <div className="p-4 border-t border-slate-100 bg-white safe-area-bottom">
-                <button 
-                  onClick={handlePayment}
-                  className="w-full bg-blue-600 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-blue-600/30 active:scale-[0.98] transition-transform"
-                >
-                  立即支付 ¥{selectedPackage.price}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* --- Store Mode: Payment Success --- */}
-          {storeModeStep === "payment_success" && (
-            <div className="absolute inset-0 bg-white z-50 flex flex-col animate-in fade-in duration-300">
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
-                  <CheckCircle className="w-10 h-10 text-green-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">支付成功</h2>
-                <p className="text-slate-500 mb-8">请向店员出示核销码，或在“我的-订单”中查看</p>
-                
-                <div className="w-full bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
-                  <div className="text-sm text-slate-400 mb-2">核销码</div>
-                  <div className="text-4xl font-mono font-bold text-slate-900 tracking-widest mb-4">
-                    8829 1034
-                  </div>
-                  <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
-                    <Clock className="w-3 h-3" />
-                    <span>有效期至 2026-03-09</span>
-                  </div>
-                </div>
-
-                {/* Guidance Section */}
-                <div className="w-full space-y-3">
-                  <div className="bg-blue-50 p-4 rounded-xl flex items-center gap-4 text-left">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
-                      <Users className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-slate-900 text-sm">加入店铺群聊</h4>
-                      <p className="text-xs text-slate-500">和 234 位同店小伙伴一起聊天</p>
-                    </div>
-                    <button className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-full">
-                      加入
-                    </button>
-                  </div>
-
-                  <div className="bg-pink-50 p-4 rounded-xl flex items-center gap-4 text-left">
-                    <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center shrink-0">
-                      <Heart className="w-5 h-5 text-pink-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-slate-900 text-sm">发布探店动态</h4>
-                      <p className="text-xs text-slate-500">分享此刻美好，赢取免单机会</p>
-                    </div>
-                    <button className="px-3 py-1.5 bg-pink-600 text-white text-xs font-bold rounded-full">
-                      发布
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 border-t border-slate-100 safe-area-bottom">
-                <button 
-                  onClick={handleCloseStoreMode}
-                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold active:scale-[0.98] transition-transform"
-                >
-                  完成
-                </button>
-              </div>
-            </div>
-          )}
-
-        </div>
       </div>
     </Layout>
   );
