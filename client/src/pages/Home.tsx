@@ -1069,13 +1069,7 @@ export default function Home() {
                   
                   <h3 className="font-bold text-slate-900 mb-4">推荐店铺</h3>
                   <div className="space-y-4">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-                        <div className="h-32 bg-slate-200 rounded-lg mb-3"></div>
-                        <div className="h-4 w-2/3 bg-slate-200 rounded mb-2"></div>
-                        <div className="h-3 w-1/2 bg-slate-100 rounded"></div>
-                      </div>
-                    ))}
+                    {/* Empty list as requested */}
                   </div>
                 </div>
               )}
