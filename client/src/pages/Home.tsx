@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, Users, MapPin, MessageCircle, User, Plus, 
   Filter, Heart, Navigation, X, ChevronRight, Camera,
-  Calendar, Coffee, Utensils, Moon, Gift, Star, ArrowLeft
+  Calendar, Coffee, Utensils, Moon, Gift, Star, ArrowLeft,
+  CheckCircle, ShoppingBag, Clock, MapPin as MapPinIcon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
@@ -59,6 +60,44 @@ const MEET_RECOMMENDATIONS = [
     likes: 456,
     image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=400&h=500&fit=crop&q=80"
   }
+];
+
+const STORE_PACKAGES = [
+  {
+    id: 1,
+    title: "双人浪漫晚餐套餐",
+    price: 298,
+    originalPrice: 598,
+    sold: 1205,
+    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=300&fit=crop&q=80",
+    tags: ["约会首选", "氛围感", "免预约"]
+  },
+  {
+    id: 2,
+    title: "闺蜜下午茶套餐",
+    price: 168,
+    originalPrice: 298,
+    sold: 856,
+    image: "https://images.unsplash.com/photo-1563089145-599997674d42?w=400&h=300&fit=crop&q=80",
+    tags: ["拍照出片", "甜点", "无限续杯"]
+  },
+  {
+    id: 3,
+    title: "4人聚会超值套餐",
+    price: 498,
+    originalPrice: 888,
+    sold: 432,
+    image: "https://images.unsplash.com/photo-1555244162-803834f70033?w=400&h=300&fit=crop&q=80",
+    tags: ["量大管饱", "包间可用", "周末通用"]
+  }
+];
+
+const SCENARIOS = [
+  { id: 'date', label: '约会', icon: Heart, color: 'text-pink-500', bg: 'bg-pink-50' },
+  { id: 'friends', label: '闺蜜', icon: Users, color: 'text-purple-500', bg: 'bg-purple-50' },
+  { id: 'bros', label: '哥们', icon: Coffee, color: 'text-blue-500', bg: 'bg-blue-50' },
+  { id: 'anniversary', label: '纪念日', icon: Gift, color: 'text-red-500', bg: 'bg-red-50' },
+  { id: 'night', label: '深夜', icon: Moon, color: 'text-indigo-500', bg: 'bg-indigo-50' },
 ];
 
 // --- Layout Component ---
@@ -144,6 +183,11 @@ export default function Home() {
   const [overlays, setOverlays] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   
+  // Store Mode States
+  const [storeModeStep, setStoreModeStep] = useState<"none" | "scenario" | "store_home" | "package_detail" | "payment_success">("none");
+  const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<any | null>(null);
+
   const tabs = [
     { id: "encounter", label: "偶遇", subtitle: "身边的人" },
     { id: "friends", label: "好友", subtitle: "我的好友" },
@@ -201,8 +245,6 @@ export default function Home() {
         if (this.container.parentElement) {
           this.container.parentElement.removeChild(this.container);
         }
-        // Ideally we should unmount root here, but React 18 createRoot makes it tricky inside a class without proper cleanup
-        // For this prototype, we'll rely on the DOM removal
         setTimeout(() => this.root.unmount(), 0);
       }
     }
@@ -220,7 +262,6 @@ export default function Home() {
       div.style.cursor = 'pointer';
       div.style.transform = 'translate(-50%, -50%)';
       
-      // Prevent map clicks from propagating
       div.addEventListener('click', (e) => {
         e.stopPropagation();
         console.log('Marker clicked:', marker.id);
@@ -232,7 +273,6 @@ export default function Home() {
       );
 
       if (marker.type === 'moment') {
-        // Moment Card Style
         overlay.root.render(
           <div className="relative group transition-transform hover:scale-105 active:scale-95">
             <div className="w-32 h-24 bg-white rounded-2xl shadow-xl overflow-hidden border-[4px] border-white">
@@ -251,7 +291,6 @@ export default function Home() {
           </div>
         );
       } else {
-        // Avatar Style (Encounter & Friends)
         const borderColor = marker.gender === 'female' ? 'border-pink-500' : 'border-blue-500';
         const statusColor = marker.status === 'online' ? 'bg-green-500' : 
                            marker.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-300';
@@ -283,67 +322,97 @@ export default function Home() {
     };
   }, [mapInstance, activeTab]);
 
+  // --- Store Mode Handlers ---
+  const handleScanCode = () => {
+    setStoreModeStep("scenario");
+  };
+
+  const handleSelectScenario = (scenarioId: string) => {
+    setSelectedScenario(scenarioId);
+    setStoreModeStep("store_home");
+  };
+
+  const handleSelectPackage = (pkg: any) => {
+    setSelectedPackage(pkg);
+    setStoreModeStep("package_detail");
+  };
+
+  const handlePayment = () => {
+    setStoreModeStep("payment_success");
+  };
+
+  const handleCloseStoreMode = () => {
+    setStoreModeStep("none");
+    setSelectedScenario(null);
+    setSelectedPackage(null);
+  };
+
   return (
-    <Layout>
+    <Layout showNav={storeModeStep === "none"}>
       <div className="relative w-full h-full bg-slate-50">
         
-        {/* --- Top Navigation Bar --- */}
-        <div className="absolute top-0 left-0 right-0 z-20 bg-white/90 backdrop-blur-md pt-12 pb-2 px-4 shadow-sm">
-          {/* Search Bar */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4 gap-2">
-              <Search className="w-4 h-4 text-slate-400" />
-              <input 
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="搜索好友ID、套餐名称、商户名称"
-                className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
-              />
+        {/* --- Top Navigation Bar (Hidden in Store Mode) --- */}
+        {storeModeStep === "none" && (
+          <div className="absolute top-0 left-0 right-0 z-20 bg-white/90 backdrop-blur-md pt-12 pb-2 px-4 shadow-sm">
+            {/* Search Bar */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4 gap-2">
+                <Search className="w-4 h-4 text-slate-400" />
+                <input 
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="搜索好友ID、套餐名称、商户名称"
+                  className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
+                />
+              </div>
+              <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition-colors">
+                <User className="w-6 h-6 text-slate-700" />
+              </button>
             </div>
-            <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 active:scale-95 transition-colors">
-              <User className="w-6 h-6 text-slate-700" />
-            </button>
-          </div>
 
-          {/* Tabs */}
-          <div className="flex items-center justify-between px-2">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className="flex flex-col items-center gap-1 relative py-2"
-                >
-                  <span className={cn(
-                    "text-base font-bold transition-colors",
-                    isActive ? "text-slate-900" : "text-slate-400"
-                  )}>
-                    {tab.label}
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-medium">
-                    {tab.subtitle}
-                  </span>
-                  {isActive && (
-                    <motion.div 
-                      layoutId="activeTabIndicator"
-                      className="absolute bottom-0 w-4 h-1 bg-blue-600 rounded-full"
-                    />
-                  )}
-                </button>
-              );
-            })}
+            {/* Tabs */}
+            <div className="flex items-center justify-between px-2">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="flex flex-col items-center gap-1 relative py-2"
+                  >
+                    <span className={cn(
+                      "text-base font-bold transition-colors",
+                      isActive ? "text-slate-900" : "text-slate-400"
+                    )}>
+                      {tab.label}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      {tab.subtitle}
+                    </span>
+                    {isActive && (
+                      <motion.div 
+                        layoutId="activeTabIndicator"
+                        className="absolute bottom-0 w-4 h-1 bg-blue-600 rounded-full"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* --- Main Content Area --- */}
-        <div className="absolute inset-0 pt-[140px] pb-[88px]">
+        <div className={cn(
+          "absolute inset-0",
+          storeModeStep === "none" ? "pt-[140px] pb-[88px]" : "pt-0 pb-0 z-50 bg-white"
+        )}>
           
           {/* Map View (Visible for Encounter, Friends, Moments) */}
           <div className={cn(
             "w-full h-full transition-opacity duration-300",
-            activeTab === 'meet' ? "opacity-0 pointer-events-none" : "opacity-100"
+            (activeTab === 'meet' || storeModeStep !== "none") ? "opacity-0 pointer-events-none" : "opacity-100"
           )}>
             <MapView onMapReady={setMapInstance} />
             
@@ -356,7 +425,7 @@ export default function Home() {
           </div>
 
           {/* Meet View (Visible only for Meet tab) */}
-          {activeTab === 'meet' && (
+          {activeTab === 'meet' && storeModeStep === "none" && (
             <div className="absolute inset-0 bg-slate-50 overflow-y-auto z-10">
               <div className="p-4 space-y-6 pb-24">
                 
@@ -371,7 +440,10 @@ export default function Home() {
                     <h2 className="text-2xl font-bold mb-2">到店相见</h2>
                     <p className="text-blue-100 text-sm mb-6">扫码解锁专属优惠与社交玩法</p>
                     
-                    <button className="bg-white text-blue-600 px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg active:scale-95 transition-transform">
+                    <button 
+                      onClick={handleScanCode}
+                      className="bg-white text-blue-600 px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg active:scale-95 transition-transform"
+                    >
                       <Camera className="w-4 h-4" />
                       模拟扫码进店
                     </button>
@@ -412,6 +484,202 @@ export default function Home() {
                 </div>
 
               </div>
+            </div>
+          )}
+
+          {/* --- Store Mode: Scenario Selection --- */}
+          {storeModeStep === "scenario" && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+              <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-slate-900">这次和谁来？</h3>
+                  <button onClick={handleCloseStoreMode} className="p-2 hover:bg-slate-100 rounded-full">
+                    <X className="w-5 h-5 text-slate-400" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {SCENARIOS.map((scenario) => (
+                    <button
+                      key={scenario.id}
+                      onClick={() => handleSelectScenario(scenario.id)}
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all active:scale-95",
+                        scenario.bg,
+                        "border-transparent hover:border-blue-200"
+                      )}
+                    >
+                      <div className={cn("w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm", scenario.color)}>
+                        <scenario.icon className="w-6 h-6" />
+                      </div>
+                      <span className="font-bold text-slate-700">{scenario.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* --- Store Mode: Store Home --- */}
+          {storeModeStep === "store_home" && (
+            <div className="absolute inset-0 bg-slate-50 z-50 overflow-y-auto">
+              {/* Header Image */}
+              <div className="relative h-48">
+                <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=400&fit=crop&q=80" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <button 
+                  onClick={() => setStoreModeStep("scenario")}
+                  className="absolute top-12 left-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h1 className="text-2xl font-bold mb-1">Blue Bottle Coffee</h1>
+                  <div className="flex items-center gap-2 text-sm text-white/80">
+                    <MapPinIcon className="w-4 h-4" />
+                    <span>静安嘉里中心店</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-4 -mt-4 relative z-10 bg-slate-50 rounded-t-3xl min-h-[calc(100vh-180px)]">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-lg font-bold text-slate-900">超值套餐</h2>
+                  <span className="text-xs text-slate-500">已售 2345</span>
+                </div>
+
+                <div className="space-y-4">
+                  {STORE_PACKAGES.map((pkg) => (
+                    <div 
+                      key={pkg.id}
+                      onClick={() => handleSelectPackage(pkg)}
+                      className="bg-white p-3 rounded-2xl shadow-sm flex gap-4 active:scale-[0.98] transition-transform"
+                    >
+                      <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                        <img src={pkg.image} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                          <h3 className="font-bold text-slate-900 mb-1">{pkg.title}</h3>
+                          <div className="flex gap-2">
+                            {pkg.tags.map(tag => (
+                              <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded-md">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-end justify-between">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-lg font-bold text-red-500">¥{pkg.price}</span>
+                            <span className="text-xs text-slate-400 line-through">¥{pkg.originalPrice}</span>
+                          </div>
+                          <button className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-bold">
+                            抢购
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* --- Store Mode: Package Detail --- */}
+          {storeModeStep === "package_detail" && selectedPackage && (
+            <div className="absolute inset-0 bg-white z-50 overflow-y-auto flex flex-col">
+              {/* Header */}
+              <div className="relative h-64 shrink-0">
+                <img src={selectedPackage.image} className="w-full h-full object-cover" />
+                <button 
+                  onClick={() => setStoreModeStep("store_home")}
+                  className="absolute top-12 left-4 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 p-6 -mt-6 bg-white rounded-t-3xl relative z-10">
+                <h1 className="text-2xl font-bold text-slate-900 mb-2">{selectedPackage.title}</h1>
+                <div className="flex items-baseline gap-3 mb-6">
+                  <span className="text-3xl font-bold text-red-500">¥{selectedPackage.price}</span>
+                  <span className="text-sm text-slate-400 line-through">¥{selectedPackage.originalPrice}</span>
+                  <span className="ml-auto text-sm text-slate-500">已售 {selectedPackage.sold}</span>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="p-4 bg-slate-50 rounded-2xl">
+                    <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      套餐内容
+                    </h3>
+                    <div className="space-y-2 text-sm text-slate-600">
+                      <div className="flex justify-between">
+                        <span>主食任选 x2</span>
+                        <span>¥128</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>特色饮品 x2</span>
+                        <span>¥68</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>精美甜点 x1</span>
+                        <span>¥48</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-2xl">
+                    <h3 className="font-bold text-slate-900 mb-3 flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-blue-500" />
+                      使用规则
+                    </h3>
+                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                      <li>有效期：购买后30天内有效</li>
+                      <li>使用时间：10:00 - 22:00</li>
+                      <li>无需预约，消费高峰期可能需要等位</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action Bar */}
+              <div className="p-4 border-t border-slate-100 bg-white safe-area-bottom">
+                <button 
+                  onClick={handlePayment}
+                  className="w-full bg-blue-600 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-blue-600/30 active:scale-[0.98] transition-transform"
+                >
+                  立即支付 ¥{selectedPackage.price}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* --- Store Mode: Payment Success --- */}
+          {storeModeStep === "payment_success" && (
+            <div className="absolute inset-0 bg-white z-50 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
+              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                <CheckCircle className="w-12 h-12 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">支付成功</h2>
+              <p className="text-slate-500 mb-8">您已成功购买套餐，请向店员出示核销码</p>
+              
+              <div className="w-full bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100">
+                <div className="text-sm text-slate-400 mb-2">核销码</div>
+                <div className="text-3xl font-mono font-bold text-slate-900 tracking-widest">
+                  8829 1034
+                </div>
+              </div>
+
+              <button 
+                onClick={handleCloseStoreMode}
+                className="w-full bg-slate-900 text-white py-4 rounded-full font-bold active:scale-[0.98] transition-transform"
+              >
+                完成
+              </button>
             </div>
           )}
 
