@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Search, ChevronRight, Star, Map as MapIcon, List, Heart, Share2, Clock, ScanLine, ShoppingBag } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -292,12 +292,11 @@ export default function MeetPage() {
 
         {/* Store Mode Entry (Floating) */}
         <Link href="/store-mode">
-          <motion.div 
-            whileTap={{ scale: 0.95 }}
-            className="fixed bottom-24 right-4 z-30 bg-slate-900 text-white p-3 rounded-full shadow-xl flex items-center justify-center"
+          <div 
+            className="fixed bottom-24 right-4 z-30 bg-slate-900 text-white p-3 rounded-full shadow-xl flex items-center justify-center active:scale-95 transition-transform"
           >
             <ScanLine className="w-6 h-6" />
-          </motion.div>
+          </div>
         </Link>
 
         {/* Main Content */}
@@ -404,9 +403,7 @@ export default function MeetPage() {
                   {filteredMerchants.length > 0 ? (
                     filteredMerchants.map((item) => (
                       <Link key={item.id} href={`/merchant/${item.id}`}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
+                        <div
                           className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 mb-4 block"
                         >
                           <div className="flex p-3 gap-3">
@@ -490,7 +487,7 @@ export default function MeetPage() {
                               <span className="text-slate-300 text-xs line-through">{deal.originalPrice}</span>
                             </div>
                           ))}
-                        </motion.div>
+                        </div>
                       </Link>
                     ))
                   ) : (
