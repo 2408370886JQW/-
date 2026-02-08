@@ -38,6 +38,11 @@ const SAVED_SHOPS = [
   { id: 2, name: "Algorithm 算法", type: "咖啡厅", rating: 4.8, image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop", address: "朝阳区工体北路" },
 ];
 
+const SAVED_MOMENTS = [
+  { id: 1, user: "Alice", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", content: "今天天气真好！", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop", likes: 24 },
+  { id: 2, user: "Bob", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", content: "打卡网红咖啡店", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop", likes: 156 },
+];
+
 type TabType = "moments" | "saved";
 
 export default function ProfilePage() {
@@ -219,25 +224,55 @@ export default function ProfilePage() {
           )}
 
           {activeTab === "saved" && (
-            <div className="space-y-3 p-3">
-              {SAVED_SHOPS.map(shop => (
-                <div key={shop.id} className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 flex gap-3">
-                  <img src={shop.image} className="w-20 h-20 rounded-lg object-cover bg-slate-100" />
-                  <div className="flex-1 flex flex-col justify-between py-0.5">
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-sm">{shop.name}</h4>
-                      <div className="text-xs text-slate-500 mt-1">{shop.address}</div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">{shop.type}</span>
-                      <div className="flex items-center gap-1 text-xs font-medium text-slate-900">
-                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        {shop.rating}
+            <div className="space-y-6 p-3">
+              {/* Saved Shops */}
+              <div>
+                <h3 className="font-bold text-slate-900 mb-3 px-1">收藏的店铺</h3>
+                <div className="space-y-3">
+                  {SAVED_SHOPS.map(shop => (
+                    <div key={shop.id} className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 flex gap-3">
+                      <img src={shop.image} className="w-20 h-20 rounded-lg object-cover bg-slate-100" />
+                      <div className="flex-1 flex flex-col justify-between py-0.5">
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-sm">{shop.name}</h4>
+                          <div className="text-xs text-slate-500 mt-1">{shop.address}</div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">{shop.type}</span>
+                          <div className="flex items-center gap-1 text-xs font-medium text-slate-900">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            {shop.rating}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Saved Moments */}
+              <div>
+                <h3 className="font-bold text-slate-900 mb-3 px-1">收藏的动态</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {SAVED_MOMENTS.map(moment => (
+                    <div key={moment.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
+                      <div className="aspect-square relative">
+                        <img src={moment.image} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-sm rounded-full p-1.5">
+                          <Heart className="w-3 h-3 text-white fill-white" />
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <img src={moment.avatar} className="w-5 h-5 rounded-full object-cover" />
+                          <span className="text-xs font-medium text-slate-700">{moment.user}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 line-clamp-2">{moment.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>

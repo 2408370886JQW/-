@@ -810,6 +810,9 @@ export default function Home() {
             setMapInstance(map);
             // Add click listener to close popups when clicking map
             map.addListener('click', () => {
+              // Check interaction lock to prevent map click from interfering with toggle button
+              if (interactionLockRef.current) return;
+
               // Only close if clicking on the map background, not markers
               // But markers have their own click handlers which stop propagation
               // So this is fine, but we need to make sure marker clicks don't bubble up to map click
