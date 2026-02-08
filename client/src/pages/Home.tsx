@@ -428,6 +428,12 @@ export default function Home() {
       const div = document.createElement('div');
       div.style.cursor = 'pointer';
       
+      // Add click listener to the container div to stop propagation to map
+      div.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // e.preventDefault(); // Optional: might prevent default map behaviors if needed
+      });
+
       // Render different markers based on type
       if (marker.type === 'encounter') {
         // Encounter Marker
@@ -831,7 +837,10 @@ export default function Home() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
-              onClick={() => setIsNavVisible(!isNavVisible)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsNavVisible(prev => !prev);
+              }}
             >
               {isNavVisible ? (
                 <ChevronUp className="w-5 h-5" />
