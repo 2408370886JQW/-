@@ -118,14 +118,14 @@ const Layout = ({ children, showNav = true }: { children: React.ReactNode, showN
         {children}
       </div>
       
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation (Floating Style) */}
       <AnimatePresence>
         {showNav && (
           <motion.div 
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            exit={{ y: 100 }}
-            className="h-[88px] bg-white border-t border-slate-100 flex items-end justify-around pb-6 px-2 relative z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="absolute bottom-8 left-4 right-4 h-[72px] bg-white/90 backdrop-blur-md rounded-[32px] flex items-center justify-around px-2 z-50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/50"
           >
             {navItems.map((item) => {
               const isActive = location === item.id;
@@ -135,12 +135,12 @@ const Layout = ({ children, showNav = true }: { children: React.ReactNode, showN
                   <button 
                     key={item.id}
                     onClick={() => setLocation(item.id)}
-                    className="relative -top-6"
+                    className="relative -top-8 group"
                   >
-                    <div className="w-16 h-16 bg-[#0F172A] rounded-full flex items-center justify-center shadow-lg shadow-slate-900/20 active:scale-95 transition-transform">
-                      <Plus className="w-8 h-8 text-white" />
+                    <div className="w-[72px] h-[72px] bg-[#0F172A] rounded-full flex items-center justify-center shadow-xl shadow-slate-900/30 active:scale-95 transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-1 border-4 border-white">
+                      <Plus className="w-8 h-8 text-white" strokeWidth={2.5} />
                     </div>
-                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-medium text-slate-400 whitespace-nowrap">
+                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-500 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       {item.label}
                     </span>
                   </button>
@@ -151,18 +151,29 @@ const Layout = ({ children, showNav = true }: { children: React.ReactNode, showN
                 <button
                   key={item.id}
                   onClick={() => setLocation(item.id)}
-                  className="flex flex-col items-center gap-1 w-12"
+                  className="flex flex-col items-center gap-1 w-14 h-full justify-center active:scale-90 transition-transform"
                 >
-                  <item.icon 
-                    className={cn(
-                      "w-6 h-6 transition-colors",
-                      isActive ? "text-blue-600 fill-blue-600" : "text-slate-400"
-                    )} 
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
+                  <div className={cn(
+                    "relative transition-all duration-300",
+                    isActive ? "-translate-y-1" : ""
+                  )}>
+                    <item.icon 
+                      className={cn(
+                        "w-6 h-6 transition-colors duration-300",
+                        isActive ? "text-blue-600 fill-blue-600" : "text-slate-400"
+                      )} 
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    {isActive && (
+                      <motion.div
+                        layoutId="navIndicator"
+                        className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"
+                      />
+                    )}
+                  </div>
                   <span className={cn(
-                    "text-[10px] font-medium transition-colors",
-                    isActive ? "text-blue-600" : "text-slate-400"
+                    "text-[10px] font-bold transition-all duration-300",
+                    isActive ? "text-blue-600 opacity-100" : "text-slate-400 opacity-0 h-0 overflow-hidden"
                   )}>
                     {item.label}
                   </span>
@@ -189,10 +200,10 @@ export default function Home() {
   const [selectedPackage, setSelectedPackage] = useState<any | null>(null);
 
   const tabs = [
-    { id: "encounter", label: "偶遇", subtitle: "身边的人" },
-    { id: "friends", label: "好友", subtitle: "我的好友" },
-    { id: "moments", label: "动态", subtitle: "看看新鲜事" },
-    { id: "meet", label: "相见", subtitle: "发现美好生活" },
+    { id: "encounter", label: "偶遇", subLabel: "身边的人" },
+    { id: "friends", label: "好友", subLabel: "我的好友" },
+    { id: "moments", label: "动态", subLabel: "看看新鲜事" },
+    { id: "meet", label: "相见", subLabel: "发现美好生活" },
   ];
 
   // --- Custom Overlay Logic ---
@@ -370,30 +381,38 @@ export default function Home() {
                 <User className="w-6 h-6 text-slate-700" />
               </button>
             </div>
+          </div>
+        )}
 
-            {/* Tabs */}
-            <div className="flex items-center justify-between px-2">
+        {/* --- Top Navigation Tabs --- */}
+        {storeModeStep === "none" && (
+          <div className="absolute top-[110px] left-0 right-0 z-50 px-4">
+            <div className="flex justify-between items-start px-4">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className="flex flex-col items-center gap-1 relative py-2"
+                    className="flex flex-col items-center gap-1 relative py-2 group"
                   >
                     <span className={cn(
-                      "text-base font-bold transition-colors",
-                      isActive ? "text-slate-900" : "text-slate-400"
+                      "text-[18px] font-bold transition-all duration-300",
+                      isActive ? "text-slate-900 scale-105" : "text-slate-400 group-hover:text-slate-600"
                     )}>
                       {tab.label}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      {tab.subtitle}
+                    <span className={cn(
+                      "text-[10px] font-medium transition-all duration-300",
+                      isActive ? "text-blue-600 opacity-100 translate-y-0" : "text-slate-300 opacity-80"
+                    )}>
+                      {tab.subLabel}
                     </span>
                     {isActive && (
                       <motion.div 
                         layoutId="activeTabIndicator"
-                        className="absolute bottom-0 w-4 h-1 bg-blue-600 rounded-full"
+                        className="absolute -bottom-1 w-5 h-1.5 bg-blue-600 rounded-full shadow-sm shadow-blue-200"
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       />
                     )}
                   </button>
