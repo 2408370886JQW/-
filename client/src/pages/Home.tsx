@@ -1068,73 +1068,12 @@ export default function Home() {
                   </div>
                   
                   <h3 className="font-bold text-slate-900 mb-4">推荐店铺</h3>
-                  <div className="space-y-4 pb-4">
-                    {[
-                      {
-                        name: "丝路星光·旋转餐厅",
-                        tags: ["情侣约会", "高空夜景"],
-                        rating: 4.9,
-                        price: 328,
-                        image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80",
-                        distance: "1.2km"
-                      },
-                      {
-                        name: "天山雪莲·私房菜",
-                        tags: ["商务宴请", "本地特色"],
-                        rating: 4.8,
-                        price: 188,
-                        image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80",
-                        distance: "2.5km"
-                      },
-                      {
-                        name: "遇见·花园餐厅",
-                        tags: ["闺蜜聚会", "下午茶"],
-                        rating: 4.7,
-                        price: 128,
-                        image: "https://images.unsplash.com/photo-1550966871-3ed3c47e2ce2?w=800&q=80",
-                        distance: "800m"
-                      },
-                      {
-                        name: "深夜食堂·居酒屋",
-                        tags: ["深夜小酌", "日式料理"],
-                        rating: 4.8,
-                        price: 156,
-                        image: "https://images.unsplash.com/photo-1551632436-cbf8dd354ca8?w=800&q=80",
-                        distance: "3.1km"
-                      },
-                      {
-                        name: "云端·咖啡厅",
-                        tags: ["休闲放松", "景观位"],
-                        rating: 4.6,
-                        price: 68,
-                        image: "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=800&q=80",
-                        distance: "500m"
-                      }
-                    ].map((shop, i) => (
-                      <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex gap-4 active:scale-[0.98] transition-transform">
-                        <div className="w-24 h-24 rounded-lg bg-slate-100 flex-shrink-0 overflow-hidden">
-                          <img src={shop.image} alt={shop.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start mb-1">
-                            <h4 className="font-bold text-slate-900 truncate">{shop.name}</h4>
-                            <span className="text-xs text-slate-500">{shop.distance}</span>
-                          </div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="flex items-center text-amber-400 text-xs font-bold">
-                              <span className="mr-0.5">★</span>
-                              {shop.rating}
-                            </div>
-                            <span className="text-xs text-slate-400">¥{shop.price}/人</span>
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            {shop.tags.map(tag => (
-                              <span key={tag} className="px-2 py-0.5 bg-slate-50 text-slate-600 text-xs rounded-md">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
+                  <div className="space-y-4">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+                        <div className="h-32 bg-slate-200 rounded-lg mb-3"></div>
+                        <div className="h-4 w-2/3 bg-slate-200 rounded mb-2"></div>
+                        <div className="h-3 w-1/2 bg-slate-100 rounded"></div>
                       </div>
                     ))}
                   </div>

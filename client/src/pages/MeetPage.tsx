@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-// import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Search, ChevronRight, Star, Map as MapIcon, List, Heart, Share2, Clock, ScanLine, ShoppingBag } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -181,6 +181,8 @@ export default function MeetPage() {
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [overlays, setOverlays] = useState<google.maps.OverlayView[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   // Filter logic
   const filteredMerchants = MERCHANTS.filter(m => {
     if (activeSubCategory) {
@@ -188,6 +190,15 @@ export default function MeetPage() {
     }
     return m.category === activeCategory;
   });
+
+  // Simulate loading when category changes
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 600); // 600ms loading simulation
+    return () => clearTimeout(timer);
+  }, [activeCategory, activeSubCategory]);
 
   // Map Effect
   useEffect(() => {
@@ -292,11 +303,12 @@ export default function MeetPage() {
 
         {/* Store Mode Entry (Floating) */}
         <Link href="/store-mode">
-          <div 
-            className="fixed bottom-24 right-4 z-30 bg-slate-900 text-white p-3 rounded-full shadow-xl flex items-center justify-center active:scale-95 transition-transform"
+          <motion.div 
+            whileTap={{ scale: 0.95 }}
+            className="fixed bottom-24 right-4 z-30 bg-slate-900 text-white p-3 rounded-full shadow-xl flex items-center justify-center"
           >
             <ScanLine className="w-6 h-6" />
-          </div>
+          </motion.div>
         </Link>
 
         {/* Main Content */}
@@ -398,111 +410,153 @@ export default function MeetPage() {
                   </button>
                 </div>
 
-                {/* Merchant Cards */}
-                <div className="space-y-4">
-                  {filteredMerchants.length > 0 ? (
-                    filteredMerchants.map((item) => (
-                      <Link key={item.id} href={`/merchant/${item.id}`}>
-                        <div
-                          className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 mb-4 block"
-                        >
-                          <div className="flex p-3 gap-3">
-                            {/* Image */}
-                            <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
-                              <img src={item.image} className="w-full h-full object-cover" />
-                              {item.isTop && (
-                                <div className="absolute top-0 left-0 bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-br-lg flex items-center gap-0.5">
-                                  <Star className="w-2 h-2 fill-white" />
-                                  {item.topLabel}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-start">
-                                <h3 className="font-bold text-slate-900 truncate text-base">{item.title}</h3>
-                                <div className="flex gap-2 text-slate-400">
-                                  <Share2 className="w-4 h-4" />
-                                  <Heart className="w-4 h-4" />
-                                </div>
+                {/* Merchant Cards with Skeleton Loading */}
+                <AnimatePresence mode="wait">
+                  {isLoading ? (
+                    <motion.div
+                      key="skeleton"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="space-y-4"
+                    >
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 p-3">
+                          <div className="flex gap-3">
+                            <Skeleton className="w-24 h-24 rounded-lg flex-shrink-0" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-5 w-3/4" />
+                              <div className="flex gap-2">
+                                <Skeleton className="h-4 w-12" />
+                                <Skeleton className="h-4 w-16" />
                               </div>
-                              
-                              <div className="flex items-center gap-2 mt-1 text-xs">
-                                <span className="text-orange-500 font-bold text-sm">{item.rating}分</span>
-                                <span className="text-slate-900 font-medium">{item.price}</span>
-                                <span className="text-slate-400">|</span>
-                                <span className="text-slate-400 truncate">{item.location} · {item.distance}</span>
+                              <Skeleton className="h-4 w-1/2" />
+                              <div className="flex gap-1 pt-1">
+                                <Skeleton className="h-4 w-12" />
+                                <Skeleton className="h-4 w-12" />
                               </div>
-
-                              {item.rank && (
-                                <div className="mt-1.5 inline-block bg-orange-50 text-orange-600 text-[10px] px-1.5 py-0.5 rounded">
-                                  {item.rank}
-                                </div>
-                              )}
-
-                              {item.tags && (
-                                <div className="flex gap-1 mt-1.5 flex-wrap">
-                                  {item.tags.map((tag, i) => (
-                                    <span key={i} className="border border-slate-200 text-slate-500 text-[10px] px-1 py-0.5 rounded">
-                                      {tag}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
                             </div>
                           </div>
+                          <div className="mt-3 pt-2 border-t border-slate-50">
+                            <Skeleton className="h-6 w-full rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="content"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      {filteredMerchants.length > 0 ? (
+                        filteredMerchants.map((item) => (
+                          <Link key={item.id} href={`/merchant/${item.id}`}>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 mb-4 block"
+                            >
+                              <div className="flex p-3 gap-3">
+                                {/* Image */}
+                                <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
+                                  <img src={item.image} className="w-full h-full object-cover" />
+                                  {item.isTop && (
+                                    <div className="absolute top-0 left-0 bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-br-lg flex items-center gap-0.5">
+                                      <Star className="w-2 h-2 fill-white" />
+                                      {item.topLabel}
+                                    </div>
+                                  )}
+                                </div>
 
-                          {/* Coupon / Deal Section */}
-                          {item.coupon && (
-                            <div className="mx-3 mb-3 bg-red-50 rounded-lg p-2 flex items-center justify-between border border-red-100">
-                              <div className="flex items-center gap-2">
-                                <span className="bg-red-400 text-white text-[10px] px-1 rounded">{item.coupon.tag}</span>
-                                <span className="text-red-500 font-bold text-sm">{item.coupon.title}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-red-600 font-bold text-lg">{item.coupon.value}</span>
-                                <div className="text-[10px] text-red-400 text-right leading-tight">
-                                  <div className="line-through">¥100</div>
-                                  <div>{item.coupon.limit}</div>
+                                {/* Info */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex justify-between items-start">
+                                    <h3 className="font-bold text-slate-900 truncate text-base">{item.title}</h3>
+                                    <div className="flex gap-2 text-slate-400">
+                                      <Share2 className="w-4 h-4" />
+                                      <Heart className="w-4 h-4" />
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2 mt-1 text-xs">
+                                    <span className="text-orange-500 font-bold text-sm">{item.rating}分</span>
+                                    <span className="text-slate-900 font-medium">{item.price}</span>
+                                    <span className="text-slate-400">|</span>
+                                    <span className="text-slate-400 truncate">{item.location} · {item.distance}</span>
+                                  </div>
+
+                                  {item.rank && (
+                                    <div className="mt-1.5 inline-block bg-orange-50 text-orange-600 text-[10px] px-1.5 py-0.5 rounded">
+                                      {item.rank}
+                                    </div>
+                                  )}
+
+                                  {item.tags && (
+                                    <div className="flex gap-1 mt-1.5 flex-wrap">
+                                      {item.tags.map((tag, i) => (
+                                        <span key={i} className="border border-slate-200 text-slate-500 text-[10px] px-1 py-0.5 rounded">
+                                          {tag}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                            </div>
-                          )}
 
-                          {item.deal && (
-                            <div className="mx-3 mb-3 flex items-center gap-2 text-sm border-t border-slate-50 pt-2">
-                              <span className="bg-red-100 text-red-500 text-[10px] w-4 h-4 flex items-center justify-center rounded">团</span>
-                              <span className="text-slate-700 truncate flex-1">{item.deal.title}</span>
-                              <span className="text-red-500 font-bold">{item.deal.price}</span>
-                              <span className="text-slate-300 text-xs line-through">{item.deal.originalPrice}</span>
-                            </div>
-                          )}
+                              {/* Coupon / Deal Section */}
+                              {item.coupon && (
+                                <div className="mx-3 mb-3 bg-red-50 rounded-lg p-2 flex items-center justify-between border border-red-100">
+                                  <div className="flex items-center gap-2">
+                                    <span className="bg-red-400 text-white text-[10px] px-1 rounded">{item.coupon.tag}</span>
+                                    <span className="text-red-500 font-bold text-sm">{item.coupon.title}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-red-600 font-bold text-lg">{item.coupon.value}</span>
+                                    <div className="text-[10px] text-red-400 text-right leading-tight">
+                                      <div className="line-through">¥100</div>
+                                      <div>{item.coupon.limit}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
-                          {item.deals && item.deals.map((deal, i) => (
-                            <div key={i} className="mx-3 mb-2 flex items-center gap-2 text-sm last:mb-3">
-                              <span className="bg-red-100 text-red-500 text-[10px] w-4 h-4 flex items-center justify-center rounded">团</span>
-                              <span className="text-slate-700 truncate flex-1">{deal.title}</span>
-                              <span className="text-red-500 font-bold">{deal.price}</span>
-                              <span className="text-slate-300 text-xs line-through">{deal.originalPrice}</span>
-                            </div>
-                          ))}
+                              {item.deal && (
+                                <div className="mx-3 mb-3 flex items-center gap-2 text-sm border-t border-slate-50 pt-2">
+                                  <span className="bg-red-100 text-red-500 text-[10px] w-4 h-4 flex items-center justify-center rounded">团</span>
+                                  <span className="text-slate-700 truncate flex-1">{item.deal.title}</span>
+                                  <span className="text-red-500 font-bold">{item.deal.price}</span>
+                                  <span className="text-slate-300 text-xs line-through">{item.deal.originalPrice}</span>
+                                </div>
+                              )}
+
+                              {item.deals && item.deals.map((deal, i) => (
+                                <div key={i} className="mx-3 mb-2 flex items-center gap-2 text-sm last:mb-3">
+                                  <span className="bg-red-100 text-red-500 text-[10px] w-4 h-4 flex items-center justify-center rounded">团</span>
+                                  <span className="text-slate-700 truncate flex-1">{deal.title}</span>
+                                  <span className="text-red-500 font-bold">{deal.price}</span>
+                                  <span className="text-slate-300 text-xs line-through">{deal.originalPrice}</span>
+                                </div>
+                              ))}
+                            </motion.div>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="text-center text-slate-300 text-xs py-12">
+                          <div className="mb-2 text-4xl">🏜️</div>
+                          该分类下暂无商家，去其他分类看看吧 ~
                         </div>
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="text-center text-slate-300 text-xs py-12">
-                      <div className="mb-2 text-4xl">🏜️</div>
-                      该分类下暂无商家，去其他分类看看吧 ~
-                    </div>
+                      )}
+                      
+                      {filteredMerchants.length > 0 && (
+                        <div className="text-center text-slate-300 text-xs py-4">
+                          已经到底啦，去其他分类看看吧 ~
+                        </div>
+                      )}
+                    </motion.div>
                   )}
-                  
-                  {filteredMerchants.length > 0 && (
-                    <div className="text-center text-slate-300 text-xs py-4">
-                      已经到底啦，去其他分类看看吧 ~
-                    </div>
-                  )}
-                </div>
+                </AnimatePresence>
               </div>
             )}
           </div>
