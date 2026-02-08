@@ -411,10 +411,10 @@ export default function Home() {
           
           {/* Map View (Visible for Encounter, Friends, Moments) */}
           <div className={cn(
-            "w-full h-full transition-opacity duration-300",
+            "absolute inset-0 w-full h-full transition-opacity duration-300 z-0",
             (activeTab === 'meet' || storeModeStep !== "none") ? "opacity-0 pointer-events-none" : "opacity-100"
           )}>
-            <MapView onMapReady={setMapInstance} />
+            <MapView className="w-full h-full" onMapReady={setMapInstance} />
             
             {/* Filter Button (Only on Map Tabs) */}
             {activeTab !== 'meet' && (
@@ -489,32 +489,47 @@ export default function Home() {
 
           {/* --- Store Mode: Scenario Selection --- */}
           {storeModeStep === "scenario" && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-              <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-slate-900">这次和谁来？</h3>
-                  <button onClick={handleCloseStoreMode} className="p-2 hover:bg-slate-100 rounded-full">
-                    <X className="w-5 h-5 text-slate-400" />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center">
+              <div className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-full sm:zoom-in-95 duration-300">
+                <div className="flex justify-between items-center mb-8">
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-1">这次和谁来？</h3>
+                    <p className="text-sm text-slate-500">选择同行伙伴，解锁专属玩法</p>
+                  </div>
+                  <button onClick={handleCloseStoreMode} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors">
+                    <X className="w-5 h-5 text-slate-500" />
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4 mb-8">
                   {SCENARIOS.map((scenario) => (
                     <button
                       key={scenario.id}
                       onClick={() => handleSelectScenario(scenario.id)}
-                      className={cn(
-                        "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all active:scale-95",
-                        scenario.bg,
-                        "border-transparent hover:border-blue-200"
-                      )}
+                      className="group flex flex-col items-center gap-3"
                     >
-                      <div className={cn("w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm", scenario.color)}>
-                        <scenario.icon className="w-6 h-6" />
+                      <div className={cn(
+                        "w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm transition-all duration-300 group-active:scale-95",
+                        scenario.bg,
+                        "group-hover:shadow-md"
+                      )}>
+                        <scenario.icon className={cn("w-7 h-7 transition-transform group-hover:scale-110", scenario.color)} strokeWidth={2} />
                       </div>
-                      <span className="font-bold text-slate-700">{scenario.label}</span>
+                      <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">{scenario.label}</span>
                     </button>
                   ))}
+                </div>
+                
+                <div className="bg-blue-50 rounded-xl p-4 flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <Star className="w-3 h-3 text-blue-600 fill-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-blue-800 mb-1">为什么选择场景？</h4>
+                    <p className="text-[10px] text-blue-600 leading-relaxed">
+                      不同的社交场景会触发不同的店铺优惠和互动玩法。比如“约会”场景下，我们会为您推荐更私密、氛围感更强的座位和双人套餐。
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -660,26 +675,64 @@ export default function Home() {
 
           {/* --- Store Mode: Payment Success --- */}
           {storeModeStep === "payment_success" && (
-            <div className="absolute inset-0 bg-white z-50 flex flex-col items-center justify-center p-8 text-center animate-in fade-in duration-300">
-              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
-                <CheckCircle className="w-12 h-12 text-green-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">支付成功</h2>
-              <p className="text-slate-500 mb-8">您已成功购买套餐，请向店员出示核销码</p>
-              
-              <div className="w-full bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100">
-                <div className="text-sm text-slate-400 mb-2">核销码</div>
-                <div className="text-3xl font-mono font-bold text-slate-900 tracking-widest">
-                  8829 1034
+            <div className="absolute inset-0 bg-white z-50 flex flex-col animate-in fade-in duration-300">
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                  <CheckCircle className="w-10 h-10 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">支付成功</h2>
+                <p className="text-slate-500 mb-8">请向店员出示核销码，或在“我的-订单”中查看</p>
+                
+                <div className="w-full bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+                  <div className="text-sm text-slate-400 mb-2">核销码</div>
+                  <div className="text-4xl font-mono font-bold text-slate-900 tracking-widest mb-4">
+                    8829 1034
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
+                    <Clock className="w-3 h-3" />
+                    <span>有效期至 2026-03-09</span>
+                  </div>
+                </div>
+
+                {/* Guidance Section */}
+                <div className="w-full space-y-3">
+                  <div className="bg-blue-50 p-4 rounded-xl flex items-center gap-4 text-left">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                      <Users className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-slate-900 text-sm">加入店铺群聊</h4>
+                      <p className="text-xs text-slate-500">和 234 位同店小伙伴一起聊天</p>
+                    </div>
+                    <button className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-full">
+                      加入
+                    </button>
+                  </div>
+
+                  <div className="bg-pink-50 p-4 rounded-xl flex items-center gap-4 text-left">
+                    <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center shrink-0">
+                      <Heart className="w-5 h-5 text-pink-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-slate-900 text-sm">发布探店动态</h4>
+                      <p className="text-xs text-slate-500">分享此刻美好，赢取免单机会</p>
+                    </div>
+                    <button className="px-3 py-1.5 bg-pink-600 text-white text-xs font-bold rounded-full">
+                      发布
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <button 
-                onClick={handleCloseStoreMode}
-                className="w-full bg-slate-900 text-white py-4 rounded-full font-bold active:scale-[0.98] transition-transform"
-              >
-                完成
-              </button>
+              <div className="p-4 border-t border-slate-100 safe-area-bottom">
+                <button 
+                  onClick={handleCloseStoreMode}
+                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold active:scale-[0.98] transition-transform"
+                >
+                  完成
+                </button>
+              </div>
             </div>
           )}
 
