@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
-import { Search, Filter, MapPin, Star, User, MessageCircle, Heart, Share2, MoreHorizontal, Navigation, Users, ChevronRight } from "lucide-react";
+import { Search, Filter, MapPin, Star, User, MessageCircle, Heart, Share2, MoreHorizontal, Navigation, Users, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -46,7 +46,7 @@ const MOCK_FRIENDS = [
   { id: 2, name: "Bob", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop", status: "recent", distance: "1.2km" },
   { id: 3, name: "Carol", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", status: "offline", distance: "2.5km" },
   { id: 4, name: "David", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", status: "online", distance: "0.8km" },
-  { id: 5, name: "Eva", avatar: "https://images.unsplash.com/photo-1554151228-14d9def656ec?w=100&h=100&fit=crop", status: "recent", distance: "3.0km" },
+  { id: 5, name: "Eva", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", status: "recent", distance: "3.0km" },
 ];
 
 const MOCK_SHOPS = [
@@ -57,7 +57,7 @@ const MOCK_SHOPS = [
     rating: 4.8,
     price: "$$",
     distance: "0.3km",
-    image: "https://images.unsplash.com/photo-1453614512568-c4024d139247?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop",
     tags: ["Specialty Coffee", "Minimalist"],
     address: "123 Sanlitun Rd"
   },
@@ -79,7 +79,7 @@ const MOCK_SHOPS = [
     rating: 4.9,
     price: "$$$$",
     distance: "1.2km",
-    image: "https://images.unsplash.com/photo-1514362545857-3bc16549766b?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=600&fit=crop",
     tags: ["French", "Historic", "View"],
     address: "23 Shatan N St"
   },
@@ -90,7 +90,7 @@ const MOCK_SHOPS = [
     rating: 4.7,
     price: "$$$",
     distance: "0.8km",
-    image: "https://images.unsplash.com/photo-1550966871-3ed3c47e2ce2?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800&h=600&fit=crop",
     tags: ["Peking Duck", "Dim Sum"],
     address: "19 Sanlitun Rd"
   },
@@ -106,28 +106,6 @@ const MOCK_SHOPS = [
     address: "6 Xinzhong St"
   }
 ];
-
-// Custom Marker Icons (SVG strings)
-const UserIcon = {
-  url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="18" fill="white" stroke="#3B82F6" stroke-width="2"/>
-      <circle cx="20" cy="20" r="16" fill="#EFF6FF"/>
-    </svg>
-  `)}`,
-  scaledSize: { width: 40, height: 40 },
-  anchor: { x: 20, y: 20 }
-};
-
-const ShopIcon = {
-  url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M16 0C7.163 0 0 7.163 0 16s7.163 16 16 16 16-7.163 16-16S24.837 0 16 0zm0 24c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8-3.582 8-8 8z" fill="#F59E0B"/>
-    </svg>
-  `)}`,
-  scaledSize: { width: 32, height: 32 },
-  anchor: { x: 16, y: 16 }
-};
 
 const ImageIcon = {
   url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
@@ -146,6 +124,8 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
+  const [ageFilter, setAgeFilter] = useState<string | null>(null);
+  const [zodiacFilter, setZodiacFilter] = useState<string | null>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markerData, setMarkerData] = useState<any>({
     encounter: [],
@@ -548,170 +528,337 @@ export default function Home() {
     <Layout showNav={isNavVisible}>
       <div className="relative w-full h-screen overflow-hidden bg-slate-50">
         
-        {/* Top Navigation Bar - Auto Hide */}
-        <motion.div 
-          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-2 bg-white shadow-sm pointer-events-none"
-          animate={{ 
-            y: (isNavVisible && activeTab !== 'meet' && !isHeaderCollapsed) ? 0 : -200,
-            opacity: (isNavVisible && activeTab !== 'meet' && !isHeaderCollapsed) ? 1 : 0
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <div className="pointer-events-auto">
-            {/* Search Bar */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4">
-                <Search className="w-4 h-4 text-slate-400 mr-2" />
-                <input 
-                  type="text"
-                  placeholder="搜索好友ID、套餐名称、商户名称"
-                  className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <button 
-                className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                onClick={() => setShowFriendList(true)}
-              >
-                <Users className="w-5 h-5 text-slate-600" />
-              </button>
-            </div>
-
-            {/* Tab Switcher */}
-            <div className="flex items-center justify-between px-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as TabType)}
-                  className="flex flex-col items-center gap-0.5 group"
-                >
-                  <span className={cn(
-                    "text-base font-bold transition-colors",
-                    activeTab === tab.id ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
-                  )}>
-                    {tab.label}
-                  </span>
-                  <span className={cn(
-                    "text-[10px] font-medium transition-colors",
-                    activeTab === tab.id ? "text-blue-500" : "text-slate-300"
-                  )}>
-                    {tab.subtitle}
-                  </span>
-                  {activeTab === tab.id && (
-                    <motion.div
-                      layoutId="activeTabIndicator"
-                      className="w-4 h-1 bg-blue-500 rounded-full mt-1"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-
-
-        {/* Friend List Popup */}
-        <AnimatePresence>
-          {showFriendList && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowFriendList(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-              />
-              <motion.div
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed top-0 right-0 bottom-0 w-3/4 max-w-sm bg-white shadow-2xl z-50 flex flex-col"
-              >
-                <div className="p-4 border-b flex items-center justify-between bg-slate-50">
-                  <h2 className="text-lg font-bold text-slate-800">好友列表</h2>
-                  <button onClick={() => setShowFriendList(false)} className="p-2 hover:bg-slate-200 rounded-full">
-                    <ChevronRight className="w-5 h-5 text-slate-500" />
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {MOCK_FRIENDS.map(friend => (
-                    <div key={friend.id} className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm border border-slate-100 active:scale-95 transition-transform">
-                      <div className="relative">
-                        <img src={friend.avatar} className="w-12 h-12 rounded-full object-cover" />
-                        <div className={cn(
-                          "absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white",
-                          friend.status === "online" ? "bg-green-500" : friend.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
-                        )} />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-slate-800">{friend.name}</h3>
-                        <p className="text-xs text-slate-500">{friend.distance} • {friend.status === "online" ? "在线" : "离线"}</p>
-                      </div>
-                      <button className="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center text-blue-500">
-                        <MessageCircle className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Full Screen Map */}
+        {/* Map Background */}
         <div className="absolute inset-0 z-0">
           <MapView onMapReady={handleMapReady} />
         </div>
 
-        {/* Filter Button & Toggle */}
-        <motion.div 
-          animate={{ top: isHeaderCollapsed ? "1rem" : "9rem" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="absolute right-4 z-10 flex flex-col gap-3"
-        >
-          <button 
-            onClick={() => setShowFilterModal(true)}
-            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-blue-500 active:scale-95 transition-all"
-          >
-            <Filter className="w-5 h-5" />
-          </button>
-
-          {/* Collapse/Expand Toggle */}
-          <button 
-            onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
-            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-blue-500 active:scale-95 transition-all"
-          >
-            {isHeaderCollapsed ? (
-              <ChevronRight className="w-5 h-5 rotate-90" />
-            ) : (
-              <ChevronRight className="w-5 h-5 -rotate-90" />
-            )}
-          </button>
-        </motion.div>
-
-        {/* Filter Modal */}
+        {/* Top Navigation & Search */}
         <AnimatePresence>
-          {showFilterModal && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowFilterModal(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
-              />
+          {!isHeaderCollapsed && (
+            <motion.div 
+              initial={{ y: -100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -100, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute top-0 left-0 right-0 z-20 pt-12 pb-4 px-4 bg-gradient-to-b from-white/90 via-white/80 to-transparent backdrop-blur-[2px]"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-white/50 flex items-center px-4">
+                  <Search className="w-4 h-4 text-slate-400 mr-2" />
+                  <input 
+                    type="text"
+                    placeholder="搜索好友、动态或地点..."
+                    className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <button 
+                  className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-white/50 flex items-center justify-center active:scale-95 transition-transform"
+                  onClick={() => setShowFilterModal(true)}
+                >
+                  <Filter className="w-4 h-4 text-slate-700" />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex items-center justify-between px-2">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as TabType)}
+                    className={cn(
+                      "flex flex-col items-center transition-all duration-300",
+                      activeTab === tab.id ? "scale-110" : "opacity-60 scale-100"
+                    )}
+                  >
+                    <span className={cn(
+                      "text-base font-bold mb-0.5",
+                      activeTab === tab.id ? "text-slate-800" : "text-slate-500"
+                    )}>
+                      {tab.label}
+                    </span>
+                    {activeTab === tab.id && (
+                      <motion.div 
+                        layoutId="activeTabIndicator"
+                        className="w-1 h-1 bg-slate-800 rounded-full"
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Header Toggle Button */}
+        <div className="absolute top-28 right-4 z-20 flex flex-col gap-3">
+           {/* This is a placeholder to align with the filter button position if needed, 
+               but since the filter button is inside the collapsible header, 
+               we position this toggle button independently or relative to where the header ends.
+               Actually, let's position it just below where the header WOULD be, or fixed.
+               Better yet, let's put it below the filter button's usual position.
+           */}
+           <motion.button
+             animate={{ top: isHeaderCollapsed ? 60 : 130 }} // Adjust position based on header state
+             className="absolute right-0 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full shadow-md border border-white/50 flex items-center justify-center active:scale-95 transition-all duration-300"
+             onClick={() => setIsHeaderCollapsed(!isHeaderCollapsed)}
+             style={{ top: isHeaderCollapsed ? '60px' : '130px' }} // Fallback/Initial style
+           >
+             {isHeaderCollapsed ? (
+               <ChevronDown className="w-5 h-5 text-slate-600" />
+             ) : (
+               <ChevronUp className="w-5 h-5 text-slate-600" />
+             )}
+           </motion.button>
+        </div>
+
+
+        {/* Content Area (Bottom Sheets / Cards) */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 pb-20 pointer-events-none">
+          {/* Shop Detail Card */}
+          <AnimatePresence>
+            {selectedShop && (
               <motion.div
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-safe"
+                className="absolute bottom-0 left-0 right-0 p-4 pointer-events-auto"
+              >
+                <div className="bg-white rounded-3xl shadow-2xl p-5 mb-20">
+                  <div className="flex gap-4">
+                    <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0">
+                      <img src={selectedShop.image} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-bold text-slate-900 truncate">{selectedShop.name}</h3>
+                          <div className="flex items-center gap-1 text-orange-400 mt-1">
+                            <Star className="w-4 h-4 fill-current" />
+                            <span className="text-sm font-bold">{selectedShop.rating}</span>
+                            <span className="text-slate-300 mx-1">|</span>
+                            <span className="text-sm text-slate-500">{selectedShop.type}</span>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => setSelectedShop(null)}
+                          className="p-1 hover:bg-slate-100 rounded-full"
+                        >
+                          <ChevronDown className="w-5 h-5 text-slate-400" />
+                        </button>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <div className="text-sm text-slate-500">{selectedShop.distance} • {selectedShop.price}</div>
+                        <Link href={`/merchant/${selectedShop.id}`}>
+                          <button className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-full shadow-lg shadow-slate-900/20 active:scale-95 transition-transform">
+                            进店看看
+                          </button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Moment Detail Card */}
+          <AnimatePresence>
+            {selectedMoment && (
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="absolute bottom-0 left-0 right-0 p-4 pointer-events-auto"
+              >
+                <div className="bg-white rounded-3xl shadow-2xl overflow-hidden mb-20">
+                  <div className="relative h-48">
+                    <img src={selectedMoment.image} className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => setSelectedMoment(null)}
+                      className="absolute top-4 right-4 w-8 h-8 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
+                    >
+                      <ChevronDown className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-100">
+                        <img src={selectedMoment.user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">{selectedMoment.user?.name || "Unknown User"}</div>
+                        <div className="text-xs text-slate-400">{selectedMoment.time || "Just now"}</div>
+                      </div>
+                    </div>
+                    <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                      {selectedMoment.content}
+                    </p>
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                      <div className="flex gap-4">
+                        <button className="flex items-center gap-1.5 text-slate-500 hover:text-pink-500 transition-colors">
+                          <Heart className="w-5 h-5" />
+                          <span className="text-xs font-medium">{selectedMoment.likes || 0}</span>
+                        </button>
+                        <button className="flex items-center gap-1.5 text-slate-500 hover:text-blue-500 transition-colors">
+                          <MessageCircle className="w-5 h-5" />
+                          <span className="text-xs font-medium">{selectedMoment.comments || 0}</span>
+                        </button>
+                      </div>
+                      <button className="text-slate-400 hover:text-slate-600">
+                        <Share2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Horizontal Scroll Lists (When no selection) */}
+          <AnimatePresence>
+            {!selectedShop && !selectedMoment && (
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                className="pointer-events-auto pb-24 pl-4 overflow-x-auto no-scrollbar overscroll-x-contain"
+                style={{ overscrollBehaviorX: 'contain' }}
+              >
+                <div className="flex gap-4 pr-4 w-max">
+                  {activeTab === "meet" ? (
+                    // Shop Cards
+                    MOCK_SHOPS.map((shop, index) => (
+                      <Link key={shop.id} href={`/merchant/${shop.id}`}>
+                        <div 
+                          ref={(el) => { shopCardRefs.current[index] = el; }}
+                          className="w-72 bg-white rounded-2xl shadow-lg overflow-hidden shrink-0 active:scale-95 transition-transform duration-200"
+                          onClick={() => {
+                            setSelectedShop(shop);
+                            mapInstance?.panTo({ lat: 39.9042, lng: 116.4074 }); // Mock location
+                          }}
+                        >
+                          <div className="h-32 relative">
+                            <img src={shop.image} className="w-full h-full object-cover" />
+                            <div className="absolute top-3 right-3 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-xs font-bold text-slate-800">
+                              {shop.rating} ★
+                            </div>
+                          </div>
+                          <div className="p-4">
+                            <h3 className="font-bold text-slate-900 mb-1">{shop.name}</h3>
+                            <div className="flex items-center text-xs text-slate-500 mb-3">
+                              <span>{shop.type}</span>
+                              <span className="mx-1">•</span>
+                              <span>{shop.distance}</span>
+                              <span className="mx-1">•</span>
+                              <span>{shop.price}</span>
+                            </div>
+                            <div className="flex gap-2">
+                              {shop.tags.map(tag => (
+                                <span key={tag} className="px-2 py-1 bg-slate-100 rounded-md text-[10px] text-slate-600 font-medium">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))
+                  ) : activeTab === "moments" ? (
+                    // Moment Cards
+                    markerData.moments.map((moment: any) => (
+                      <div 
+                        key={moment.id}
+                        className="w-64 bg-white rounded-2xl shadow-lg overflow-hidden shrink-0 active:scale-95 transition-transform duration-200"
+                        onClick={() => {
+                          setSelectedMoment(moment);
+                          mapInstance?.panTo({ lat: moment.lat, lng: moment.lng });
+                        }}
+                      >
+                        <div className="h-40 relative">
+                          <img src={moment.image} className="w-full h-full object-cover" />
+                          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full border border-white/50 overflow-hidden">
+                                <img src={MOCK_MOMENTS[0].user.avatar} className="w-full h-full object-cover" />
+                              </div>
+                              <span className="text-white text-xs font-medium truncate">User {moment.id}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <p className="text-sm text-slate-700 line-clamp-2 mb-2">
+                            {moment.content || "Enjoying a wonderful day out in the city! #lifestyle"}
+                          </p>
+                          <div className="flex items-center justify-between text-xs text-slate-400">
+                            <span>2h ago</span>
+                            <div className="flex items-center gap-3">
+                              <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {moment.likes}</span>
+                              <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {moment.comments}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    // User/Friend Cards
+                    (activeTab === "friends" ? markerData.friends : markerData.encounter)
+                      .slice(0, 10)
+                      .map((user: any) => (
+                        <div 
+                          key={user.id}
+                          className="w-20 flex flex-col items-center shrink-0"
+                          onClick={() => mapInstance?.panTo({ lat: user.lat, lng: user.lng })}
+                        >
+                          <div className={cn(
+                            "w-16 h-16 rounded-full border-2 p-0.5 mb-2 relative",
+                            user.gender === "female" ? "border-pink-400" : "border-blue-400"
+                          )}>
+                            <img src={user.image} className="w-full h-full object-cover rounded-full" />
+                            <div className={cn(
+                              "absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white",
+                              user.status === "online" ? "bg-green-500" : "bg-yellow-500"
+                            )} />
+                          </div>
+                          <span className="text-xs font-medium text-slate-700 truncate w-full text-center">
+                            {user.title}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            0.5km
+                          </span>
+                        </div>
+                      ))
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Filter Modal */}
+        <AnimatePresence>
+          {showFilterModal && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/40 z-40 backdrop-blur-sm"
+                onClick={() => setShowFilterModal(false)}
+              />
+              <motion.div 
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 p-6 pb-10"
               >
                 <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
-                <h3 className="text-lg font-bold text-slate-900 mb-4">筛选显示</h3>
+                <h3 className="text-lg font-bold text-slate-900 mb-6">筛选显示</h3>
                 
                 <div className="space-y-6">
                   <div>
@@ -721,14 +868,14 @@ export default function Home() {
                         { id: "all", label: "全部" },
                         { id: "male", label: "男生" },
                         { id: "female", label: "女生" }
-                      ].map(opt => (
+                      ].map((opt) => (
                         <button
                           key={opt.id}
                           onClick={() => setGenderFilter(opt.id as any)}
                           className={cn(
-                            "flex-1 h-10 rounded-full text-sm font-medium transition-all",
-                            genderFilter === opt.id 
-                              ? "bg-blue-500 text-white shadow-md shadow-blue-200" 
+                            "flex-1 py-3 rounded-xl text-sm font-bold transition-all",
+                            genderFilter === opt.id
+                              ? "bg-slate-900 text-white shadow-lg shadow-slate-900/20"
                               : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                           )}
                         >
@@ -737,125 +884,56 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                  
+
+                  {/* Age Filter */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">年龄</label>
+                    <div className="flex gap-3">
+                      {["18-22", "23-26", "27-35", "35+"].map(age => (
+                        <button 
+                          key={age} 
+                          onClick={() => setAgeFilter(age === ageFilter ? null : age)}
+                          className={cn(
+                            "flex-1 py-2 rounded-lg text-xs font-medium transition-colors",
+                            age === ageFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {age}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Zodiac Filter */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">星座</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"].map(zodiac => (
+                        <button 
+                          key={zodiac} 
+                          onClick={() => setZodiacFilter(zodiac === zodiacFilter ? null : zodiac)}
+                          className={cn(
+                            "py-2 rounded-lg text-xs font-medium transition-colors",
+                            zodiac === zodiacFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {zodiac}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <button 
                     onClick={() => setShowFilterModal(false)}
-                    className="w-full h-12 bg-slate-900 text-white rounded-full font-bold text-base active:scale-95 transition-transform"
+                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/20 active:scale-95 transition-transform mt-4"
                   >
-                    完成
+                    确认
                   </button>
                 </div>
               </motion.div>
             </>
           )}
         </AnimatePresence>
-
-        {/* Bottom Card List - Only for 'meet' tab */}
-        <AnimatePresence>
-          {activeTab === 'meet' && (
-            <motion.div 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute bottom-[80px] left-0 right-0 z-20 px-4 overflow-x-auto flex gap-4 pb-4 snap-x snap-mandatory no-scrollbar overscroll-contain touch-pan-x"
-            >
-              {MOCK_SHOPS.map((shop) => (
-                <Link key={shop.id} href={`/merchant/${shop.id}`}>
-                  <div 
-                    className="snap-center shrink-0 w-[280px] bg-white rounded-2xl shadow-lg overflow-hidden active:scale-95 transition-transform"
-                  >
-                    <div className="h-32 relative">
-                      <img src={shop.image} className="w-full h-full object-cover" />
-                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-bold text-slate-800 flex items-center gap-1">
-                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        {shop.rating}
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-bold text-slate-900 truncate flex-1">{shop.name}</h3>
-                        <span className="text-xs font-medium text-slate-500">{shop.distance}</span>
-                      </div>
-                      <p className="text-xs text-slate-500 mb-2">{shop.type} • {shop.price}</p>
-                      <div className="flex flex-wrap gap-1">
-                        {shop.tags.map((tag: string) => (
-                          <span key={tag} className="px-1.5 py-0.5 bg-slate-100 rounded text-[10px] text-slate-500">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Moment Detail Modal */}
-        <AnimatePresence>
-          {selectedMoment && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSelectedMoment(null)}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-              />
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="fixed inset-x-4 top-1/2 -translate-y-1/2 bg-white rounded-3xl z-50 overflow-hidden shadow-2xl max-h-[80vh] flex flex-col"
-              >
-                <div className="relative h-64 shrink-0">
-                  <img src={selectedMoment.image} className="w-full h-full object-cover" />
-                  <button 
-                    onClick={() => setSelectedMoment(null)}
-                    className="absolute top-4 right-4 w-8 h-8 bg-black/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
-                  >
-                    <ChevronRight className="w-5 h-5 rotate-90" />
-                  </button>
-                </div>
-                <div className="p-6 overflow-y-auto">
-                  <div className="flex items-center gap-3 mb-4">
-                    <img src={selectedMoment.user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"} className="w-10 h-10 rounded-full object-cover" />
-                    <div>
-                      <h3 className="font-bold text-slate-900">{selectedMoment.user?.name || "Unknown User"}</h3>
-                      <p className="text-xs text-slate-500">{selectedMoment.time || "Just now"}</p>
-                    </div>
-                  </div>
-                  <p className="text-slate-700 leading-relaxed mb-4">
-                    {selectedMoment.content}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {selectedMoment.hashtags?.map((tag: string) => (
-                      <span key={tag} className="text-blue-500 text-sm font-medium">{tag}</span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <div className="flex gap-4">
-                      <button className="flex items-center gap-1 text-slate-500 hover:text-pink-500 transition-colors">
-                        <Heart className="w-5 h-5" />
-                        <span className="text-sm">{selectedMoment.likes || 0}</span>
-                      </button>
-                      <button className="flex items-center gap-1 text-slate-500 hover:text-blue-500 transition-colors">
-                        <MessageCircle className="w-5 h-5" />
-                        <span className="text-sm">{selectedMoment.comments || 0}</span>
-                      </button>
-                    </div>
-                    <button className="text-slate-400 hover:text-slate-600">
-                      <Share2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
       </div>
     </Layout>
   );
