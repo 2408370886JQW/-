@@ -178,7 +178,7 @@ export default function MerchantDetailPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* 左侧分类导航 - 手风琴交互 */}
-        <ScrollArea className="w-[100px] min-w-[100px] bg-slate-50 h-full border-r border-slate-100 flex-shrink-0 overscroll-contain touch-pan-y">
+        <ScrollArea className="w-[100px] min-w-[100px] bg-slate-50 h-full border-r border-slate-100 flex-shrink-0">
           <div className="flex flex-col py-2 w-full">
             {/* 全城筛选 */}
             <div className="px-3 py-4 text-sm font-bold text-slate-800 flex items-center cursor-pointer active:bg-slate-100 whitespace-nowrap">
@@ -265,7 +265,7 @@ export default function MerchantDetailPage() {
         </ScrollArea>
 
         {/* 右侧内容区域 - 强制限制宽度防止溢出 */}
-        <ScrollArea className="flex-1 bg-white h-full w-0 min-w-0 overscroll-contain touch-pan-y">
+        <ScrollArea className="flex-1 bg-white h-full w-0 min-w-0">
           <div className="p-3 pb-24 w-full max-w-full overflow-hidden">
             {/* 顶部Banner与筛选 */}
             <div className="relative mb-4 rounded-xl overflow-hidden h-32">
