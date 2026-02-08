@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Search, Clock, ChevronRight, Star, Map as MapIcon, List } from "lucide-react";
+import { MapPin, Search, Clock, ChevronRight, Star, Map as MapIcon, List, Tag, ShoppingBag } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,10 @@ const MERCHANTS = [
     sold: 1200,
     tags: ["适合拍照", "闺蜜聚会", "高颜值"],
     isPackage: true,
+    packages: [
+      { title: "双人精致下午茶套餐", price: "¥168", originalPrice: "¥298", sold: 500 },
+      { title: "单人舒芙蕾套餐", price: "¥58", originalPrice: "¥88", sold: 200 }
+    ],
     lat: 39.9255,
     lng: 116.5181
   },
@@ -37,6 +41,10 @@ const MERCHANTS = [
     sold: 850,
     tags: ["约会首选", "氛围感", "西餐"],
     isPackage: true,
+    packages: [
+      { title: "浪漫双人西餐", price: "¥398", originalPrice: "¥588", sold: 300 },
+      { title: "主厨精选单人餐", price: "¥128", originalPrice: "¥198", sold: 150 }
+    ],
     lat: 39.9355,
     lng: 116.4551
   },
@@ -52,6 +60,10 @@ const MERCHANTS = [
     sold: 450,
     tags: ["烧脑", "沉浸式", "社交"],
     isPackage: true,
+    packages: [
+      { title: "城市限定本通玩券", price: "¥128", originalPrice: "¥168", sold: 100 },
+      { title: "实景搜证4人车", price: "¥488", originalPrice: "¥688", sold: 50 }
+    ],
     lat: 39.9995,
     lng: 116.4810
   },
@@ -67,6 +79,10 @@ const MERCHANTS = [
     sold: 600,
     tags: ["微醺", "精酿", "深夜"],
     isPackage: true,
+    packages: [
+      { title: "精酿啤酒畅饮", price: "¥128", originalPrice: "¥198", sold: 200 },
+      { title: "双人小酌套餐", price: "¥158", originalPrice: "¥228", sold: 120 }
+    ],
     lat: 39.9405,
     lng: 116.4020
   },
@@ -82,8 +98,31 @@ const MERCHANTS = [
     sold: 300,
     tags: ["刺激", "解压", "团建"],
     isPackage: true,
+    packages: [
+      { title: "单人极速体验8分钟", price: "¥128", originalPrice: "¥168", sold: 150 },
+      { title: "双人竞速套餐", price: "¥238", originalPrice: "¥336", sold: 80 }
+    ],
     lat: 40.0100,
     lng: 116.5500
+  },
+  {
+    id: 6,
+    title: "Blue Note Jazz Club",
+    type: "fun",
+    image: "https://images.unsplash.com/photo-1514525253440-b393452e3383?w=800&h=400&fit=crop",
+    location: "前门东大街",
+    distance: "3.5km",
+    price: "¥280/人",
+    rating: 4.9,
+    sold: 200,
+    tags: ["爵士乐", "高端", "约会"],
+    isPackage: true,
+    packages: [
+      { title: "周末现场演出门票", price: "¥280", originalPrice: "¥380", sold: 100 },
+      { title: "双人晚餐+演出", price: "¥888", originalPrice: "¥1288", sold: 50 }
+    ],
+    lat: 39.9000,
+    lng: 116.4000
   }
 ];
 
@@ -264,7 +303,7 @@ export default function MeetPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   whileTap={{ scale: 0.98 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 block"
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 block mb-4"
                 >
                   {/* Image Section */}
                   <div className="relative h-48">
@@ -303,8 +342,28 @@ export default function MeetPage() {
                       ))}
                     </div>
 
+                    {/* Group Buying Packages */}
+                    {item.packages && item.packages.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-slate-50 space-y-2">
+                        {item.packages.map((pkg, idx) => (
+                          <div key={idx} className="flex items-center justify-between bg-slate-50 p-2 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 bg-red-100 text-red-500 rounded flex items-center justify-center">
+                                <ShoppingBag className="w-3 h-3" />
+                              </div>
+                              <span className="text-sm text-slate-700 font-medium">{pkg.title}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-slate-400 line-through">{pkg.originalPrice}</span>
+                              <span className="text-sm font-bold text-red-500">{pkg.price}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {/* Footer Info */}
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-50">
+                    <div className="flex items-center justify-between pt-3 mt-2 border-t border-slate-50">
                       <div className="flex items-center gap-1 text-amber-500">
                         <Star className="w-4 h-4 fill-current" />
                         <span className="text-xs font-bold">{item.rating}</span>
