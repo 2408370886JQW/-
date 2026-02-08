@@ -603,7 +603,14 @@ export default function Home() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    if (tab.id === 'meet') {
+                      // Navigate to dedicated Meet page
+                      window.location.href = '/meet';
+                    } else {
+                      setActiveTab(tab.id);
+                    }
+                  }}
                   className="flex flex-col items-center gap-0.5 group"
                 >
                   <span className={cn(
@@ -1025,63 +1032,7 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Meet Page Overlay */}
-        <AnimatePresence>
-          {activeTab === "meet" && (
-            <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={cn(
-                "absolute inset-0 bg-slate-50 flex flex-col",
-                showStoreMode ? "z-[100]" : "z-20"
-              )}
-            >
-              {showStoreMode ? (
-                <StoreMode onExit={(targetTab) => {
-                  setShowStoreMode(false);
-                  if (targetTab) {
-                    setActiveTab(targetTab as TabType);
-                  }
-                }} />
-              ) : (
-                <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14 relative">
-                  {/* Back Button */}
-                  <button 
-                    onClick={() => setActiveTab("encounter")}
-                    className="absolute top-4 left-4 p-2 bg-white shadow-sm border border-slate-100 rounded-full text-slate-900 z-10 active:scale-95 transition-transform"
-                  >
-                    <ArrowLeft className="w-6 h-6" />
-                  </button>
 
-                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6 pt-16">
-                    <h2 className="text-2xl font-bold mb-2">到店相见</h2>
-                    <p className="text-blue-100 mb-6">扫码解锁专属优惠与社交玩法</p>
-                    <button 
-                      onClick={() => setShowStoreMode(true)}
-                      className="bg-white text-blue-600 font-bold px-6 py-3 rounded-full shadow-md active:scale-95 transition-transform flex items-center gap-2"
-                    >
-                      <Camera className="w-5 h-5" />
-                      模拟扫码进店
-                    </button>
-                  </div>
-                  
-                  <h3 className="font-bold text-slate-900 mb-4">推荐店铺</h3>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-                        <div className="h-32 bg-slate-200 rounded-lg mb-3"></div>
-                        <div className="h-4 w-2/3 bg-slate-200 rounded mb-2"></div>
-                        <div className="h-3 w-1/2 bg-slate-100 rounded"></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
 
       </div>
     </Layout>
