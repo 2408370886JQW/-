@@ -38,10 +38,39 @@ const SAVED_SHOPS = [
   { id: 2, name: "Algorithm 算法", type: "咖啡厅", rating: 4.8, image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop", address: "朝阳区工体北路" },
 ];
 
+const SAVED_MOMENTS = [
+  { 
+    id: 101, 
+    content: "今天发现一家超棒的咖啡店！☕️", 
+    image: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=400&h=500&fit=crop", 
+    author: "CoffeeLover", 
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop",
+    likes: 128 
+  },
+  { 
+    id: 102, 
+    content: "周末的快乐时光，和朋友们一起野餐 🧺", 
+    image: "https://images.unsplash.com/photo-1526401485004-46910ecc8e51?w=400&h=500&fit=crop", 
+    author: "SunnyDay", 
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop",
+    likes: 256 
+  },
+  { 
+    id: 103, 
+    content: "深夜食堂，治愈系美食 🍜", 
+    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=500&fit=crop", 
+    author: "FoodieLife", 
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop",
+    likes: 89 
+  },
+];
+
 type TabType = "moments" | "saved";
+type SavedTabType = "shops" | "moments";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<TabType>("moments");
+  const [savedTab, setSavedTab] = useState<SavedTabType>("shops");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   return (
@@ -219,25 +248,82 @@ export default function ProfilePage() {
           )}
 
           {activeTab === "saved" && (
-            <div className="space-y-3 p-3">
-              {SAVED_SHOPS.map(shop => (
-                <div key={shop.id} className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 flex gap-3">
-                  <img src={shop.image} className="w-20 h-20 rounded-lg object-cover bg-slate-100" />
-                  <div className="flex-1 flex flex-col justify-between py-0.5">
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-sm">{shop.name}</h4>
-                      <div className="text-xs text-slate-500 mt-1">{shop.address}</div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">{shop.type}</span>
-                      <div className="flex items-center gap-1 text-xs font-medium text-slate-900">
-                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                        {shop.rating}
+            <div className="flex flex-col h-full">
+              {/* Saved Sub-tabs */}
+              <div className="flex items-center gap-4 px-4 py-3 border-b border-slate-100 bg-white sticky top-[48px] z-20">
+                <button 
+                  onClick={() => setSavedTab("shops")}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-sm font-bold transition-all",
+                    savedTab === "shops" 
+                      ? "bg-slate-900 text-white shadow-md" 
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  )}
+                >
+                  收藏的店
+                </button>
+                <button 
+                  onClick={() => setSavedTab("moments")}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-sm font-bold transition-all",
+                    savedTab === "moments" 
+                      ? "bg-slate-900 text-white shadow-md" 
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  )}
+                >
+                  收藏的动态
+                </button>
+              </div>
+
+              {/* Saved Content */}
+              <div className="p-3 min-h-[400px]">
+                {savedTab === "shops" ? (
+                  <div className="space-y-3">
+                    {SAVED_SHOPS.map(shop => (
+                      <div key={shop.id} className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 flex gap-3 active:scale-[0.98] transition-transform cursor-pointer">
+                        <img src={shop.image} className="w-20 h-20 rounded-lg object-cover bg-slate-100" />
+                        <div className="flex-1 flex flex-col justify-between py-0.5">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-sm">{shop.name}</h4>
+                            <div className="text-xs text-slate-500 mt-1">{shop.address}</div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">{shop.type}</span>
+                            <div className="flex items-center gap-1 text-xs font-medium text-slate-900">
+                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                              {shop.rating}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                </div>
-              ))}
+                ) : (
+                  <div className="columns-2 gap-3 space-y-3">
+                    {SAVED_MOMENTS.map(moment => (
+                      <div key={moment.id} className="break-inside-avoid bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100 group cursor-pointer active:scale-[0.98] transition-transform">
+                        <div className="relative">
+                          <img src={moment.image} className="w-full object-cover" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <div className="p-3">
+                          <p className="text-sm text-slate-900 font-medium line-clamp-2 mb-2">{moment.content}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <img src={moment.avatar} className="w-5 h-5 rounded-full object-cover" />
+                              <span className="text-xs text-slate-500 truncate max-w-[60px]">{moment.author}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-slate-400">
+                              <Heart className="w-3 h-3" />
+                              {moment.likes}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

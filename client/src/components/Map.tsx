@@ -99,13 +99,19 @@ function loadMapScript() {
       return;
     }
     
+    // Check if script is already loading
+    const existingScript = document.querySelector(`script[src^="${MAPS_PROXY_URL}/maps/api/js"]`);
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(null));
+      return;
+    }
+
     const script = document.createElement("script");
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
+    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry&loading=async`;
     script.async = true;
     script.crossOrigin = "anonymous";
     script.onload = () => {
       resolve(null);
-      // Do not remove script tag as it might be needed by other components or re-renders
     };
     script.onerror = () => {
       console.error("Failed to load Google Maps script");
