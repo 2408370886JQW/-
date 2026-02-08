@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import StoreMode from "./StoreMode";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronUp, ChevronDown } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -212,6 +212,7 @@ export default function Home() {
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
   const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const interactionLockRef = useRef(false);
 
   // Listen for new moment posted event
   useEffect(() => {
@@ -841,16 +842,26 @@ export default function Home() {
                 e.preventDefault();
                 e.stopPropagation();
                 e.nativeEvent.stopImmediatePropagation();
+                
+                // Interaction lock to prevent map interference
+                if (interactionLockRef.current) return;
+                interactionLockRef.current = true;
+                setTimeout(() => {
+                  interactionLockRef.current = false;
+                }, 500);
+
                 setIsNavVisible(prev => !prev);
               }}
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
+              }}
             >
-              {isNavVisible ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
+              <ChevronsUpDown className="w-5 h-5" />
             </motion.button>
           </div>
         )}
@@ -972,27 +983,58 @@ export default function Home() {
                     <ArrowLeft className="w-6 h-6" />
                   </button>
 
-                  <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-lg mb-6 pt-16">
-                    <h2 className="text-2xl font-bold mb-2">到店相见</h2>
-                    <p className="text-blue-100 mb-6">扫码解锁专属优惠与社交玩法</p>
+                  <div className="mb-6 pt-12">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">选择相见场景</h2>
+                    <p className="text-slate-500 mb-6">选择一个场景，开启你的社交之旅</p>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      {SCENARIOS.map((scenario) => {
+                        const Icon = scenario.icon;
+                        return (
+                          <button
+                            key={scenario.id}
+                            onClick={() => {
+                              setActiveScenario(scenario.id);
+                              setShowStoreMode(true);
+                            }}
+                            className={cn(
+                              "relative p-4 rounded-2xl text-left transition-all active:scale-95 border-2",
+                              activeScenario === scenario.id 
+                                ? "bg-white border-blue-500 shadow-lg shadow-blue-100" 
+                                : "bg-white border-transparent shadow-sm hover:shadow-md"
+                            )}
+                          >
+                            <div className={cn(
+                              "w-12 h-12 rounded-xl flex items-center justify-center mb-3",
+                              scenario.bg
+                            )}>
+                              <Icon className={cn("w-6 h-6", scenario.color)} />
+                            </div>
+                            <div className="font-bold text-slate-900 text-lg mb-1">{scenario.label}</div>
+                            <div className="text-xs text-slate-400">点击进入</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="font-bold text-lg">扫码进店</h3>
+                        <p className="text-slate-400 text-sm">已在店内？直接扫码</p>
+                      </div>
+                      <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                        <Camera className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
                     <button 
                       onClick={() => setShowStoreMode(true)}
-                      className="bg-white text-blue-600 font-bold px-6 py-3 rounded-full shadow-md active:scale-95 transition-transform flex items-center gap-2"
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
                     >
                       <Camera className="w-5 h-5" />
-                      模拟扫码进店
+                      开启扫码
                     </button>
-                  </div>
-                  
-                  <h3 className="font-bold text-slate-900 mb-4">推荐店铺</h3>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
-                        <div className="h-32 bg-slate-200 rounded-lg mb-3"></div>
-                        <div className="h-4 w-2/3 bg-slate-200 rounded mb-2"></div>
-                        <div className="h-3 w-1/2 bg-slate-100 rounded"></div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               )}

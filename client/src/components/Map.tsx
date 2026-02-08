@@ -139,21 +139,23 @@ export default function MapView({
       console.error("Map container not found");
       return;
     }
-    map.current = new window.google.maps.Map(mapContainer.current, {
-      zoom: initialZoom,
-      center: initialCenter,
-      mapTypeControl: false,
-      fullscreenControl: false,
-      zoomControl: false,
-      streetViewControl: false,
-      scaleControl: false,
-      rotateControl: false,
-      panControl: false,
-      mapId: "DEMO_MAP_ID",
-      gestureHandling: "greedy", // Enable single-finger panning
-      clickableIcons: false, // Disable default POI clicks
-    });
-    if (onMapReady) {
+    if (window.google && window.google.maps) {
+      map.current = new window.google.maps.Map(mapContainer.current, {
+        zoom: initialZoom,
+        center: initialCenter,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        zoomControl: false,
+        streetViewControl: false,
+        scaleControl: false,
+        rotateControl: false,
+        panControl: false,
+        mapId: "DEMO_MAP_ID",
+        gestureHandling: "greedy", // Enable single-finger panning
+        clickableIcons: false, // Disable default POI clicks
+      });
+    }
+    if (onMapReady && map.current) {
       onMapReady(map.current);
     }
   });
@@ -163,7 +165,7 @@ export default function MapView({
   }, [init]);
 
   return (
-    <div ref={mapContainer} className={cn("w-full h-[500px]", className)}>
+    <div ref={mapContainer} className={cn("w-full h-full min-h-screen absolute inset-0", className)}>
       {children}
     </div>
   );
