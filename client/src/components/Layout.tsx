@@ -8,8 +8,8 @@ interface LayoutProps {
 
 export default function Layout({ children, showNav = true }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-background font-sans antialiased">
-      <main className="w-full max-w-md mx-auto min-h-screen relative bg-background shadow-2xl overflow-hidden">
+    <div className="h-screen bg-background font-sans antialiased overflow-hidden flex justify-center">
+      <main className="w-full max-w-md h-full relative bg-background shadow-2xl overflow-hidden flex flex-col">
         {children}
       </main>
       {showNav && (

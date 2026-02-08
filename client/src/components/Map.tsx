@@ -90,7 +90,7 @@ const API_KEY = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
 const FORGE_BASE_URL =
   import.meta.env.VITE_FRONTEND_FORGE_API_URL ||
   "https://forge.butterfly-effect.dev";
-const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
+const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy/maps/api/js`;
 
 function loadMapScript() {
   return new Promise(resolve => {
@@ -100,9 +100,14 @@ function loadMapScript() {
     }
     
     const script = document.createElement("script");
-    script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
+    // Use the standard Google Maps path structure: /maps/api/js
+    // The proxy expects the full path to forward correctly
+    const scriptUrl = `${MAPS_PROXY_URL}?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
+    console.log("Loading Google Maps script from:", scriptUrl);
+    script.src = scriptUrl;
     script.async = true;
-    script.crossOrigin = "anonymous";
+    // script.crossOrigin = "anonymous"; // Removed to fix proxy issue
+    script.referrerPolicy = "origin";
     script.onload = () => {
       resolve(null);
       // Do not remove script tag as it might be needed by other components or re-renders
@@ -125,7 +130,7 @@ interface MapViewProps {
 
 export default function MapView({
   className,
-  initialCenter = { lat: 37.7749, lng: -122.4194 },
+  initialCenter = { lat: 31.2304, lng: 121.4737 },
   initialZoom = 12,
   onMapReady,
   children,
@@ -139,21 +144,23 @@ export default function MapView({
       console.error("Map container not found");
       return;
     }
-    map.current = new window.google.maps.Map(mapContainer.current, {
-      zoom: initialZoom,
-      center: initialCenter,
-      mapTypeControl: false,
-      fullscreenControl: false,
-      zoomControl: false,
-      streetViewControl: false,
-      scaleControl: false,
-      rotateControl: false,
-      panControl: false,
-      mapId: "DEMO_MAP_ID",
-      gestureHandling: "greedy", // Enable single-finger panning
-    });
-    if (onMapReady) {
-      onMapReady(map.current);
+    if (!map.current) {
+      map.current = new window.google.maps.Map(mapContainer.current, {
+        zoom: initialZoom,
+        center: initialCenter,
+        mapTypeControl: false,
+        fullscreenControl: false,
+        zoomControl: false,
+        streetViewControl: false,
+        scaleControl: false,
+        rotateControl: false,
+        panControl: false,
+        mapId: "DEMO_MAP_ID",
+        gestureHandling: "greedy", // Enable single-finger panning
+      });
+      if (onMapReady) {
+        onMapReady(map.current);
+      }
     }
   });
 
