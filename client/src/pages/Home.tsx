@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import StoreMode from "./StoreMode";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronsUpDown } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -811,8 +811,8 @@ export default function Home() {
             // Add click listener to close popups when clicking map
             map.addListener('click', () => {
               // Check timestamp lock to prevent map click from interfering with toggle button
-              // If less than 500ms has passed since the last toggle, ignore this click
-              if (Date.now() - lastToggleTimeRef.current < 500) return;
+              // If less than 1000ms has passed since the last toggle, ignore this click
+              if (Date.now() - lastToggleTimeRef.current < 1000) return;
 
               // Only close if clicking on the map background, not markers
               // But markers have their own click handlers which stop propagation
@@ -872,7 +872,11 @@ export default function Home() {
                 lastToggleTimeRef.current = Date.now();
               }}
             >
-              <ChevronsUpDown className="w-5 h-5" />
+              {isNavVisible ? (
+                <ChevronUp className="w-5 h-5" />
+              ) : (
+                <ChevronDown className="w-5 h-5" />
+              )}
             </motion.button>
           </div>
         )}
