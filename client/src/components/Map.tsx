@@ -151,6 +151,7 @@ export default function MapView({
       panControl: false,
       mapId: "DEMO_MAP_ID",
       gestureHandling: "greedy", // Enable single-finger panning
+      clickableIcons: false, // Disable default POI clicks
     });
     if (onMapReady) {
       onMapReady(map.current);

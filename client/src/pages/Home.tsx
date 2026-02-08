@@ -838,9 +838,13 @@ export default function Home() {
               animate={{ scale: 1 }}
               className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900"
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
+                e.nativeEvent.stopImmediatePropagation();
                 setIsNavVisible(prev => !prev);
               }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
             >
               {isNavVisible ? (
                 <ChevronUp className="w-5 h-5" />
