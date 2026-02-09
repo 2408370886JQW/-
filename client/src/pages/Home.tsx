@@ -266,8 +266,18 @@ export default function Home() {
           "stylers": [{"color": "#ffffff"}, {"lightness": 18}]
         },
         {
+          "featureType": "road.arterial",
+          "elementType": "geometry.stroke",
+          "stylers": [{"color": "#ffffff"}, {"lightness": 18}]
+        },
+        {
           "featureType": "road.local",
           "elementType": "geometry",
+          "stylers": [{"color": "#ffffff"}, {"lightness": 16}]
+        },
+        {
+          "featureType": "road.local",
+          "elementType": "geometry.stroke",
           "stylers": [{"color": "#ffffff"}, {"lightness": 16}]
         },
         {
@@ -291,20 +301,20 @@ export default function Home() {
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
   const [isNavVisible, setIsNavVisible] = useState(true);
-  const [isStoreMode, setIsStoreMode] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isStoreMode, setIsStoreMode] = useState(false);
   const lastToggleTimeRef = useRef(0);
 
-  // Function to handle adding a new consumption marker
+  // Function to add a new consumption marker
   const handleAddConsumptionMarker = () => {
     const newMarker = {
       id: Date.now(),
-      lat: 39.908, // Near center
+      lat: 39.908, // Near the center
       lng: 116.404,
       type: "moment",
-      icon: ImageIcon,
+      icon: ShoppingBag,
       content: "我在这里消费了",
-      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=200&fit=crop",
+      image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop",
       likes: 0,
       comments: 0,
       isNew: true // Flag for animation
@@ -312,40 +322,32 @@ export default function Home() {
 
     setMarkerData((prev: any) => ({
       ...prev,
-      moments: [newMarker, ...prev.moments]
+      moments: [...prev.moments, newMarker]
     }));
 
     // Switch to moments tab to see the new marker
     setActiveTab("moments");
     
-    // Select the new marker to show the bubble immediately
-    setTimeout(() => {
-      setSelectedMoment(newMarker);
-      setIsNavVisible(false);
-    }, 500);
+    // Show toast or notification could go here
   };
 
-  // Update markers when activeTab or markerData changes
   useEffect(() => {
     if (!mapInstance) return;
 
     // Clear existing markers
     markers.forEach(marker => marker.setMap(null));
-    
-    const newMarkers: google.maps.Marker[] = [];
-    const currentData = markerData[activeTab] || [];
 
     // Define CustomOverlay class inside useEffect to ensure google is defined
     class CustomOverlay extends google.maps.OverlayView {
-      position: google.maps.LatLng;
-      content: HTMLElement;
-      data: any;
+      private position: google.maps.LatLng;
+      private content: HTMLElement;
+      private markerData: any;
 
-      constructor(position: google.maps.LatLng, content: HTMLElement, data: any) {
+      constructor(position: google.maps.LatLng, content: HTMLElement, markerData: any) {
         super();
         this.position = position;
         this.content = content;
-        this.data = data;
+        this.markerData = markerData;
       }
 
       onAdd() {
@@ -373,132 +375,116 @@ export default function Home() {
       }
     }
 
-    currentData.forEach((item: any) => {
+    // Create new markers based on active tab
+    const currentMarkers = markerData[activeTab] || [];
+    const newMarkers = currentMarkers.map((marker: any) => {
       const div = document.createElement('div');
       div.style.position = 'absolute';
       div.style.cursor = 'pointer';
-      div.style.transform = 'translate(-50%, -100%)'; // Center bottom anchor
+      div.style.transform = 'translate(-50%, -50%)'; // Center the marker
       
-      // Render React component to HTML string
+      // Render marker content based on type
       const root = createRoot(div);
       
-      // Determine marker style based on type
-      let markerContent;
-      
-      if (activeTab === 'encounter') {
-        markerContent = (
-          <div className="relative group">
+      if (activeTab === 'moments') {
+        // Moment Marker (Large Rectangle)
+        root.render(
+          <div 
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent map click
+              setSelectedMoment(marker);
+              setIsNavVisible(false);
+            }}
+            className={cn(
+              "relative group transition-transform hover:scale-105 hover:z-50",
+              marker.isNew ? "animate-bounce" : ""
+            )}
+          >
+            {/* Large Rectangle Bubble */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden w-40 border-2 border-white">
+              <div className="h-24 bg-slate-100 relative">
+                <img src={marker.image} className="w-full h-full object-cover" />
+                {marker.isNew && (
+                  <div className="absolute top-2 right-2 bg-yellow-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                    刚刚发布
+                  </div>
+                )}
+              </div>
+              <div className="p-2">
+                <p className="text-xs font-medium text-slate-900 line-clamp-1 mb-1">{marker.content}</p>
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <div className="flex items-center gap-1">
+                    <Heart className="w-3 h-3 fill-slate-300 text-slate-300" />
+                    <span>{marker.likes}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MessageCircle className="w-3 h-3" />
+                    <span>{marker.comments}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Triangle Pointer */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white drop-shadow-sm"></div>
+          </div>
+        );
+      } else if (activeTab === 'encounter' || activeTab === 'friends') {
+        // User Avatar Marker
+        const isOnline = marker.status === 'online';
+        const isRecent = marker.status === 'recent';
+        const borderColor = marker.gender === 'female' ? 'border-pink-500' : 'border-blue-500';
+        
+        root.render(
+          <div 
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent map click
+              setSelectedFriend(marker);
+              setIsNavVisible(false);
+            }}
+            className="relative group"
+          >
             {/* Avatar Container */}
             <div className={cn(
-              "w-12 h-12 rounded-full border-2 overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-110 relative z-10",
-              item.gender === 'female' ? 'border-pink-400' : 'border-blue-400',
-              "bg-white"
+              "w-12 h-12 rounded-full border-2 shadow-lg overflow-hidden bg-white transition-transform group-hover:scale-110",
+              borderColor
             )}>
-              <img src={item.avatar} className="w-full h-full object-cover" alt="avatar" />
+              <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
             
-            {/* Status Dot - Moved outside avatar */}
+            {/* Status Dot (Outside Avatar) */}
             <div className={cn(
-              "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white z-20",
-              item.status === 'online' ? 'bg-green-500' : 
-              item.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-400'
+              "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm z-10",
+              isOnline ? "bg-green-500" : 
+              isRecent ? "bg-yellow-500" : "bg-slate-300"
             )} />
             
-            {/* Info Bubble (Visible on Hover) */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-30">
-              <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm text-xs font-medium text-slate-700">
-                {item.lastSeen}
-              </div>
-              <div className="w-2 h-2 bg-white/90 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
-            </div>
-            
-            {/* Pulse Effect for Online Users */}
-            {item.status === 'online' && (
-              <div className="absolute inset-0 rounded-full bg-green-400 opacity-20 animate-ping z-0"></div>
-            )}
-          </div>
-        );
-      } else if (activeTab === 'friends') {
-        markerContent = (
-          <div className="relative group">
-            <div className="w-12 h-12 rounded-full border-2 border-white shadow-md overflow-hidden bg-white transition-transform group-hover:scale-110 relative z-10">
-              <img src={item.avatar} className="w-full h-full object-cover" />
-            </div>
-            
-            {/* Status Dot for Friends - Restored */}
-            <div className={cn(
-              "absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white z-20",
-              item.status === 'online' ? 'bg-green-500' : 
-              item.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-400'
-            )} />
-            
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border border-white whitespace-nowrap z-30">
-              好友
-            </div>
-          </div>
-        );
-      } else if (activeTab === 'moments') {
-        markerContent = (
-          <div className={cn("relative group", item.isNew && "animate-bounce")}>
-            <div className="w-14 h-14 rounded-xl border-2 border-white shadow-lg overflow-hidden bg-white transition-transform group-hover:scale-105 relative">
-              <img src={item.image} className="w-full h-full object-cover" />
-              {item.isNew && (
-                <div className="absolute inset-0 bg-yellow-400/20 animate-pulse"></div>
-              )}
-            </div>
-            {item.isNew && (
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow-sm whitespace-nowrap animate-bounce">
-                刚刚发布
-              </div>
-            )}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white px-2 py-0.5 rounded-full shadow-sm border border-slate-100 flex items-center gap-1 whitespace-nowrap">
-              <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-              <span className="text-[10px] font-bold text-slate-600">{item.likes}</span>
-              <MessageCircle className="w-3 h-3 text-blue-500 ml-1" />
-              <span className="text-[10px] font-bold text-slate-600">{item.comments}</span>
+            {/* Name Tag (Optional, visible on hover) */}
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {marker.lastSeen}
             </div>
           </div>
         );
       } else {
-        // Default marker
-        markerContent = (
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white">
-            <item.icon className="w-4 h-4" />
+        // Default Marker
+        root.render(
+          <div className="w-8 h-8 bg-blue-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white">
+            <marker.icon className="w-4 h-4" />
           </div>
         );
       }
 
-      root.render(markerContent);
-
-      // Create overlay
+      // Create Overlay
       const overlay = new CustomOverlay(
-        new google.maps.LatLng(item.lat, item.lng),
+        new google.maps.LatLng(marker.lat, marker.lng),
         div,
-        item
+        marker
       );
       
       overlay.setMap(mapInstance);
-
-      // Add click listener to the div
-      div.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent map click
-        console.log("Marker clicked:", item);
-        
-        if (activeTab === 'friends') {
-          setSelectedFriend(item);
-          setIsNavVisible(false);
-        } else if (activeTab === 'moments') {
-          setSelectedMoment(item);
-          setIsNavVisible(false);
-        } else if (activeTab === 'encounter') {
-          setSelectedFriend(item); // Reuse friend modal for encounter details
-          setIsNavVisible(false);
-        }
-      });
-
-      // Store overlay reference (using marker array for cleanup, though types mismatch slightly, we manage it manually)
-      // @ts-ignore
-      newMarkers.push(overlay);
+      
+      // Return a dummy marker object for cleanup (since we use OverlayView)
+      return { setMap: () => overlay.setMap(null) } as any;
     });
 
     setMarkers(newMarkers);
@@ -734,10 +720,13 @@ export default function Home() {
                 {/* Header Info */}
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex gap-4">
-                    <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden relative">
-                      <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
+                    <div className="relative">
+                      <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden">
+                        <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
+                      </div>
+                      {/* Status Dot (Outside Avatar) */}
                       <div className={cn(
-                        "absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white",
+                        "absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-white shadow-sm z-10",
                         selectedFriend.status === 'online' ? 'bg-green-500' : 
                         selectedFriend.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-300'
                       )} />
@@ -745,25 +734,30 @@ export default function Home() {
                     <div className="pt-2">
                       <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
                         Alex
-                        <span className="px-2 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-full font-bold">Lv.4</span>
+                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full font-medium">
+                          {selectedFriend.gender === 'male' ? '♂ 24' : '♀ 22'}
+                        </span>
                       </h2>
-                      <p className="text-slate-400 text-sm mt-1 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> 500m · {selectedFriend.lastSeen || '刚刚活跃'}
+                      <p className="text-slate-500 text-sm mt-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        距离 0.8km · {selectedFriend.lastSeen}
                       </p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => { setSelectedFriend(null); setIsNavVisible(true); }}
-                    className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="flex gap-2">
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+                      <Heart className="w-5 h-5" />
+                    </button>
+                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+                      <MessageCircle className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-8">
-                  {["摄影控", "咖啡重度患者", "夜猫子", "ENFP"].map(tag => (
-                    <span key={tag} className="px-3 py-1.5 bg-slate-50 text-slate-600 text-xs rounded-full font-medium">
+                  {["摄影控", "咖啡重度患者", "健身达人", "猫奴"].map(tag => (
+                    <span key={tag} className="px-3 py-1 bg-slate-50 text-slate-600 text-xs rounded-full border border-slate-100">
                       # {tag}
                     </span>
                   ))}
@@ -771,35 +765,26 @@ export default function Home() {
 
                 {/* Recent Moments */}
                 <div className="mb-8">
-                  <div className="flex justify-between items-end mb-4">
+                  <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-slate-900">最近动态</h3>
                     <button className="text-xs text-slate-400 flex items-center">
-                      全部 <ChevronRight className="w-3 h-3" />
+                      查看全部 <ChevronRight className="w-3 h-3" />
                     </button>
                   </div>
-                  <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                  <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
                     {[1, 2, 3].map(i => (
-                      <div key={i} className="w-32 h-40 bg-slate-100 rounded-xl flex-shrink-0 overflow-hidden relative">
-                        <img 
-                          src={`https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=300&fit=crop`} 
-                          className="w-full h-full object-cover"
-                        />
+                      <div key={i} className="w-32 h-40 flex-shrink-0 rounded-xl overflow-hidden relative group">
+                        <img src={`https://images.unsplash.com/photo-${1510000000000 + i}?w=200&h=300&fit=crop`} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-4">
-                  <button className="py-3.5 bg-slate-100 text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
-                    <User className="w-5 h-5" />
-                    加好友
-                  </button>
-                  <button className="py-3.5 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-transform">
-                    <MessageCircle className="w-5 h-5" />
-                    打招呼
-                  </button>
-                </div>
+                {/* Action Button */}
+                <button className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-[0.98] transition-transform">
+                  打招呼
+                </button>
               </div>
             </motion.div>
           )}
@@ -810,7 +795,10 @@ export default function Home() {
           {selectedMoment && (
             <MomentDetail 
               moment={selectedMoment} 
-              onClose={() => { setSelectedMoment(null); setIsNavVisible(true); }} 
+              onClose={() => {
+                setSelectedMoment(null);
+                setIsNavVisible(true);
+              }} 
             />
           )}
         </AnimatePresence>
