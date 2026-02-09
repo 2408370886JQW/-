@@ -92,19 +92,43 @@ const FORGE_BASE_URL =
   "https://forge.butterfly-effect.dev";
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 
-function loadMapScript() {
-  return new Promise(resolve => {
+function loadMapScript(retries = 3) {
+  return new Promise((resolve, reject) => {
+    if (window.google && window.google.maps) {
+      resolve(null);
+      return;
+    }
+    
+    // Check if script is already loading
+    const existingScript = document.querySelector(`script[src*="${MAPS_PROXY_URL}/maps/api/js"]`);
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(null));
+      existingScript.addEventListener('error', () => reject(new Error("Existing script failed")));
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
     script.async = true;
     script.crossOrigin = "anonymous";
+    
     script.onload = () => {
       resolve(null);
-      script.remove(); // Clean up immediately
     };
+    
     script.onerror = () => {
-      console.error("Failed to load Google Maps script");
+      document.head.removeChild(script);
+      if (retries > 0) {
+        console.log(`Retrying Google Maps script load... (${retries} attempts left)`);
+        setTimeout(() => {
+          loadMapScript(retries - 1).then(resolve).catch(reject);
+        }, 1000);
+      } else {
+        console.error("Failed to load Google Maps script after multiple attempts");
+        reject(new Error("Failed to load Google Maps script"));
+      }
     };
+    
     document.head.appendChild(script);
   });
 }
@@ -114,34 +138,123 @@ interface MapViewProps {
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
   onMapReady?: (map: google.maps.Map) => void;
+  children?: React.ReactNode;
+  markers?: any[]; // Added to allow passing markers for dependency tracking if needed, though not used internally
 }
 
-export function MapView({
+export default function MapView({
   className,
-  initialCenter = { lat: 37.7749, lng: -122.4194 },
+  initialCenter = { lat: 39.9042, lng: 116.4074 }, // Default to Beijing to match mock data
   initialZoom = 12,
   onMapReady,
+  children,
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
 
   const init = usePersistFn(async () => {
-    await loadMapScript();
-    if (!mapContainer.current) {
-      console.error("Map container not found");
-      return;
-    }
-    map.current = new window.google.maps.Map(mapContainer.current, {
-      zoom: initialZoom,
-      center: initialCenter,
-      mapTypeControl: true,
-      fullscreenControl: true,
-      zoomControl: true,
-      streetViewControl: true,
-      mapId: "DEMO_MAP_ID",
-    });
-    if (onMapReady) {
-      onMapReady(map.current);
+    try {
+      await loadMapScript();
+      if (!mapContainer.current) {
+        console.error("Map container not found");
+        return;
+      }
+      if (window.google && window.google.maps) {
+        // Prevent re-initialization if map already exists
+        if (map.current) return;
+
+        map.current = new window.google.maps.Map(mapContainer.current, {
+          zoom: initialZoom,
+          center: initialCenter,
+          mapTypeControl: false,
+          fullscreenControl: false,
+          zoomControl: false,
+          streetViewControl: false,
+          scaleControl: false,
+          rotateControl: false,
+          panControl: false,
+          mapId: "DEMO_MAP_ID",
+          gestureHandling: "greedy", // Enable single-finger panning
+          clickableIcons: false, // Disable default POI clicks
+          styles: [
+            {
+              "featureType": "all",
+              "elementType": "labels.text.fill",
+              "stylers": [{"saturation": 36}, {"color": "#333333"}, {"lightness": 40}]
+            },
+            {
+              "featureType": "all",
+              "elementType": "labels.text.stroke",
+              "stylers": [{"visibility": "on"}, {"color": "#ffffff"}, {"lightness": 16}]
+            },
+            {
+              "featureType": "all",
+              "elementType": "labels.icon",
+              "stylers": [{"visibility": "off"}]
+            },
+            {
+              "featureType": "administrative",
+              "elementType": "geometry.fill",
+              "stylers": [{"color": "#fefefe"}, {"lightness": 20}]
+            },
+            {
+              "featureType": "administrative",
+              "elementType": "geometry.stroke",
+              "stylers": [{"color": "#fefefe"}, {"lightness": 17}, {"weight": 1.2}]
+            },
+            {
+              "featureType": "landscape",
+              "elementType": "geometry",
+              "stylers": [{"color": "#f5f5f5"}, {"lightness": 20}]
+            },
+            {
+              "featureType": "poi",
+              "elementType": "geometry",
+              "stylers": [{"color": "#f5f5f5"}, {"lightness": 21}]
+            },
+            {
+              "featureType": "poi.park",
+              "elementType": "geometry",
+              "stylers": [{"color": "#dedede"}, {"lightness": 21}]
+            },
+            {
+              "featureType": "road.highway",
+              "elementType": "geometry.fill",
+              "stylers": [{"color": "#ffffff"}, {"lightness": 17}]
+            },
+            {
+              "featureType": "road.highway",
+              "elementType": "geometry.stroke",
+              "stylers": [{"color": "#ffffff"}, {"lightness": 29}, {"weight": 0.2}]
+            },
+            {
+              "featureType": "road.arterial",
+              "elementType": "geometry",
+              "stylers": [{"color": "#ffffff"}, {"lightness": 18}]
+            },
+            {
+              "featureType": "road.local",
+              "elementType": "geometry",
+              "stylers": [{"color": "#ffffff"}, {"lightness": 16}]
+            },
+            {
+              "featureType": "transit",
+              "elementType": "geometry",
+              "stylers": [{"color": "#f2f2f2"}, {"lightness": 19}]
+            },
+            {
+              "featureType": "water",
+              "elementType": "geometry",
+              "stylers": [{"color": "#e9e9e9"}, {"lightness": 17}]
+            }
+          ]
+        });
+      }
+      if (onMapReady && map.current) {
+        onMapReady(map.current);
+      }
+    } catch (error) {
+      console.error("Map initialization failed:", error);
     }
   });
 
@@ -150,6 +263,8 @@ export function MapView({
   }, [init]);
 
   return (
-    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
+    <div ref={mapContainer} className={cn("w-full h-full min-h-screen absolute inset-0", className)}>
+      {children}
+    </div>
   );
 }
