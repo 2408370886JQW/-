@@ -41,7 +41,7 @@ import StoreMode from "./StoreMode";
 
 // Types
 type TabType = "encounter" | "friends" | "moments" | "meet";
-type UserStatus = "online" | "15m" | "3h" | "24h" | "offline";
+type UserStatus = "online" | "offline" | "busy";
 
 interface Friend {
   id: string;
@@ -105,7 +105,7 @@ const FRIENDS: Friend[] = [
     id: "2", 
     name: "Mike", 
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop", 
-    status: "15m",
+    status: "busy",
     distance: "1.2km",
     location: { lat: 39.915, lng: 116.404 },
     tags: ["Tech", "Gym"],
@@ -155,7 +155,7 @@ const FRIENDS: Friend[] = [
     id: "5", 
     name: "Linda", 
     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop", 
-    status: "3h",
+    status: "online",
     distance: "1.5km",
     location: { lat: 39.912, lng: 116.415 },
     tags: ["Yoga", "Nature"],
@@ -357,139 +357,152 @@ export default function Home() {
         data: f
       }));
 
-      // Add new marker
-      const newMarker = {
+      // Add new consumption marker
+      const consumptionMarker = {
         id: newMoment.id,
-        lat: 39.9042,
+        lat: 39.9042, // Slightly offset or same as user
         lng: 116.4074,
-        type: "consumption",
+        type: "moment",
         data: newMoment
       };
 
-      setMarkerDataRef.current([...currentMarkers, newMarker]);
+      setMarkerDataRef.current([...currentMarkers, consumptionMarker]);
     }
   };
 
-  // Listen for new moments from BottomNav
+  // Initialize map data when tab changes to encounter
   useEffect(() => {
-    const handleNewMoment = (e: CustomEvent) => {
-      const newMoment = e.detail;
-      // Transform to match Moment interface
-      const moment: Moment = {
-        id: newMoment.id.toString(),
-        user: {
-          id: "me",
-          name: "我",
-          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop",
-          status: "online",
-          location: { lat: 39.9042, lng: 116.4074 }
-        },
-        content: newMoment.content,
-        image: newMoment.media[0],
-        likes: 0,
-        comments: 0,
-        time: "刚刚",
-        location: newMoment.location
-      };
-      setMoments(prev => [moment, ...prev]);
-      setActiveTab("moments");
-    };
-
-    window.addEventListener('new-moment-posted' as any, handleNewMoment as any);
-    return () => {
-      window.removeEventListener('new-moment-posted' as any, handleNewMoment as any);
-    };
-  }, []);
-
-  if (isStoreMode) {
-    return <StoreMode onExit={() => setIsStoreMode(false)} onBack={() => setIsStoreMode(false)} onConsume={handleAddConsumptionMarker} />;
-  }
+    if (activeTab === "encounter" && setMarkerDataRef.current) {
+      const markers = FRIENDS.map(f => ({
+        id: f.id,
+        lat: f.location!.lat,
+        lng: f.location!.lng,
+        type: "user",
+        data: f
+      }));
+      setMarkerDataRef.current(markers);
+    }
+  }, [activeTab]);
 
   return (
-    <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-      <div className="relative h-full w-full overflow-hidden bg-slate-50">
-        {/* Map Background (Always rendered but hidden when not active) */}
-        <div className={cn("absolute inset-0 z-0 transition-opacity duration-500", activeTab === "encounter" ? "opacity-100" : "opacity-0 pointer-events-none")}>
+    <Layout showNav={isNavVisible} activeTab={activeTab} onTabChange={setActiveTab}>
+      <div className="relative h-full w-full bg-slate-50">
+        
+        {/* Map View (Always rendered but hidden when not active to preserve state) */}
+        <div className={cn("absolute inset-0 z-0", activeTab === "encounter" ? "opacity-100" : "opacity-0 pointer-events-none")}>
           <MapView 
-            onMapReady={(map: any, setMarkerData: any) => {
+            onMapReady={(map) => {
               mapRef.current = map;
-              setMarkerDataRef.current = setMarkerData;
               
-              // Add click listener to map to close user card
-              map.addListener('click', () => {
-                setSelectedFriend(null);
-                setIsNavVisible(true);
-              });
+              // Define CustomOverlay
+              class CustomOverlay extends google.maps.OverlayView {
+                position: google.maps.LatLng;
+                container: HTMLDivElement;
+                data: any;
+                onClick: (data: any) => void;
 
-              // Custom overlay for user markers
-              const createMarkerContent = (user: Friend) => {
-                const div = document.createElement('div');
-                div.className = 'relative group cursor-pointer transform transition-transform hover:scale-110';
-                
-                // Status color mapping
-                let statusColor = 'bg-slate-300'; // offline
-                if (user.status === 'online') statusColor = 'bg-green-500';
-                else if (user.status === '15m') statusColor = 'bg-green-400';
-                else if (user.status === '3h') statusColor = 'bg-yellow-400';
-                else if (user.status === '24h') statusColor = 'bg-orange-400';
-
-                div.innerHTML = `
-                  <div class="w-12 h-12 rounded-full p-0.5 ${user.gender === 'female' ? 'bg-pink-500' : 'bg-blue-500'} shadow-lg relative">
-                    <img src="${user.avatar}" class="w-full h-full rounded-full object-cover border-2 border-white" />
-                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 border-2 border-white rounded-full ${statusColor}"></div>
-                  </div>
-                `;
-                return div;
-              };
-
-              // Add markers
-              const overlays: any[] = [];
-              
-              // Override setMarkerData to handle custom markers
-              setMarkerDataRef.current = (data: any[]) => {
-                // Clear existing overlays
-                overlays.forEach(o => o.setMap(null));
-                overlays.length = 0;
-
-                data.forEach((point: any) => {
-                  if (!point || !point.data) return;
+                constructor(position: google.maps.LatLng, data: any, onClick: (data: any) => void) {
+                  super();
+                  this.position = position;
+                  this.data = data;
+                  this.onClick = onClick;
+                  this.container = document.createElement('div');
+                  this.container.style.position = 'absolute';
+                  this.container.style.cursor = 'pointer';
                   
-                  // Use AdvancedMarkerElement if available, otherwise fallback to OverlayView
-                  const overlay = new google.maps.OverlayView();
-                  overlay.onAdd = function() {
-                    const layer = this.getPanes()?.floatPane;
-                    if (layer) {
-                      const element = createMarkerContent(point.data);
-                      element.style.position = 'absolute';
-                      element.onclick = (e) => {
-                        e.stopPropagation();
-                        setSelectedFriend(point.data);
-                        setIsNavVisible(false);
-                        
-                        // Center map on user
-                        map.panTo({ lat: point.lat, lng: point.lng });
-                        map.setZoom(16);
-                      };
-                      layer.appendChild(element);
-                      (this as any).element = element;
-                    }
+                  // Create marker content based on type
+                  const content = document.createElement('div');
+                  if (data.type === 'user') {
+                    // Gender-based color: Blue for male, Pink for female
+                    const borderColor = data.data.gender === 'female' ? 'border-pink-400' : 'border-blue-500';
+                    
+                    content.innerHTML = `
+                      <div class="relative group">
+                        <div class="w-12 h-12 rounded-full border-[3px] ${borderColor} shadow-lg overflow-hidden bg-white">
+                          <img src="${data.data.avatar}" class="w-full h-full object-cover" />
+                        </div>
+                        ${data.data.status === 'online' ? `
+                          <div class="absolute -bottom-1 -right-1 bg-white rounded-full px-1.5 py-0.5 shadow-sm border border-slate-100 flex items-center gap-0.5">
+                            <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                            <span class="text-[8px] font-bold text-slate-600">在线</span>
+                          </div>
+                        ` : data.data.lastSeen ? `
+                          <div class="absolute -bottom-1 -right-1 bg-white rounded-full px-1.5 py-0.5 shadow-sm border border-slate-100 flex items-center gap-0.5">
+                            <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                            <span class="text-[8px] font-bold text-slate-400">${data.data.lastSeen}</span>
+                          </div>
+                        ` : ''}
+                      </div>
+                    `;
+                  } else if (data.type === 'moment') {
+                    content.innerHTML = `
+                      <div class="bg-white p-2 rounded-xl shadow-lg border border-slate-100 flex items-center gap-2 w-48">
+                        <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                          <img src="${data.data.user.avatar}" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="text-xs font-bold text-slate-900 truncate">${data.data.user.name}</div>
+                          <div class="text-[10px] text-slate-500 truncate">${data.data.content}</div>
+                        </div>
+                      </div>
+                    `;
+                  }
+                  
+                  content.onclick = (e) => {
+                    e.stopPropagation();
+                    this.onClick(this.data.data);
                   };
-                  overlay.draw = function() {
-                    const projection = this.getProjection();
-                    if (projection && (this as any).element) {
-                      const position = projection.fromLatLngToDivPixel(new google.maps.LatLng(point.lat, point.lng));
-                      if (position) {
-                        (this as any).element.style.left = (position.x - 24) + 'px';
-                        (this as any).element.style.top = (position.y - 48) + 'px';
+                  
+                  this.container.appendChild(content);
+                }
+
+                onAdd() {
+                  const panes = this.getPanes();
+                  if (panes) {
+                    panes.overlayMouseTarget.appendChild(this.container);
+                  }
+                }
+
+                draw() {
+                  const projection = this.getProjection();
+                  if (projection) {
+                    const point = projection.fromLatLngToDivPixel(this.position);
+                    if (point) {
+                      this.container.style.left = (point.x - 24) + 'px'; // Center horizontally (assuming 48px width)
+                      this.container.style.top = (point.y - 48) + 'px'; // Bottom anchor
+                    }
+                  }
+                }
+
+                onRemove() {
+                  if (this.container.parentNode) {
+                    this.container.parentNode.removeChild(this.container);
+                  }
+                }
+              }
+
+              // Function to update markers
+              let overlays: any[] = [];
+              
+              setMarkerDataRef.current = (data: any[]) => {
+                // Clear existing
+                overlays.forEach(o => o.setMap(null));
+                overlays = [];
+                
+                // Add new
+                data.forEach(item => {
+                  const overlay = new CustomOverlay(
+                    new google.maps.LatLng(item.lat, item.lng),
+                    item,
+                    (clickedData) => {
+                      if (item.type === 'user') {
+                        setSelectedFriend(clickedData);
+                        setIsNavVisible(false);
+                      } else {
+                        console.log("Clicked moment", clickedData);
                       }
                     }
-                  };
-                  overlay.onRemove = function() {
-                    if ((this as any).element) {
-                      (this as any).element.parentNode.removeChild((this as any).element);
-                      (this as any).element = null;
-                    }
-                  };
+                  );
                   overlay.setMap(map);
                   overlays.push(overlay);
                 });
@@ -672,9 +685,7 @@ export default function Home() {
                       <div className={cn(
                         "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full",
                         friend.status === "online" ? "bg-green-500" : 
-                        friend.status === "15m" ? "bg-green-400" :
-                        friend.status === "3h" ? "bg-yellow-400" :
-                        friend.status === "24h" ? "bg-orange-400" : "bg-slate-300"
+                        friend.status === "busy" ? "bg-red-500" : "bg-slate-300"
                       )} />
                     </div>
                     <div className="flex-1">
@@ -787,75 +798,128 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Scenario Selection */}
-              <div className="mb-8">
-                <h3 className="text-lg font-bold text-slate-900 mb-4">场景推荐</h3>
-                <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
-                  {SCENARIOS.map(scenario => (
+              {/* Relationship Filter (Modified to be a filter) */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <h3 className="text-lg font-bold text-slate-900">和谁去？</h3>
+                  {selectedCategory && (
+                    <button 
+                      onClick={() => setSelectedCategory(null)}
+                      className="text-xs text-blue-500 font-medium"
+                    >
+                      清除筛选
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  {SCENARIOS.map((scenario) => (
                     <button
                       key={scenario.id}
                       onClick={() => setSelectedCategory(selectedCategory === scenario.id ? null : scenario.id)}
-                      className={cn(
-                        "flex-shrink-0 px-4 py-2 rounded-full flex items-center gap-2 transition-all",
-                        selectedCategory === scenario.id 
-                          ? "bg-slate-900 text-white shadow-lg scale-105" 
-                          : "bg-white text-slate-600 border border-slate-100"
-                      )}
+                      className="flex flex-col items-center gap-2 group"
                     >
-                      <scenario.icon className={cn("w-4 h-4", selectedCategory === scenario.id ? "text-white" : scenario.color)} />
-                      <span className="text-sm font-medium">{scenario.label}</span>
+                      <div className={cn(
+                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-sm",
+                        selectedCategory === scenario.id 
+                          ? "bg-slate-900 text-white scale-105 shadow-md" 
+                          : cn(scenario.bg, scenario.color, "group-active:scale-95")
+                      )}>
+                        <scenario.icon className="w-6 h-6" />
+                      </div>
+                      <span className={cn(
+                        "text-xs font-medium transition-colors",
+                        selectedCategory === scenario.id ? "text-slate-900 font-bold" : "text-slate-600"
+                      )}>
+                        {scenario.label}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Plan Recommendations */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 mb-2">精选方案</h3>
-                {filteredPlans.map(plan => (
-                  <div key={plan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4 active:scale-[0.99] transition-transform">
-                    <img src={plan.image} className="w-24 h-24 rounded-xl object-cover" />
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="font-bold text-slate-900">{plan.title}</h4>
-                          <div className="flex items-center gap-1 text-amber-500">
-                            <Star className="w-3 h-3 fill-current" />
-                            <span className="text-xs font-bold">{plan.rating}</span>
+              {/* Shop/Plan List (Filtered) */}
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-4 px-1">
+                  {selectedCategory ? `${SCENARIOS.find(s => s.id === selectedCategory)?.label}推荐` : "猜你喜欢"}
+                </h3>
+                <div className="space-y-4">
+                  {filteredPlans.map((plan) => (
+                    <div key={plan.id} className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex gap-3 active:scale-[0.99] transition-transform">
+                      <div className="w-28 h-28 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 relative">
+                        <img src={plan.image} className="w-full h-full object-cover" />
+                        <div className="absolute top-1.5 left-1.5 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                          <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
+                          <span className="text-[10px] font-bold text-slate-900">{plan.rating}</span>
+                        </div>
+                      </div>
+                      <div className="flex-1 py-0.5 flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-base mb-1 line-clamp-1">{plan.title}</h4>
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {plan.tags.map(tag => (
+                              <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md border border-slate-100">
+                                {tag}
+                              </span>
+                            ))}
                           </div>
                         </div>
-                        <div className="flex gap-2 mb-2">
-                          {plan.tags.map(tag => (
-                            <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {plan.steps.map((step, i) => (
-                            <div key={i} className="flex items-center gap-1 text-xs text-slate-400">
-                              <step.icon className="w-3 h-3" />
-                              <span>{step.label}</span>
-                              {i < plan.steps.length - 1 && <ChevronRight className="w-3 h-3 text-slate-300" />}
+                        
+                        <div className="flex items-end justify-between">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1 text-xs text-slate-400">
+                              {plan.steps.map((step, i) => (
+                                <React.Fragment key={i}>
+                                  <span>{step.label}</span>
+                                  {i < plan.steps.length - 1 && <span className="text-slate-300">·</span>}
+                                </React.Fragment>
+                              ))}
                             </div>
-                          ))}
+                            <div className="text-xs text-slate-400">
+                              人均 <span className="text-orange-500 font-bold text-sm">¥{plan.price}</span>
+                            </div>
+                          </div>
+                          <button className="bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-bold">
+                            去看看
+                          </button>
                         </div>
-                        <span className="text-sm font-bold text-slate-900">¥{plan.price}</span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* User Detail Modal */}
+        {/* Store Mode Overlay */}
+        <AnimatePresence>
+          {isStoreMode && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 bg-white"
+            >
+              <StoreMode 
+                onExit={(targetTab) => {
+                  setIsStoreMode(false);
+                  if (targetTab === "encounter") {
+                    // Trigger the consumption marker logic
+                    handleAddConsumptionMarker();
+                  } else if (targetTab === "moments") {
+                    setActiveTab("moments");
+                  }
+                }} 
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Friend Detail Modal */}
         <AnimatePresence>
           {selectedFriend && (
             <>
+              {/* Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -864,95 +928,138 @@ export default function Home() {
                   setSelectedFriend(null);
                   setIsNavVisible(true);
                 }}
-                className="absolute inset-0 bg-black/20 backdrop-blur-[2px] z-40"
+                className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm"
               />
+              
+              {/* Modal */}
               <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
+                initial={{ opacity: 0, y: "100%" }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                drag="y"
+                dragConstraints={{ top: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100) {
+                    setSelectedFriend(null);
+                    setIsNavVisible(true);
+                  }
+                }}
+                className="fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-safe"
+                style={{ maxHeight: "85vh" }}
               >
-                <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6" />
+                {/* Drag Handle */}
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
                 
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="relative">
-                    <img src={selectedFriend.avatar} className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg" />
-                    <div className={cn(
-                      "absolute bottom-0 right-0 w-5 h-5 border-2 border-white rounded-full flex items-center justify-center",
-                      selectedFriend.status === "online" ? "bg-green-500" : 
-                      selectedFriend.status === "15m" ? "bg-green-400" :
-                      selectedFriend.status === "3h" ? "bg-yellow-400" :
-                      selectedFriend.status === "24h" ? "bg-orange-400" : "bg-slate-300"
-                    )}>
-                      {selectedFriend.status === "online" && <div className="w-2 h-2 bg-white rounded-full animate-pulse" />}
-                    </div>
-                  </div>
-                  <div className="flex-1 pt-1">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h2 className="text-2xl font-bold text-slate-900 mb-1">{selectedFriend.name}</h2>
-                        <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {selectedFriend.distance}
-                          </span>
-                          <span>•</span>
-                          <span>{selectedFriend.status === 'offline' ? selectedFriend.lastSeen || '离线' : '在线'}</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center active:scale-95 transition-transform">
-                          <MessageCircle className="w-5 h-5" />
-                        </button>
-                        <button className="w-10 h-10 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center active:scale-95 transition-transform">
-                          <Heart className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <div className={cn(
-                        "px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1",
-                        selectedFriend.gender === 'female' ? "bg-pink-100 text-pink-600" : "bg-blue-100 text-blue-600"
-                      )}>
-                        <span>{selectedFriend.age}岁</span>
-                      </div>
-                      <div className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-600 text-[10px] font-medium">
-                        {selectedFriend.constellation}
-                      </div>
-                      {selectedFriend.tags?.map(tag => (
-                        <span key={tag} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-2xl p-4 mb-6">
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    "{selectedFriend.bio}"
-                  </p>
-                </div>
-
-                <div className="mb-6">
-                  <h3 className="text-sm font-bold text-slate-900 mb-3">最近动态</h3>
-                  <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                    {selectedFriend.photos?.map((photo, i) => (
-                      <img key={i} src={photo} className="w-24 h-32 rounded-xl object-cover flex-shrink-0" />
-                    ))}
-                  </div>
-                </div>
-
+                {/* Close Button */}
                 <button 
                   onClick={() => {
                     setSelectedFriend(null);
                     setIsNavVisible(true);
                   }}
-                  className="w-full bg-slate-100 text-slate-900 font-bold py-3 rounded-xl active:scale-[0.98] transition-transform"
+                  className="absolute top-4 right-4 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors z-50"
                 >
-                  关闭卡片
+                  <X className="w-5 h-5" />
                 </button>
+
+                <div className="px-6 pb-8 overflow-y-auto max-h-[calc(85vh-3rem)]">
+                  {/* Header */}
+                  <div className="flex items-start gap-4 mb-6">
+                    <div className="relative">
+                      <img src={selectedFriend.avatar} className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg" />
+                      <div className={cn(
+                        "absolute -bottom-1 -right-1 w-6 h-6 border-4 border-white rounded-full flex items-center justify-center",
+                        selectedFriend.status === "online" ? "bg-green-500" : 
+                        selectedFriend.status === "busy" ? "bg-red-500" : "bg-slate-300"
+                      )}>
+                        {selectedFriend.status === "online" && (
+                          <div className="w-full h-full rounded-full bg-green-400 animate-ping opacity-75" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-1 pt-2">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-1">{selectedFriend.name}</h2>
+                      
+                      {/* Info Row: Distance + Status + Age/Gender */}
+                      <div className="flex items-center gap-3 text-slate-500 text-sm mb-2">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span>{selectedFriend.distance}</span>
+                        </div>
+                        {selectedFriend.lastSeen && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{selectedFriend.lastSeen}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tags & Age/Gender */}
+                      <div className="flex flex-wrap gap-2">
+                        {/* Age/Gender Capsule */}
+                        {(selectedFriend.age || selectedFriend.gender) && (
+                          <div className={cn(
+                            "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white",
+                            selectedFriend.gender === "female" ? "bg-pink-400" : "bg-blue-400"
+                          )}>
+                            {selectedFriend.gender === "female" ? <span className="text-[10px]">F</span> : <span className="text-[10px]">M</span>}
+                            <span>{selectedFriend.age}</span>
+                          </div>
+                        )}
+                        
+                        {/* Constellation */}
+                        {selectedFriend.constellation && (
+                          <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-medium">
+                            <Sparkles className="w-3 h-3" />
+                            <span>{selectedFriend.constellation}</span>
+                          </div>
+                        )}
+
+                        {selectedFriend.tags?.map(tag => (
+                          <span key={tag} className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-lg font-medium">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  <div className="bg-slate-50 p-4 rounded-2xl mb-6">
+                    <p className="text-slate-600 italic">"{selectedFriend.bio}"</p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-3 mb-8">
+                    <button className="bg-slate-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+                      <MessageCircle className="w-5 h-5" />
+                      打招呼
+                    </button>
+                    <button className="bg-white border border-slate-200 text-slate-900 py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+                      <User className="w-5 h-5" />
+                      加好友
+                    </button>
+                  </div>
+
+                  {/* Photos (Recent Moments) */}
+                  <div>
+                    <h3 className="font-bold text-slate-900 mb-3">最近动态</h3>
+                    {selectedFriend.photos && selectedFriend.photos.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {selectedFriend.photos.map((photo, i) => (
+                          <div key={i} className="aspect-square rounded-2xl overflow-hidden bg-slate-100">
+                            <img src={photo} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-400 text-sm bg-slate-50 rounded-2xl">
+                        暂无动态
+                      </div>
+                    )}
+                  </div>
+                </div>
               </motion.div>
             </>
           )}

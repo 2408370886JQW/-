@@ -137,7 +137,7 @@ interface MapViewProps {
   className?: string;
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
-  onMapReady?: (map: google.maps.Map, setMarkerData?: (data: any[]) => void) => void;
+  onMapReady?: (map: google.maps.Map) => void;
   children?: React.ReactNode;
   markers?: any[]; // Added to allow passing markers for dependency tracking if needed, though not used internally
 }
@@ -251,10 +251,7 @@ export default function MapView({
         });
       }
       if (onMapReady && map.current) {
-        // Pass a dummy setMarkerData function if not provided internally, 
-        // but in Home.tsx we override it anyway. 
-        // This is just to satisfy the type signature.
-        onMapReady(map.current, () => {});
+        onMapReady(map.current);
       }
     } catch (error) {
       console.error("Map initialization failed:", error);

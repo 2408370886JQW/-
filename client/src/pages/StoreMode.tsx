@@ -12,11 +12,9 @@ type FlowStep = "entry" | "login" | "home" | "scenario" | "package" | "payment" 
 
 interface StoreModeProps {
   onExit: (targetTab?: string) => void; // Callback to return to main app, optionally redirecting to a specific tab
-  onBack?: () => void; // Optional back handler
-  onConsume?: () => void; // Optional consume handler
 }
 
-export default function StoreMode({ onExit, onBack, onConsume }: StoreModeProps) {
+export default function StoreMode({ onExit }: StoreModeProps) {
   const [step, setStep] = useState<FlowStep>("home");
   const [selectedRelationship, setSelectedRelationship] = useState<string | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
@@ -34,8 +32,7 @@ export default function StoreMode({ onExit, onBack, onConsume }: StoreModeProps)
   const handleGoEncounter = () => {
     setIsUnfoldingMap(true);
     setTimeout(() => {
-      if (onConsume) onConsume();
-      else onExit("encounter");
+      onExit("encounter");
     }, 1500); // Wait for animation to complete
   };
   
@@ -158,7 +155,7 @@ export default function StoreMode({ onExit, onBack, onConsume }: StoreModeProps)
               </div>
               
               <div className="mt-8 text-center">
-                <button onClick={() => onBack ? onBack() : onExit()} className="text-slate-400 text-xs hover:text-slate-600 transition-colors font-medium">
+                <button onClick={() => onExit()} className="text-slate-400 text-xs hover:text-slate-600 transition-colors font-medium">
                   暂不进店
                 </button>
               </div>
@@ -258,7 +255,7 @@ export default function StoreMode({ onExit, onBack, onConsume }: StoreModeProps)
         <div className="p-8 space-y-12">
           <section>
             <h3 className="text-lg font-bold text-slate-900 mb-4">套餐内容</h3>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {selectedPackage.items.map((item: any, i: number) => (
                 <div key={i} className="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
                   <span className="text-slate-600">{item.name}</span>
@@ -351,6 +348,7 @@ export default function StoreMode({ onExit, onBack, onConsume }: StoreModeProps)
               {/* QR Code Section */}
               <div className="my-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 inline-block shadow-sm">
                 <QrCode className="w-32 h-32 text-slate-800 mx-auto" strokeWidth={1} />
+                <p className="text-xs text-slate-400 mt-3 font-mono tracking-widest">NO.839201</p>
               </div>
 
               <p className="text-slate-500 mb-10 text-sm leading-relaxed max-w-[260px] mx-auto">
