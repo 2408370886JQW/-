@@ -137,7 +137,7 @@ interface MapViewProps {
   className?: string;
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
-  onMapReady?: (map: google.maps.Map) => void;
+  onMapReady?: (map: google.maps.Map, setMarkerData?: (data: any[]) => void) => void;
   children?: React.ReactNode;
   markers?: any[]; // Added to allow passing markers for dependency tracking if needed, though not used internally
 }
@@ -151,6 +151,8 @@ export default function MapView({
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
+  // Ref to hold the setMarkerData function exposed to parent
+  const setMarkerDataRef = useRef<((data: any[]) => void) | null>(null);
 
   const init = usePersistFn(async () => {
     try {
@@ -251,7 +253,53 @@ export default function MapView({
         });
       }
       if (onMapReady && map.current) {
-        onMapReady(map.current);
+        // We pass a dummy setMarkerData function initially, 
+        // but the parent is expected to define its own logic inside onMapReady 
+        // using the map instance. 
+        // However, to support the specific pattern used in Home.tsx where 
+        // onMapReady(map, setMarkerData) is called, we need to provide a way.
+        // Since the overlay logic is defined IN the parent, we just pass a placeholder
+        // or let the parent handle it.
+        // Actually, looking at Home.tsx, it defines the overlay logic INSIDE onMapReady.
+        // So we just need to pass the map. The second argument in Home.tsx is `setMarkerData`.
+        // Wait, Home.tsx expects `onMapReady` to PROVIDE `setMarkerData`? 
+        // No, Home.tsx defines: `onMapReady={(map: any, setMarkerData: any) => { ... }}`
+        // This means Home.tsx expects MapView to CALL it with 2 arguments.
+        // So MapView needs to implement the marker logic to pass it back?
+        // OR, Home.tsx is using a pattern where it expects the child to provide a setter.
+        
+        // Let's look at how it was used before.
+        // It seems the previous code in Home.tsx was trying to receive a setter from MapView.
+        // But MapView doesn't have that logic built-in in this generic version.
+        
+        // To fix the TS error and make it work:
+        // We will simply pass a dummy function as the second argument, 
+        // AND we will update Home.tsx to NOT rely on a setter passed from MapView,
+        // but instead define the setter inside Home.tsx itself (which it already does!).
+        
+        // Wait, Home.tsx line 398: `onMapReady={(map: any, setMarkerData: any) => {`
+        // It receives `setMarkerData`.
+        // And then line 400: `setMarkerDataRef.current = setMarkerData;`
+        // And then line 506: `setMarkerDataRef.current = (data: any[]) => { ... }`
+        // It OVERWRITES the ref with its OWN function later!
+        
+        // So the `setMarkerData` argument passed FROM MapView is actually UNUSED or overwritten.
+        // The logic at line 506 defines the function `(data: any[]) => { ... }` which uses `CustomOverlay`.
+        // This function closes over `map` and `overlays`.
+        
+        // So, we can just pass `undefined` or a no-op as the second argument from MapView,
+        // and Home.tsx will work fine because it defines its own setter anyway?
+        // Let's check line 506 again.
+        // `setMarkerDataRef.current = (data: any[]) => { ... }`
+        // Yes, it assigns a NEW function to the ref.
+        
+        // So the fix is: Update MapView to pass a second argument (even if dummy) to satisfy the signature,
+        // OR update Home.tsx to not expect the second argument.
+        // Updating MapView is safer to avoid changing Home.tsx logic too much.
+        
+        onMapReady(map.current, (data: any[]) => {
+           console.log("Default setMarkerData called", data);
+        });
       }
     } catch (error) {
       console.error("Map initialization failed:", error);

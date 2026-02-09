@@ -41,7 +41,7 @@ import StoreMode from "./StoreMode";
 
 // Types
 type TabType = "encounter" | "friends" | "moments" | "meet";
-type UserStatus = "online" | "offline" | "busy";
+type UserStatus = "online" | "15m" | "3h" | "24h" | "offline";
 
 interface Friend {
   id: string;
@@ -105,7 +105,7 @@ const FRIENDS: Friend[] = [
     id: "2", 
     name: "Mike", 
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop", 
-    status: "busy",
+    status: "15m",
     distance: "1.2km",
     location: { lat: 39.915, lng: 116.404 },
     tags: ["Tech", "Gym"],
@@ -155,7 +155,7 @@ const FRIENDS: Friend[] = [
     id: "5", 
     name: "Linda", 
     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop", 
-    status: "online",
+    status: "3h",
     distance: "1.5km",
     location: { lat: 39.912, lng: 116.415 },
     tags: ["Yoga", "Nature"],
@@ -384,6 +384,10 @@ export default function Home() {
     }
   }, [activeTab]);
 
+  if (isStoreMode) {
+    return <StoreMode onExit={() => setIsStoreMode(false)} onBack={() => setIsStoreMode(false)} onConsume={handleAddConsumptionMarker} />;
+  }
+
   return (
     <Layout showNav={isNavVisible} activeTab={activeTab} onTabChange={setActiveTab}>
       <div className="relative h-full w-full bg-slate-50">
@@ -391,8 +395,9 @@ export default function Home() {
         {/* Map View (Always rendered but hidden when not active to preserve state) */}
         <div className={cn("absolute inset-0 z-0", activeTab === "encounter" ? "opacity-100" : "opacity-0 pointer-events-none")}>
           <MapView 
-            onMapReady={(map) => {
+            onMapReady={(map: any, setMarkerData: any) => {
               mapRef.current = map;
+              setMarkerDataRef.current = setMarkerData;
               
               // Define CustomOverlay
               class CustomOverlay extends google.maps.OverlayView {
@@ -685,7 +690,9 @@ export default function Home() {
                       <div className={cn(
                         "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full",
                         friend.status === "online" ? "bg-green-500" : 
-                        friend.status === "busy" ? "bg-red-500" : "bg-slate-300"
+                        friend.status === "15m" ? "bg-green-400" :
+                        friend.status === "3h" ? "bg-yellow-400" :
+                        friend.status === "24h" ? "bg-orange-400" : "bg-slate-300"
                       )} />
                     </div>
                     <div className="flex-1">
@@ -746,7 +753,7 @@ export default function Home() {
               {/* Floating Action Button for Moments */}
               <button className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 active:scale-95 transition-transform z-30">
                 <Plus className="w-5 h-5" />
-                <span className="font-bold text-sm">发布动态</span>
+                <span className="font-bold text-sm">发动态</span>
               </button>
             </motion.div>
           )}
@@ -798,90 +805,73 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Relationship Filter (Modified to be a filter) */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-4 px-1">
-                  <h3 className="text-lg font-bold text-slate-900">和谁去？</h3>
-                  {selectedCategory && (
-                    <button 
-                      onClick={() => setSelectedCategory(null)}
-                      className="text-xs text-blue-500 font-medium"
-                    >
-                      清除筛选
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-4 gap-3">
-                  {SCENARIOS.map((scenario) => (
+              {/* Scenario Selection */}
+              <div className="mb-8">
+                <h3 className="text-lg font-bold text-slate-900 mb-4">场景推荐</h3>
+                <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                  {SCENARIOS.map(scenario => (
                     <button
                       key={scenario.id}
                       onClick={() => setSelectedCategory(selectedCategory === scenario.id ? null : scenario.id)}
-                      className="flex flex-col items-center gap-2 group"
-                    >
-                      <div className={cn(
-                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-sm",
+                      className={cn(
+                        "flex-shrink-0 px-4 py-2 rounded-full flex items-center gap-2 transition-all",
                         selectedCategory === scenario.id 
-                          ? "bg-slate-900 text-white scale-105 shadow-md" 
-                          : cn(scenario.bg, scenario.color, "group-active:scale-95")
-                      )}>
-                        <scenario.icon className="w-6 h-6" />
-                      </div>
-                      <span className={cn(
-                        "text-xs font-medium transition-colors",
-                        selectedCategory === scenario.id ? "text-slate-900 font-bold" : "text-slate-600"
-                      )}>
-                        {scenario.label}
-                      </span>
+                          ? "bg-slate-900 text-white shadow-lg scale-105" 
+                          : "bg-white text-slate-600 border border-slate-100"
+                      )}
+                    >
+                      <scenario.icon className={cn("w-4 h-4", selectedCategory === scenario.id ? "text-white" : scenario.color)} />
+                      <span className="text-sm font-medium">{scenario.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Shop/Plan List (Filtered) */}
+              {/* Recommended Plans */}
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-4 px-1">
-                  {selectedCategory ? `${SCENARIOS.find(s => s.id === selectedCategory)?.label}推荐` : "猜你喜欢"}
-                </h3>
+                <h3 className="text-lg font-bold text-slate-900 mb-4">精选方案</h3>
                 <div className="space-y-4">
-                  {filteredPlans.map((plan) => (
-                    <div key={plan.id} className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex gap-3 active:scale-[0.99] transition-transform">
-                      <div className="w-28 h-28 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 relative">
+                  {filteredPlans.map(plan => (
+                    <div key={plan.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 group active:scale-[0.99] transition-transform">
+                      <div className="h-48 relative">
                         <img src={plan.image} className="w-full h-full object-cover" />
-                        <div className="absolute top-1.5 left-1.5 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
-                          <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
-                          <span className="text-[10px] font-bold text-slate-900">{plan.rating}</span>
+                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-900">
+                          ¥{plan.price}
                         </div>
-                      </div>
-                      <div className="flex-1 py-0.5 flex flex-col justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-base mb-1 line-clamp-1">{plan.title}</h4>
-                          <div className="flex flex-wrap gap-1.5 mb-2">
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                          <h4 className="text-white font-bold text-lg">{plan.title}</h4>
+                          <div className="flex gap-2 mt-2">
                             {plan.tags.map(tag => (
-                              <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md border border-slate-100">
+                              <span key={tag} className="text-[10px] text-white/80 bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
                                 {tag}
                               </span>
                             ))}
                           </div>
                         </div>
-                        
-                        <div className="flex items-end justify-between">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-1 text-xs text-slate-400">
-                              {plan.steps.map((step, i) => (
-                                <React.Fragment key={i}>
-                                  <span>{step.label}</span>
-                                  {i < plan.steps.length - 1 && <span className="text-slate-300">·</span>}
-                                </React.Fragment>
-                              ))}
-                            </div>
-                            <div className="text-xs text-slate-400">
-                              人均 <span className="text-orange-500 font-bold text-sm">¥{plan.price}</span>
-                            </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-4">
+                            {plan.steps.map((step, index) => (
+                              <div key={index} className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-slate-50 rounded-full flex items-center justify-center text-slate-500">
+                                  <step.icon className="w-4 h-4" />
+                                </div>
+                                <span className="text-xs text-slate-600">{step.label}</span>
+                                {index < plan.steps.length - 1 && (
+                                  <div className="w-4 h-[1px] bg-slate-200" />
+                                )}
+                              </div>
+                            ))}
                           </div>
-                          <button className="bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-bold">
-                            去看看
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                            <span className="text-sm font-bold text-slate-900">{plan.rating}</span>
+                          </div>
                         </div>
+                        <button className="w-full py-3 bg-slate-50 text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition-colors">
+                          查看详情
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -891,173 +881,83 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Store Mode Overlay */}
-        <AnimatePresence>
-          {isStoreMode && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 bg-white"
-            >
-              <StoreMode 
-                onExit={(targetTab) => {
-                  setIsStoreMode(false);
-                  if (targetTab === "encounter") {
-                    // Trigger the consumption marker logic
-                    handleAddConsumptionMarker();
-                  } else if (targetTab === "moments") {
-                    setActiveTab("moments");
-                  }
-                }} 
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Friend Detail Modal */}
+        {/* User Detail Modal */}
         <AnimatePresence>
           {selectedFriend && (
             <>
-              {/* Backdrop */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/20 backdrop-blur-sm z-30"
                 onClick={() => {
                   setSelectedFriend(null);
                   setIsNavVisible(true);
                 }}
-                className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm"
               />
-              
-              {/* Modal */}
               <motion.div
-                initial={{ opacity: 0, y: "100%" }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                drag="y"
-                dragConstraints={{ top: 0 }}
-                dragElastic={0.2}
-                onDragEnd={(_, info) => {
-                  if (info.offset.y > 100) {
-                    setSelectedFriend(null);
-                    setIsNavVisible(true);
-                  }
-                }}
-                className="fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-safe"
-                style={{ maxHeight: "85vh" }}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-[32px] shadow-2xl z-40 p-6 pb-safe"
               >
-                {/* Drag Handle */}
-                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
+                <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6" />
                 
-                {/* Close Button */}
-                <button 
-                  onClick={() => {
-                    setSelectedFriend(null);
-                    setIsNavVisible(true);
-                  }}
-                  className="absolute top-4 right-4 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors z-50"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-
-                <div className="px-6 pb-8 overflow-y-auto max-h-[calc(85vh-3rem)]">
-                  {/* Header */}
-                  <div className="flex items-start gap-4 mb-6">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-4">
                     <div className="relative">
                       <img src={selectedFriend.avatar} className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg" />
                       <div className={cn(
-                        "absolute -bottom-1 -right-1 w-6 h-6 border-4 border-white rounded-full flex items-center justify-center",
-                        selectedFriend.status === "online" ? "bg-green-500" : 
-                        selectedFriend.status === "busy" ? "bg-red-500" : "bg-slate-300"
+                        "absolute bottom-0 right-0 w-6 h-6 border-4 border-white rounded-full flex items-center justify-center",
+                        selectedFriend.gender === 'female' ? "bg-pink-500" : "bg-blue-500"
                       )}>
-                        {selectedFriend.status === "online" && (
-                          <div className="w-full h-full rounded-full bg-green-400 animate-ping opacity-75" />
+                        {selectedFriend.gender === 'female' ? (
+                          <span className="text-[10px] text-white">♀</span>
+                        ) : (
+                          <span className="text-[10px] text-white">♂</span>
                         )}
                       </div>
                     </div>
-                    <div className="flex-1 pt-2">
+                    <div>
                       <h2 className="text-2xl font-bold text-slate-900 mb-1">{selectedFriend.name}</h2>
-                      
-                      {/* Info Row: Distance + Status + Age/Gender */}
-                      <div className="flex items-center gap-3 text-slate-500 text-sm mb-2">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5" />
-                          <span>{selectedFriend.distance}</span>
-                        </div>
-                        {selectedFriend.lastSeen && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>{selectedFriend.lastSeen}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Tags & Age/Gender */}
-                      <div className="flex flex-wrap gap-2">
-                        {/* Age/Gender Capsule */}
-                        {(selectedFriend.age || selectedFriend.gender) && (
-                          <div className={cn(
-                            "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white",
-                            selectedFriend.gender === "female" ? "bg-pink-400" : "bg-blue-400"
-                          )}>
-                            {selectedFriend.gender === "female" ? <span className="text-[10px]">F</span> : <span className="text-[10px]">M</span>}
-                            <span>{selectedFriend.age}</span>
-                          </div>
-                        )}
-                        
-                        {/* Constellation */}
-                        {selectedFriend.constellation && (
-                          <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-medium">
-                            <Sparkles className="w-3 h-3" />
-                            <span>{selectedFriend.constellation}</span>
-                          </div>
-                        )}
-
-                        {selectedFriend.tags?.map(tag => (
-                          <span key={tag} className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-lg font-medium">
-                            {tag}
-                          </span>
-                        ))}
+                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <span>{selectedFriend.age}岁</span>
+                        <span>•</span>
+                        <span>{selectedFriend.constellation}</span>
+                        <span>•</span>
+                        <span>{selectedFriend.distance}</span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Bio */}
-                  <div className="bg-slate-50 p-4 rounded-2xl mb-6">
-                    <p className="text-slate-600 italic">"{selectedFriend.bio}"</p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="grid grid-cols-2 gap-3 mb-8">
-                    <button className="bg-slate-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
-                      <MessageCircle className="w-5 h-5" />
-                      打招呼
+                  <div className="flex gap-2">
+                    <button className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-900 active:scale-95 transition-transform">
+                      <MessageCircle className="w-6 h-6" />
                     </button>
-                    <button className="bg-white border border-slate-200 text-slate-900 py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
-                      <User className="w-5 h-5" />
-                      加好友
+                    <button className="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center text-pink-500 active:scale-95 transition-transform">
+                      <Heart className="w-6 h-6" />
                     </button>
                   </div>
+                </div>
 
-                  {/* Photos (Recent Moments) */}
-                  <div>
-                    <h3 className="font-bold text-slate-900 mb-3">最近动态</h3>
-                    {selectedFriend.photos && selectedFriend.photos.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-3">
-                        {selectedFriend.photos.map((photo, i) => (
-                          <div key={i} className="aspect-square rounded-2xl overflow-hidden bg-slate-100">
-                            <img src={photo} className="w-full h-full object-cover" />
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-slate-400 text-sm bg-slate-50 rounded-2xl">
-                        暂无动态
-                      </div>
-                    )}
+                <div className="mb-8">
+                  <h3 className="text-sm font-bold text-slate-900 mb-3">关于我</h3>
+                  <p className="text-slate-600 leading-relaxed">{selectedFriend.bio}</p>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {selectedFriend.tags?.map(tag => (
+                      <span key={tag} className="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-full text-xs font-medium">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 mb-3">最近动态</h3>
+                  <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                    {selectedFriend.photos?.map((photo, index) => (
+                      <img key={index} src={photo} className="w-32 h-32 rounded-2xl object-cover flex-shrink-0" />
+                    ))}
                   </div>
                 </div>
               </motion.div>

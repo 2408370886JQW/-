@@ -12,18 +12,16 @@ type FlowStep = "entry" | "login" | "home" | "scenario" | "package" | "payment" 
 
 interface StoreModeProps {
   onExit: (targetTab?: string) => void; // Callback to return to main app, optionally redirecting to a specific tab
+  onBack?: () => void; // Optional back handler
+  onConsume?: () => void; // Optional consume handler
 }
 
-export default function StoreMode({ onExit }: StoreModeProps) {
+export default function StoreMode({ onExit, onBack, onConsume }: StoreModeProps) {
   const [step, setStep] = useState<FlowStep>("home");
   const [selectedRelationship, setSelectedRelationship] = useState<string | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [showRelationshipModal, setShowRelationshipModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-
-
-
 
   // --- 4. Payment Logic (Moved to top level) ---
   const [paymentState, setPaymentState] = useState<"idle" | "scanning" | "processing" | "success">("idle");
@@ -31,6 +29,10 @@ export default function StoreMode({ onExit }: StoreModeProps) {
 
   const handleGoEncounter = () => {
     setIsUnfoldingMap(true);
+    // Call onConsume if provided to add marker
+    if (onConsume) {
+      onConsume();
+    }
     setTimeout(() => {
       onExit("encounter");
     }, 1500); // Wait for animation to complete
@@ -74,10 +76,6 @@ export default function StoreMode({ onExit }: StoreModeProps) {
   };
 
   // --- Render Functions ---
-
-
-
-
 
   // 3. Store Home (Blurred Background + Overlay Card)
   if (step === "home") {
@@ -254,146 +252,181 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         
         <div className="p-8 space-y-12">
           <section>
-            <h3 className="text-lg font-bold text-slate-900 mb-4">套餐内容</h3>
-            <div className="space-y-4">
-              {selectedPackage.items.map((item: any, i: number) => (
-                <div key={i} className="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
-                  <span className="text-slate-600">{item.name}</span>
-                  <span className="font-medium text-slate-900">x{item.count}</span>
-                </div>
+            <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-widest">包含内容</h3>
+            <ul className="space-y-4">
+              {selectedPackage.items.map((item: string, i: number) => (
+                <li key={i} className="flex items-center gap-3 text-slate-600">
+                  <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                  {item}
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
 
           <section>
-            <h3 className="text-lg font-bold text-slate-900 mb-4">使用须知</h3>
-            <ul className="space-y-3 text-slate-500 text-sm leading-relaxed list-disc pl-4">
-              <li>请提前1天预约</li>
-              <li>仅限堂食，不可打包</li>
-              <li>如需发票请咨询商家</li>
-            </ul>
+            <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-widest">使用须知</h3>
+            <p className="text-slate-500 leading-relaxed">
+              请提前预约。如需退改，请至少提前24小时联系商家。
+            </p>
           </section>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-100 pb-safe">
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-slate-100">
           <button 
             onClick={() => setStep("payment")}
-            className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
-            style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+            className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
           >
-            <Wallet className="w-5 h-5" />
-            立即支付 {selectedPackage.price}
+            <span>立即购买</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </div>
     );
   }
 
-  // 6. Payment & Success (Restored to original style)
-  if (step === "payment" || step === "success") {
+  // 6. Payment Page (Mock Scan)
+  if (step === "payment") {
     return (
-      <div className="min-h-screen bg-white text-slate-900 flex flex-col items-center justify-center p-8 relative overflow-hidden font-serif">
-        <AnimatePresence mode="wait">
-          {step === "payment" ? (
-            <motion.div 
-              key="payment"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
-              className="relative z-10 w-full max-w-sm text-center"
-            >
-              <div className="mb-12 relative">
-                <div className="w-48 h-48 mx-auto bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100 relative overflow-hidden shadow-inner">
-                  {paymentState === "scanning" && (
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/10 to-transparent"
-                      animate={{ y: ["-100%", "100%"] }}
-                      transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                    />
-                  )}
-                  {paymentState === "processing" ? (
-                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                      <ScanFace className="w-16 h-16 text-blue-500" strokeWidth={1.5} />
-                    </motion.div>
-                  ) : (
-                    <QrCode className="w-20 h-20 text-slate-300" strokeWidth={1} />
-                  )}
-                </div>
-                <div className="mt-8 space-y-3">
-                  <h2 className="text-2xl font-bold text-slate-900">
-                    {paymentState === "scanning" ? "正在识别..." : "支付处理中..."}
-                  </h2>
-                  <p className="text-slate-400 text-sm">请保持手机靠近感应区</p>
-                </div>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div 
-              key="success"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative z-10 w-full max-w-sm text-center"
-            >
-              <motion.div 
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", damping: 12 }}
-                className="w-24 h-24 mx-auto bg-green-50 rounded-full flex items-center justify-center mb-6"
-              >
-                <CheckCircle className="w-12 h-12 text-green-500" strokeWidth={2} />
-              </motion.div>
-              
-              <h2 className="text-3xl font-bold mb-2 text-slate-900">缘分已在路上</h2>
-              
-              {/* QR Code Section */}
-              <div className="my-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 inline-block shadow-sm">
-                <QrCode className="w-32 h-32 text-slate-800 mx-auto" strokeWidth={1} />
-                <p className="text-xs text-slate-400 mt-3 font-mono tracking-widest">NO.839201</p>
-              </div>
+      <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-8 relative overflow-hidden">
+        {/* Background Animation */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[100px] animate-pulse"></div>
+        </div>
 
-              <p className="text-slate-500 mb-10 text-sm leading-relaxed max-w-[260px] mx-auto">
-                凭此码到店消费<br/>
-                此刻，也许正有人在附近的动态里等你...
-              </p>
+        <div className="relative z-10 w-full max-w-sm text-center">
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-2">正在支付</h2>
+            <p className="text-white/50">请出示付款码或扫描商家二维码</p>
+          </div>
 
-              <div className="space-y-3">
-                <button 
-                  onClick={handleGoEncounter}
-                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
-                >
-                  <Users className="w-5 h-5" />
-                  去偶遇吧
-                </button>
-                <button 
-                  onClick={() => onExit("moments")}
-                  className="w-full py-4 bg-white text-slate-600 rounded-2xl font-bold text-lg active:scale-95 transition-transform border border-slate-200 hover:bg-slate-50 flex items-center justify-center gap-2"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  看看大家都在干嘛
-                </button>
+          {/* Scan Animation Container */}
+          <div className="relative w-64 h-64 mx-auto mb-12">
+            {/* Scan Frame */}
+            <div className="absolute inset-0 border-2 border-white/20 rounded-3xl"></div>
+            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-3xl"></div>
+            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-3xl"></div>
+
+            {/* Status Icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                {paymentState === "scanning" && (
+                  <motion.div
+                    key="scanning"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                  >
+                    <ScanFace className="w-20 h-20 text-white/80" strokeWidth={1} />
+                  </motion.div>
+                )}
+                {paymentState === "processing" && (
+                  <motion.div
+                    key="processing"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                  >
+                    <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </motion.div>
+                )}
+                {paymentState === "success" && (
+                  <motion.div
+                    key="success"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                  >
+                    <CheckCircle className="w-20 h-20 text-green-500" strokeWidth={2} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Scanning Line */}
+            {paymentState === "scanning" && (
+              <motion.div
+                className="absolute left-2 right-2 h-0.5 bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.8)]"
+                animate={{ top: ["5%", "95%", "5%"] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              />
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between bg-white/10 rounded-xl p-4 backdrop-blur-md">
+              <span className="text-white/60 text-sm">支付金额</span>
+              <span className="text-xl font-bold font-mono">{selectedPackage?.price}</span>
+            </div>
+            <div className="flex items-center justify-between bg-white/10 rounded-xl p-4 backdrop-blur-md">
+              <span className="text-white/60 text-sm">支付方式</span>
+              <div className="flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-white/80" />
+                <span className="text-sm">余额支付</span>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  // 7. Success Page
+  if (step === "success") {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
         {/* Map Unfolding Animation Overlay */}
         <AnimatePresence>
           {isUnfoldingMap && (
             <motion.div
               initial={{ clipPath: "circle(0% at 50% 50%)" }}
               animate={{ clipPath: "circle(150% at 50% 50%)" }}
-              transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed inset-0 z-50 bg-slate-50"
+              transition={{ duration: 1, ease: "easeInOut" }}
+              className="absolute inset-0 z-50 bg-slate-100 flex items-center justify-center"
             >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-500 rounded-full animate-ping mx-auto mb-4 opacity-20"></div>
-                  <p className="text-slate-400 font-medium tracking-widest">正在定位附近的人...</p>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white mb-4 mx-auto animate-bounce">
+                  <MapPin className="w-8 h-8" />
                 </div>
+                <p className="text-slate-500 font-medium">正在返回偶遇地图...</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", damping: 20 }}
+          className="w-24 h-24 bg-green-50 rounded-full flex items-center justify-center text-green-500 mb-8"
+        >
+          <CheckCircle className="w-12 h-12" strokeWidth={3} />
+        </motion.div>
+        
+        <h2 className="text-3xl font-bold text-slate-900 mb-4">支付成功</h2>
+        <p className="text-slate-500 mb-12 max-w-xs mx-auto leading-relaxed">
+          您已成功购买 <span className="text-slate-900 font-bold">{selectedPackage?.title}</span>。
+          <br />
+          祝您享受美好的相见时光。
+        </p>
+
+        <div className="w-full max-w-xs space-y-4">
+          <button 
+            onClick={handleGoEncounter}
+            className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+          >
+            <MapPin className="w-5 h-5" />
+            <span>返回偶遇地图</span>
+          </button>
+          <button 
+            onClick={() => {}} // Share logic
+            className="w-full bg-white text-slate-900 border border-slate-200 py-4 rounded-2xl font-bold active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+          >
+            <Share2 className="w-5 h-5" />
+            <span>分享给好友</span>
+          </button>
+        </div>
       </div>
     );
   }
