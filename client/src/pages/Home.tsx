@@ -29,8 +29,9 @@ import {
   BookOpen,
   Briefcase,
   Gamepad2,
-
-  Sparkles
+  Sparkles,
+  Check,
+  Plus
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -285,6 +286,16 @@ const ALL_PLANS: Plan[] = [
   }
 ];
 
+const CONSTELLATIONS = [
+  "白羊座", "金牛座", "双子座", "巨蟹座", 
+  "狮子座", "处女座", "天秤座", "天蝎座", 
+  "射手座", "摩羯座", "水瓶座", "双鱼座"
+];
+
+const AGE_RANGES = [
+  "18-22", "23-26", "27-30", "30+"
+];
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("encounter");
   const [searchQuery, setSearchQuery] = useState("");
@@ -294,6 +305,11 @@ export default function Home() {
   const [isStoreMode, setIsStoreMode] = useState(false);
   const [moments, setMoments] = useState<Moment[]>(MOMENTS);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  // Filter states
+  const [filterGender, setFilterGender] = useState<"male" | "female" | null>(null);
+  const [filterAge, setFilterAge] = useState<string | null>(null);
+  const [filterConstellation, setFilterConstellation] = useState<string | null>(null);
 
   // Map related refs
   const mapRef = useRef<any>(null);
@@ -397,15 +413,25 @@ export default function Home() {
                   // Create marker content based on type
                   const content = document.createElement('div');
                   if (data.type === 'user') {
+                    // Gender-based color: Blue for male, Pink for female
+                    const borderColor = data.data.gender === 'female' ? 'border-pink-400' : 'border-blue-500';
+                    
                     content.innerHTML = `
                       <div class="relative group">
-                        <div class="w-10 h-10 rounded-full border-2 border-white shadow-lg overflow-hidden bg-white">
+                        <div class="w-12 h-12 rounded-full border-[3px] ${borderColor} shadow-lg overflow-hidden bg-white">
                           <img src="${data.data.avatar}" class="w-full h-full object-cover" />
                         </div>
-                        <div class="absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white rounded-full ${
-                          data.data.status === 'online' ? 'bg-green-500' : 
-                          data.data.status === 'busy' ? 'bg-red-500' : 'bg-slate-300'
-                        }"></div>
+                        ${data.data.status === 'online' ? `
+                          <div class="absolute -bottom-1 -right-1 bg-white rounded-full px-1.5 py-0.5 shadow-sm border border-slate-100 flex items-center gap-0.5">
+                            <div class="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                            <span class="text-[8px] font-bold text-slate-600">在线</span>
+                          </div>
+                        ` : data.data.lastSeen ? `
+                          <div class="absolute -bottom-1 -right-1 bg-white rounded-full px-1.5 py-0.5 shadow-sm border border-slate-100 flex items-center gap-0.5">
+                            <div class="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                            <span class="text-[8px] font-bold text-slate-400">${data.data.lastSeen}</span>
+                          </div>
+                        ` : ''}
                       </div>
                     `;
                   } else if (data.type === 'moment') {
@@ -439,12 +465,12 @@ export default function Home() {
 
                 draw() {
                   const projection = this.getProjection();
-                  if (!projection) return;
-                  
-                  const point = projection.fromLatLngToDivPixel(this.position);
-                  if (point) {
-                    this.container.style.left = (point.x - 20) + 'px'; // Center horizontally (assuming 40px width)
-                    this.container.style.top = (point.y - 40) + 'px'; // Bottom anchor
+                  if (projection) {
+                    const point = projection.fromLatLngToDivPixel(this.position);
+                    if (point) {
+                      this.container.style.left = (point.x - 24) + 'px'; // Center horizontally (assuming 48px width)
+                      this.container.style.top = (point.y - 48) + 'px'; // Bottom anchor
+                    }
                   }
                 }
 
@@ -564,30 +590,71 @@ export default function Home() {
                   initial={{ opacity: 0, y: -10, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.9 }}
-                  className="absolute top-12 right-0 bg-white rounded-2xl shadow-xl p-4 w-48 flex flex-col gap-4 origin-top-right"
+                  className="absolute top-12 right-0 bg-white rounded-2xl shadow-xl p-4 w-64 flex flex-col gap-4 origin-top-right"
                 >
                   <div>
                     <div className="text-xs font-bold text-slate-900 mb-2">性别</div>
                     <div className="flex gap-2">
-                      <button className="flex-1 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">男生</button>
-                      <button className="flex-1 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-pink-50 hover:text-pink-600 transition-colors">女生</button>
+                      <button 
+                        onClick={() => setFilterGender(filterGender === 'male' ? null : 'male')}
+                        className={cn(
+                          "flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                          filterGender === 'male' ? "bg-blue-50 text-blue-600 border border-blue-200" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        )}
+                      >
+                        男生
+                      </button>
+                      <button 
+                        onClick={() => setFilterGender(filterGender === 'female' ? null : 'female')}
+                        className={cn(
+                          "flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                          filterGender === 'female' ? "bg-pink-50 text-pink-600 border border-pink-200" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        )}
+                      >
+                        女生
+                      </button>
                     </div>
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-900 mb-2">年龄</div>
-                    <div className="flex gap-2">
-                      <button className="flex-1 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors">18-25</button>
-                      <button className="flex-1 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors">26-35</button>
+                    <div className="grid grid-cols-4 gap-2">
+                      {AGE_RANGES.map(range => (
+                        <button 
+                          key={range}
+                          onClick={() => setFilterAge(filterAge === range ? null : range)}
+                          className={cn(
+                            "py-1.5 rounded-lg text-[10px] font-medium transition-colors",
+                            filterAge === range ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {range}
+                        </button>
+                      ))}
                     </div>
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-900 mb-2">星座</div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <button className="py-1.5 bg-slate-100 rounded-lg text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors">火象</button>
-                      <button className="py-1.5 bg-slate-100 rounded-lg text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors">土象</button>
-                      <button className="py-1.5 bg-slate-100 rounded-lg text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors">风象</button>
+                    <div className="grid grid-cols-4 gap-2">
+                      {CONSTELLATIONS.map(constellation => (
+                        <button 
+                          key={constellation}
+                          onClick={() => setFilterConstellation(filterConstellation === constellation ? null : constellation)}
+                          className={cn(
+                            "py-1.5 rounded-lg text-[10px] font-medium transition-colors",
+                            filterConstellation === constellation ? "bg-purple-50 text-purple-600 border border-purple-200" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {constellation}
+                        </button>
+                      ))}
                     </div>
                   </div>
+                  <button 
+                    onClick={() => setIsFilterOpen(false)}
+                    className="w-full bg-slate-900 text-white py-2 rounded-xl text-xs font-bold mt-2 active:scale-95 transition-transform"
+                  >
+                    确认筛选
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -642,69 +709,45 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Moments Tab Content */}
+        {/* Moments Tab Content (Xiaohongshu Style) */}
         <AnimatePresence>
           {activeTab === "moments" && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-20 bg-slate-50 pt-32 px-4 pb-24 overflow-y-auto"
+              className="absolute inset-0 z-20 bg-slate-50 pt-32 px-2 pb-24 overflow-y-auto"
             >
-              <div className="space-y-4">
+              <div className="columns-2 gap-2 space-y-2">
                 {moments.map((moment) => (
-                  <div key={moment.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    {/* Header */}
-                    <div className="p-3 flex items-center gap-3">
-                      <div className="relative">
-                        <img src={moment.user.avatar} className="w-8 h-8 rounded-full object-cover" />
-                        <div className={cn(
-                          "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white rounded-full",
-                          moment.user.status === "online" ? "bg-green-500" : "bg-slate-300"
-                        )} />
+                  <div key={moment.id} className="break-inside-avoid bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
+                    {moment.image && (
+                      <div className="w-full aspect-[3/4] relative">
+                        <img src={moment.image} className="w-full h-full object-cover" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-slate-900 text-sm">{moment.user.name}</h3>
-                        <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                          <span>{moment.time}</span>
-                          <span>•</span>
-                          <span>{moment.location}</span>
+                    )}
+                    <div className="p-2">
+                      <p className="text-slate-900 text-sm font-medium line-clamp-2 mb-2">{moment.content}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <img src={moment.user.avatar} className="w-4 h-4 rounded-full object-cover" />
+                          <span className="text-[10px] text-slate-500 truncate max-w-[60px]">{moment.user.name}</span>
                         </div>
-                      </div>
-                      <button className="text-slate-400">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Content */}
-                    <div className="px-3 pb-3">
-                      <p className="text-slate-700 text-sm leading-relaxed mb-2">{moment.content}</p>
-                      {moment.image && (
-                        <div className="rounded-xl overflow-hidden aspect-[16/9]">
-                          <img src={moment.image} className="w-full h-full object-cover" />
+                        <div className="flex items-center gap-1">
+                          <Heart className="w-3 h-3 text-slate-400" />
+                          <span className="text-[10px] text-slate-400">{moment.likes}</span>
                         </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="px-3 py-2 border-t border-slate-50 flex items-center justify-between">
-                      <div className="flex gap-4">
-                        <button className="flex items-center gap-1 text-slate-500 hover:text-red-500 transition-colors">
-                          <Heart className="w-4 h-4 text-red-500 fill-red-500" />
-                          <span className="text-xs font-medium text-red-500">{moment.likes}</span>
-                        </button>
-                        <button className="flex items-center gap-1 text-slate-500 hover:text-blue-500 transition-colors">
-                          <MessageCircle className="w-4 h-4 text-blue-500" />
-                          <span className="text-xs font-medium text-blue-500">{moment.comments}</span>
-                        </button>
-                        <button className="flex items-center gap-1 text-slate-500 hover:text-green-500 transition-colors">
-                          <Share2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
+              
+              {/* Floating Action Button for Moments */}
+              <button className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 active:scale-95 transition-transform z-30">
+                <Plus className="w-5 h-5" />
+                <span className="font-bold text-sm">发布动态</span>
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -960,7 +1003,7 @@ export default function Home() {
                             "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white",
                             selectedFriend.gender === "female" ? "bg-pink-400" : "bg-blue-400"
                           )}>
-                            {selectedFriend.gender === "female" ? <span className="text-[10px]">♀</span> : <span className="text-[10px]">♂</span>}
+                            {selectedFriend.gender === "female" ? <span className="text-[10px]">F</span> : <span className="text-[10px]">M</span>}
                             <span>{selectedFriend.age}</span>
                           </div>
                         )}
