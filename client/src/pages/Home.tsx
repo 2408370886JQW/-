@@ -253,246 +253,93 @@ export default function Home() {
             type: "moment",
             icon: ImageIcon,
             content: newMoment.content,
-            image: newMoment.media[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
+            image: newMoment.image,
             likes: 0,
-            comments: 0,
-            hashtags: newMoment.hashtags
+            comments: 0
           },
           ...prev.moments
         ]
       }));
-
-      // Switch to moments tab to show the new post
-      setActiveTab("moments");
-      
-      // If map instance exists, pan to the new moment
-      if (mapInstance) {
-        // Use a slight delay to ensure marker is rendered
-        setTimeout(() => {
-          mapInstance.panTo({ lat: 39.9042, lng: 116.4074 });
-          mapInstance.setZoom(16);
-        }, 500);
-      }
     };
 
-    window.addEventListener('new-moment-posted', handleNewMoment as EventListener);
+    window.addEventListener('newMomentPosted', handleNewMoment as EventListener);
     return () => {
-      window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
-    };
-  }, [mapInstance]);
-
-  // Handle scroll/drag to hide nav
-  useEffect(() => {
-    let startY = 0;
-    let isDragging = false;
-    
-    const handleTouchStart = (e: TouchEvent) => {
-      startY = e.touches[0].clientY;
-      isDragging = true;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging) return;
-      const currentY = e.touches[0].clientY;
-      const diff = startY - currentY;
-
-      // Hide nav when dragging map (swiping up/down significantly)
-      if (Math.abs(diff) > 10) {
-        setIsNavVisible(false);
-      }
-    };
-
-    const handleTouchEnd = () => {
-      isDragging = false;
-      // Show nav when dragging stops
-      setTimeout(() => {
-        setIsNavVisible(true);
-      }, 300);
-    };
-
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchmove', handleTouchMove);
-    window.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('newMomentPosted', handleNewMoment as EventListener);
     };
   }, []);
 
-  const tabs: { id: TabType; label: string; subtitle: string }[] = [
+  const tabs = [
     { id: "encounter", label: "偶遇", subtitle: "身边的人" },
     { id: "friends", label: "好友", subtitle: "我的好友" },
     { id: "moments", label: "动态", subtitle: "看看新鲜事" },
     { id: "meet", label: "相见", subtitle: "发现美好生活" },
   ];
 
-  // Listen for new moment posts
-  useEffect(() => {
-    const handleNewMoment = (event: CustomEvent) => {
-      const newMoment = event.detail;
-      // Add new moment to marker data
-      setMarkerData((prev: any) => ({
-        ...prev,
-        moments: [
-          ...prev.moments,
-          {
-            id: Date.now(),
-            lat: 39.9042 + (Math.random() - 0.5) * 0.01, // Random location near center
-            lng: 116.4074 + (Math.random() - 0.5) * 0.01,
-            type: "moment",
-            icon: ImageIcon,
-            content: newMoment.content,
-            image: newMoment.media[0] || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
-            likes: 0,
-            comments: 0,
-            hashtags: newMoment.hashtags
-          }
-        ]
-      }));
-      
-      // Switch to moments tab
-      setActiveTab("moments");
-    };
+  // Custom Overlay Class
+  class CustomOverlay extends google.maps.OverlayView {
+    private div: HTMLDivElement;
+    private position: google.maps.LatLng;
 
-    window.addEventListener('new-moment-posted', handleNewMoment as EventListener);
-    return () => {
-      window.removeEventListener('new-moment-posted', handleNewMoment as EventListener);
-    };
-  }, []);
+    constructor(position: google.maps.LatLng, content: HTMLElement) {
+      super();
+      this.position = position;
+      this.div = content as HTMLDivElement;
+      this.div.style.position = 'absolute';
+      this.div.style.cursor = 'pointer';
+    }
 
-  // Update markers when active tab changes
+    onAdd() {
+      const panes = this.getPanes();
+      if (panes) {
+        panes.overlayMouseTarget.appendChild(this.div);
+      }
+    }
+
+    draw() {
+      const overlayProjection = this.getProjection();
+      if (!overlayProjection) return;
+
+      const point = overlayProjection.fromLatLngToDivPixel(this.position);
+      if (point) {
+        this.div.style.left = point.x + 'px';
+        this.div.style.top = point.y + 'px';
+        this.div.style.transform = 'translate(-50%, -100%)'; // Center bottom anchor
+      }
+    }
+
+    onRemove() {
+      if (this.div.parentElement) {
+        this.div.parentElement.removeChild(this.div);
+      }
+    }
+  }
+
+  // Update markers when tab changes
   useEffect(() => {
     if (!mapInstance) return;
 
     // Clear existing overlays
     overlays.forEach(overlay => overlay.setMap(null));
-    setOverlays([]);
-
-    const newOverlays: google.maps.OverlayView[] = [];
-
-    // Define CustomOverlay class
-    class CustomOverlay extends google.maps.OverlayView {
-      position: google.maps.LatLng;
-      content: HTMLElement;
-      
-      constructor(position: google.maps.LatLng, content: HTMLElement) {
-        super();
-        this.position = position;
-        this.content = content;
-      }
-
-      onAdd() {
-        const panes = this.getPanes();
-        if (panes) {
-          panes.overlayMouseTarget.appendChild(this.content);
-        }
-      }
-
-      draw() {
-        const projection = this.getProjection();
-        if (projection) {
-          const pixel = projection.fromLatLngToDivPixel(this.position);
-          if (pixel) {
-            this.content.style.position = 'absolute';
-            this.content.style.left = pixel.x + 'px';
-            this.content.style.top = pixel.y + 'px';
-            // Ensure z-index is high enough to be visible
-            this.content.style.zIndex = '100';
-            this.content.style.transform = 'translate(-50%, -100%)'; // Center horizontally, anchor at bottom
-          }
-        }
-      }
-
-      onRemove() {
-        if (this.content.parentElement) {
-          this.content.parentElement.removeChild(this.content);
-        }
-      }
-    }
-
-    // Add markers based on active tab
-    let currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
-
-    // Force pan to first marker if available to ensure visibility
-    if (currentMarkers.length > 0 && mapInstance) {
-      const firstMarker = currentMarkers[0];
-      // Only pan if the map center is far away (e.g. > 1km) or on initial load
-      // For now, we'll just pan to the center of the markers to be safe
-      const bounds = new google.maps.LatLngBounds();
-      currentMarkers.forEach((m: any) => bounds.extend({ lat: m.lat, lng: m.lng }));
-      mapInstance.fitBounds(bounds);
-      
-      // Avoid zooming in too close
-      const listener = google.maps.event.addListener(mapInstance, "idle", () => { 
-        if (mapInstance.getZoom()! > 16) mapInstance.setZoom(16); 
-        google.maps.event.removeListener(listener); 
-      });
-    }
     
-    // Apply gender filter for encounter tab
-    if (activeTab === "encounter") {
-      currentMarkers = currentMarkers.filter((m: any) => {
-        if (genderFilter === "all") return true;
-        if (genderFilter === "male") return m.gender === "male" || m.gender === "Man";
-        if (genderFilter === "female") return m.gender === "female" || m.gender === "Woman";
-        return true;
-      });
-    }
+    const newOverlays: google.maps.OverlayView[] = [];
+    const currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
 
-    currentMarkers.forEach((marker: any) => {
-      console.log(`Rendering marker ${marker.id}: type=${marker.type}, gender=${marker.gender}`);
-      // Filter out offline users > 24h
-      // We assume 'offline' status means within 24h (gray dot), and we filter out those explicitly marked as 'inactive' or similar if we had that state.
-      // For now, we show 'offline' as gray dots as requested.
-      // if ((marker.type === 'encounter' || marker.type === 'friend') && marker.status === 'offline') {
-      //   return;
-      // }
+    // Filter markers based on gender if in encounter tab
+    const filteredMarkers = activeTab === 'encounter' 
+      ? currentMarkers.filter((m: any) => {
+          if (genderFilter === 'all') return true;
+          // Handle both "female"/"male" and "Woman"/"Man" formats
+          const gender = m.gender?.toLowerCase();
+          if (genderFilter === 'female') return gender === 'female' || gender === 'woman';
+          if (genderFilter === 'male') return gender === 'male' || gender === 'man';
+          return true;
+        })
+      : currentMarkers;
+
+    filteredMarkers.forEach((marker: any) => {
       const div = document.createElement('div');
-      div.style.cursor = 'pointer';
       
-      // Add click listener to the container div to stop propagation to map
-      div.addEventListener('click', (e) => {
-        e.stopPropagation();
-        // e.preventDefault(); // Optional: might prevent default map behaviors if needed
-      });
-
-      // Render different markers based on type
-      if (marker.type === 'encounter') {
-        // Encounter Marker
-        const root = createRoot(div);
-        root.render(
-          <div 
-            className="relative group"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.nativeEvent.stopImmediatePropagation();
-              setSelectedFriend(marker);
-            }}
-          >
-            {/* Online Halo Effect */}
-            {marker.status === "online" && (
-              <div className="absolute -inset-2 bg-green-400/30 rounded-full animate-pulse z-0" />
-            )}
-            
-            <div className={cn(
-              "relative z-10 w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              (marker.gender === "female" || marker.gender === "Woman") ? "!border-pink-500" : "!border-blue-500"
-            )}
-            style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
-              <img src={marker.avatar} className="w-full h-full object-cover" />
-            </div>
-            {/* Status Dot */}
-            <div className={cn(
-              "absolute bottom-0 right-0 z-20 w-3.5 h-3.5 rounded-full border-2 border-white",
-              marker.status === "online" ? "bg-green-500" : 
-              marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
-            )} />
-          </div>
-        );
-      } else if (marker.type === 'friend') {
-        // Friend Marker
+      if (marker.type === 'encounter' || marker.type === 'friend') {
         const root = createRoot(div);
         root.render(
           <div 
@@ -608,7 +455,7 @@ export default function Home() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setActiveTab(tab.id as TabType)}
                   className="flex flex-col items-center gap-0.5 group"
                 >
                   <span className={cn(
@@ -1000,16 +847,38 @@ export default function Home() {
                 <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14 relative">
                   {/* Back Button */}
                   <button 
-                    onClick={() => setActiveTab("encounter")}
+                    onClick={() => setActiveTab("encounter" as TabType)}
                     className="absolute top-4 left-4 p-2 bg-white shadow-sm border border-slate-100 rounded-full text-slate-900 z-10 active:scale-95 transition-transform"
                   >
                     <ArrowLeft className="w-6 h-6" />
                   </button>
 
                   <div className="mb-6 pt-12">
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2">选择相见场景</h2>
-                    <p className="text-slate-500 mb-6">选择一个场景，开启你的社交之旅</p>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">相见</h2>
+                    <p className="text-slate-500 mb-6">发现美好生活，开启社交之旅</p>
                     
+                    {/* Scan Code Button - Moved to Top */}
+                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl mb-8">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="font-bold text-lg">扫码进店</h3>
+                          <p className="text-slate-400 text-sm">已在店内？直接扫码</p>
+                        </div>
+                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                          <Camera className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setShowStoreMode(true)}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Camera className="w-5 h-5" />
+                        模拟扫码
+                      </button>
+                    </div>
+
+                    {/* Hidden Scenario Selection - Now inside StoreMode */}
+                    {/* 
                     <div className="grid grid-cols-2 gap-4">
                       {SCENARIOS.map((scenario) => {
                         const Icon = scenario.icon;
@@ -1039,25 +908,7 @@ export default function Home() {
                         );
                       })}
                     </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="font-bold text-lg">扫码进店</h3>
-                        <p className="text-slate-400 text-sm">已在店内？直接扫码</p>
-                      </div>
-                      <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                        <Camera className="w-6 h-6 text-white" />
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => setShowStoreMode(true)}
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Camera className="w-5 h-5" />
-                      开启扫码
-                    </button>
+                    */}
                   </div>
                 </div>
               )}
