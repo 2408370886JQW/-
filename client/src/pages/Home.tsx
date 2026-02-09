@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import StoreMode from "./StoreMode";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronUp, ChevronDown } from "lucide-react";
+import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronUp, ChevronDown, ScanFace } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
 import { Link } from "wouter";
@@ -284,605 +284,509 @@ export default function Home() {
     });
 
     return () => {
-      if (listener) google.maps.event.removeListener(listener);
+      google.maps.event.removeListener(listener);
     };
   }, [mapInstance]);
-  const [overlays, setOverlays] = useState<google.maps.OverlayView[]>([]);
-  
-  // New state for Meet page
-  const [activeScenario, setActiveScenario] = useState("date");
-  const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
-  const [ageFilter, setAgeFilter] = useState<string | null>(null);
-  const [zodiacFilter, setZodiacFilter] = useState<string | null>(null);
-  const [showFilterModal, setShowFilterModal] = useState(false);
 
-  // State for Friend Card and Dynamics Detail
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
-  const [showGroupBuying, setShowGroupBuying] = useState(false);
-  const [showFriendList, setShowFriendList] = useState(false);
-  const [selectedShop, setSelectedShop] = useState<any>(null);
-
-  // State for Nav Hiding
   const [isNavVisible, setIsNavVisible] = useState(true);
-  const [isMeetHeaderCollapsed, setIsMeetHeaderCollapsed] = useState(false);
-  const [showStoreMode, setShowStoreMode] = useState(false);
-  const lastScrollY = useRef(0);
-  const navRef = useRef<HTMLDivElement>(null);
-  const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [isStoreMode, setIsStoreMode] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const lastToggleTimeRef = useRef(0);
 
-  // Listen for new moment posted event
-  useEffect(() => {
-    const handleNewMoment = (e: CustomEvent) => {
-      const newMoment = e.detail;
-      
-      // Add to local state
-      setMarkerData((prev: any) => ({
-        ...prev,
-        moments: [
-          {
-            id: newMoment.id,
-            lat: 39.9042 + (Math.random() - 0.5) * 0.01, // Random nearby location if not specified
-            lng: 116.4074 + (Math.random() - 0.5) * 0.01,
-            type: "moment",
-            icon: ImageIcon,
-            content: newMoment.content,
-            image: newMoment.image,
-            likes: 0,
-            comments: 0
-          },
-          ...prev.moments
-        ]
-      }));
+  // Function to handle adding a new consumption marker
+  const handleAddConsumptionMarker = () => {
+    const newMarker = {
+      id: Date.now(),
+      lat: 39.908, // Near center
+      lng: 116.404,
+      type: "moment",
+      icon: ImageIcon,
+      content: "我在这里消费了",
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=200&fit=crop",
+      likes: 0,
+      comments: 0,
+      isNew: true // Flag for animation
     };
 
-    window.addEventListener('newMomentPosted', handleNewMoment as EventListener);
-    return () => {
-      window.removeEventListener('newMomentPosted', handleNewMoment as EventListener);
-    };
-  }, []);
+    setMarkerData((prev: any) => ({
+      ...prev,
+      moments: [newMarker, ...prev.moments]
+    }));
 
-  const tabs = [
-    { id: "encounter", label: "偶遇", subtitle: "身边的人" },
-    { id: "friends", label: "好友", subtitle: "我的好友" },
-    { id: "moments", label: "动态", subtitle: "看看新鲜事" },
-    { id: "meet", label: "相见", subtitle: "发现美好生活" },
-  ];
+    // Switch to moments tab to see the new marker
+    setActiveTab("moments");
+    
+    // Select the new marker to show the bubble immediately
+    setTimeout(() => {
+      setSelectedMoment(newMarker);
+      setIsNavVisible(false);
+    }, 500);
+  };
 
-  // Update markers when tab changes
+  // Update markers when activeTab or markerData changes
   useEffect(() => {
     if (!mapInstance) return;
 
-    // Custom Overlay Class - Defined inside useEffect to ensure google is available
-    class CustomOverlay extends google.maps.OverlayView {
-      private div: HTMLDivElement;
-      private position: google.maps.LatLng;
+    // Clear existing markers
+    markers.forEach(marker => marker.setMap(null));
+    
+    const newMarkers: google.maps.Marker[] = [];
+    const currentData = markerData[activeTab] || [];
 
-      constructor(position: google.maps.LatLng, content: HTMLElement) {
+    // Define CustomOverlay class inside useEffect to ensure google is defined
+    class CustomOverlay extends google.maps.OverlayView {
+      position: google.maps.LatLng;
+      content: HTMLElement;
+      data: any;
+
+      constructor(position: google.maps.LatLng, content: HTMLElement, data: any) {
         super();
         this.position = position;
-        this.div = content as HTMLDivElement;
-        this.div.style.position = 'absolute';
-        this.div.style.cursor = 'pointer';
+        this.content = content;
+        this.data = data;
       }
 
       onAdd() {
         const panes = this.getPanes();
         if (panes) {
-          panes.overlayMouseTarget.appendChild(this.div);
+          panes.overlayMouseTarget.appendChild(this.content);
         }
       }
 
       draw() {
-        const overlayProjection = this.getProjection();
-        if (!overlayProjection) return;
+        const projection = this.getProjection();
+        if (!projection) return;
 
-        const point = overlayProjection.fromLatLngToDivPixel(this.position);
+        const point = projection.fromLatLngToDivPixel(this.position);
         if (point) {
-          this.div.style.left = point.x + 'px';
-          this.div.style.top = point.y + 'px';
-          this.div.style.transform = 'translate(-50%, -100%)'; // Center bottom anchor
+          this.content.style.left = point.x + 'px';
+          this.content.style.top = point.y + 'px';
         }
       }
 
       onRemove() {
-        if (this.div.parentElement) {
-          this.div.parentElement.removeChild(this.div);
+        if (this.content.parentElement) {
+          this.content.parentElement.removeChild(this.content);
         }
       }
     }
 
-    // Clear existing overlays
-    overlays.forEach(overlay => overlay.setMap(null));
-    
-    const newOverlays: google.maps.OverlayView[] = [];
-    const currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
-
-    // Filter markers based on gender if in encounter tab
-    const filteredMarkers = activeTab === 'encounter' 
-      ? currentMarkers.filter((m: any) => {
-          if (genderFilter === 'all') return true;
-          // Handle both "female"/"male" and "Woman"/"Man" formats
-          const gender = m.gender?.toLowerCase();
-          if (genderFilter === 'female') return gender === 'female' || gender === 'woman';
-          if (genderFilter === 'male') return gender === 'male' || gender === 'man';
-          return true;
-        })
-      : currentMarkers;
-
-    filteredMarkers.forEach((marker: any) => {
+    currentData.forEach((item: any) => {
       const div = document.createElement('div');
+      div.style.position = 'absolute';
+      div.style.cursor = 'pointer';
+      div.style.transform = 'translate(-50%, -100%)'; // Center bottom anchor
       
-      if (marker.type === 'encounter' || marker.type === 'friend') {
-        const root = createRoot(div);
-        root.render(
-          <div 
-            className="relative group"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.nativeEvent.stopImmediatePropagation();
-              setSelectedFriend(marker);
-            }}
-          >
-            {/* Online Halo Effect */}
-            {marker.status === "online" && (
-              <div className="absolute -inset-2 bg-green-400/30 rounded-full animate-pulse z-0" />
-            )}
-
+      // Render React component to HTML string
+      const root = createRoot(div);
+      
+      // Determine marker style based on type
+      let markerContent;
+      
+      if (activeTab === 'encounter') {
+        markerContent = (
+          <div className="relative group">
+            {/* Avatar Container */}
             <div className={cn(
-              "relative z-10 w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              (marker.gender === "female" || marker.gender === "Woman") ? "!border-pink-500" : "!border-blue-500"
-            )}
-            style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
-              <img src={marker.avatar} className="w-full h-full object-cover" />
-            </div>
-            {/* Status Dot */}
-            <div className={cn(
-              "absolute bottom-0 right-0 z-20 w-3.5 h-3.5 rounded-full border-2 border-white",
-              marker.status === "online" ? "bg-green-500" : marker.status === "recent" ? "bg-yellow-500" : "bg-gray-400"
-            )} />
-          </div>
-        );
-      } else if (marker.type === 'moment') {
-        // Moment Marker - First Version Style (Large Image + Floating Stats)
-        const root = createRoot(div);
-        root.render(
-          <div 
-            className="relative group transition-transform hover:scale-105 active:scale-95"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.nativeEvent.stopImmediatePropagation();
-              setSelectedMoment(marker);
-            }}
-          >
-            {/* Main Image Card */}
-            <div className="w-32 h-24 bg-white rounded-2xl shadow-xl overflow-hidden border-[4px] border-white">
-              <img src={marker.image} className="w-full h-full object-cover" />
+              "w-12 h-12 rounded-full border-2 overflow-hidden shadow-lg transition-transform duration-300 group-hover:scale-110 relative z-10",
+              item.gender === 'female' ? 'border-pink-400' : 'border-blue-400',
+              "bg-white"
+            )}>
+              <img src={item.avatar} className="w-full h-full object-cover" alt="avatar" />
             </div>
             
-            {/* Floating Stats Capsule */}
-            <div className="absolute -bottom-2 -right-2 bg-white rounded-full px-2 py-1 shadow-md flex items-center gap-2 border border-slate-100">
-              <div className="flex items-center gap-1">
-                <Heart className="w-3 h-3 fill-red-500 text-red-500" />
-                <span className="text-[10px] font-bold text-slate-700">{marker.likes}</span>
+            {/* Status Dot */}
+            <div className={cn(
+              "absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white z-20",
+              item.status === 'online' ? 'bg-green-500' : 
+              item.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-400'
+            )} />
+            
+            {/* Info Bubble (Visible on Hover) */}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-30">
+              <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm text-xs font-medium text-slate-700">
+                {item.lastSeen}
               </div>
-              <div className="flex items-center gap-1">
-                <MessageCircle className="w-3 h-3 fill-blue-500 text-blue-500" />
-                <span className="text-[10px] font-bold text-slate-700">{marker.comments}</span>
-              </div>
+              <div className="w-2 h-2 bg-white/90 rotate-45 absolute -bottom-1 left-1/2 -translate-x-1/2"></div>
             </div>
+            
+            {/* Pulse Effect for Online Users */}
+            {item.status === 'online' && (
+              <div className="absolute inset-0 rounded-full bg-green-400 opacity-20 animate-ping z-0"></div>
+            )}
+          </div>
+        );
+      } else if (activeTab === 'friends') {
+        markerContent = (
+          <div className="relative group">
+            <div className="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-white transition-transform group-hover:scale-110">
+              <img src={item.avatar} className="w-full h-full object-cover" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full border border-white">
+              好友
+            </div>
+          </div>
+        );
+      } else if (activeTab === 'moments') {
+        markerContent = (
+          <div className={cn("relative group", item.isNew && "animate-bounce")}>
+            <div className="w-14 h-14 rounded-xl border-2 border-white shadow-lg overflow-hidden bg-white transition-transform group-hover:scale-105 relative">
+              <img src={item.image} className="w-full h-full object-cover" />
+              {item.isNew && (
+                <div className="absolute inset-0 bg-yellow-400/20 animate-pulse"></div>
+              )}
+            </div>
+            {item.isNew && (
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow-sm whitespace-nowrap animate-bounce">
+                刚刚发布
+              </div>
+            )}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white px-2 py-0.5 rounded-full shadow-sm border border-slate-100 flex items-center gap-1">
+              <Heart className="w-3 h-3 text-red-500 fill-red-500" />
+              <span className="text-[10px] font-bold text-slate-600">{item.likes}</span>
+            </div>
+          </div>
+        );
+      } else {
+        // Default marker
+        markerContent = (
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white">
+            <item.icon className="w-4 h-4" />
           </div>
         );
       }
 
+      root.render(markerContent);
+
+      // Create overlay
       const overlay = new CustomOverlay(
-        new google.maps.LatLng(marker.lat, marker.lng),
-        div
+        new google.maps.LatLng(item.lat, item.lng),
+        div,
+        item
       );
+      
       overlay.setMap(mapInstance);
-      newOverlays.push(overlay);
+
+      // Add click listener to the div
+      div.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent map click
+        console.log("Marker clicked:", item);
+        
+        if (activeTab === 'friends') {
+          setSelectedFriend(item);
+          setIsNavVisible(false);
+        } else if (activeTab === 'moments') {
+          setSelectedMoment(item);
+          setIsNavVisible(false);
+        } else if (activeTab === 'encounter') {
+          setSelectedFriend(item); // Reuse friend modal for encounter details
+          setIsNavVisible(false);
+        }
+      });
+
+      // Store overlay reference (using marker array for cleanup, though types mismatch slightly, we manage it manually)
+      // @ts-ignore
+      newMarkers.push(overlay);
     });
 
-    setOverlays(newOverlays);
+    setMarkers(newMarkers);
 
-    return () => {
-      newOverlays.forEach(overlay => overlay.setMap(null));
-    };
-  }, [mapInstance, activeTab, markerData, genderFilter]);
+  }, [activeTab, mapInstance, markerData]); // Re-run when markerData changes
 
   return (
     <Layout showNav={isNavVisible}>
-      <div className="relative w-full h-screen overflow-hidden bg-slate-50">
-        
-        {/* Top Navigation Bar - Auto Hide */}
-        <motion.div 
-          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-2 bg-white shadow-sm pointer-events-none"
-          animate={{ 
-            y: isNavVisible && activeTab !== 'meet' ? 0 : -100,
-            opacity: isNavVisible && activeTab !== 'meet' ? 1 : 0
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <div className="pointer-events-auto">
-            {/* Search Bar */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-10 bg-slate-100 rounded-full flex items-center px-4">
-                <Search className="w-4 h-4 text-slate-400 mr-2" />
-                <input 
-                  type="text"
-                  placeholder="搜索好友ID、套餐名称、商户名称"
-                  className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <button 
-                className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                onClick={() => setShowFriendList(true)}
-              >
-                <Users className="w-5 h-5 text-slate-600" />
-              </button>
-            </div>
+      <div className="relative h-screen w-full bg-slate-50">
+        {/* Map Container */}
+        <div className="absolute inset-0 z-0">
+          <MapView onMapReady={setMapInstance} />
+        </div>
 
-            {/* Tab Switcher */}
-            <div className="flex items-center justify-between px-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as TabType)}
-                  className="flex flex-col items-center gap-0.5 group"
-                >
-                  <span className={cn(
-                    "text-base font-bold transition-colors",
-                    activeTab === tab.id ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
-                  )}>
-                    {tab.label}
-                  </span>
-                  <span className={cn(
-                    "text-[10px] font-medium transition-colors",
-                    activeTab === tab.id ? "text-blue-500" : "text-slate-300"
-                  )}>
-                    {tab.subtitle}
-                  </span>
-                  {activeTab === tab.id && (
-                    <motion.div
-                      layoutId="activeTabIndicator"
-                      className="w-4 h-1 bg-blue-500 rounded-full mt-1"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-
-
-        {/* Friend List Popup */}
-        <AnimatePresence>
-          {showFriendList && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowFriendList(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+        {/* Top Search Bar & Tabs */}
+        <div className="absolute top-0 left-0 right-0 z-10 pt-safe px-4 pb-4 bg-gradient-to-b from-white/90 via-white/80 to-transparent backdrop-blur-[2px]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-200/60 flex items-center px-4">
+              <Search className="w-4 h-4 text-slate-400 mr-2" />
+              <input 
+                type="text"
+                placeholder="搜索好友ID、套餐名称、商户名称"
+                className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 placeholder:text-slate-400"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <motion.div
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed inset-y-0 right-0 z-50 w-3/4 max-w-sm bg-white shadow-2xl flex flex-col"
+            </div>
+            <button className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-200/60 flex items-center justify-center active:scale-95 transition-transform">
+              <Users className="w-5 h-5 text-slate-600" />
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex justify-between items-center px-2">
+            {[
+              { id: "encounter", label: "偶遇", sub: "身边的人" },
+              { id: "friends", label: "好友", sub: "我的好友" },
+              { id: "moments", label: "动态", sub: "看看新鲜事" },
+              { id: "meet", label: "相见", sub: "发现美好生活" }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as TabType)}
+                className="flex flex-col items-center gap-1 group"
               >
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-                  <h3 className="font-bold text-lg text-slate-900">好友列表</h3>
-                  <button onClick={() => setShowFriendList(false)} className="p-2 hover:bg-slate-100 rounded-full">
-                    <X className="w-5 h-5 text-slate-500" />
-                  </button>
+                <span className={cn(
+                  "text-base font-bold transition-colors",
+                  activeTab === tab.id ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
+                )}>
+                  {tab.label}
+                </span>
+                <span className="text-[10px] text-slate-400 scale-90 origin-top">{tab.sub}</span>
+                {activeTab === tab.id && (
+                  <motion.div 
+                    layoutId="activeTabIndicator"
+                    className="w-4 h-1 bg-blue-600 rounded-full mt-1"
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Side Actions */}
+        <div className="absolute top-40 right-4 z-10 flex flex-col gap-3">
+          <button 
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 active:scale-95 transition-transform"
+          >
+            <Filter className="w-5 h-5" />
+          </button>
+          <AnimatePresence>
+            {isFilterOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                className="absolute top-12 right-0 bg-white rounded-2xl shadow-xl p-3 w-32 flex flex-col gap-2 origin-top-right"
+              >
+                <button className="text-xs font-medium text-slate-600 py-2 px-3 hover:bg-slate-50 rounded-lg text-left">只看女生</button>
+                <button className="text-xs font-medium text-slate-600 py-2 px-3 hover:bg-slate-50 rounded-lg text-left">只看男生</button>
+                <button className="text-xs font-medium text-slate-600 py-2 px-3 hover:bg-slate-50 rounded-lg text-left">在线用户</button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          <button className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 active:scale-95 transition-transform">
+            <ChevronUp className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Meet Tab Content (Overlay) */}
+        <AnimatePresence>
+          {activeTab === "meet" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="absolute inset-0 z-20 bg-slate-50 flex flex-col pt-32 px-4 pb-24 overflow-y-auto"
+            >
+              {/* Scan Code Button (Top Priority) */}
+              <button 
+                onClick={() => setIsStoreMode(true)}
+                className="w-full bg-slate-900 text-white p-6 rounded-3xl shadow-xl active:scale-[0.98] transition-transform flex items-center justify-between group mb-8"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                    <ScanFace className="w-6 h-6" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-xl font-bold mb-1">扫码进店</h3>
+                    <p className="text-white/60 text-sm">扫描桌面二维码，开启相见之旅</p>
+                  </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain h-full touch-pan-y">
-                  {INITIAL_MARKERS.friends.map(friend => (
-                    <div key={friend.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer" onClick={() => {
-                      setShowFriendList(false);
-                      setSelectedFriend(friend);
-                    }}>
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-slate-900 group-hover:scale-110 transition-transform">
+                  <ArrowRight className="w-5 h-5" />
+                </div>
+              </button>
+
+              {/* Quick Actions Grid */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                  <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 mb-3">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 mb-1">附近好店</h4>
+                  <p className="text-xs text-slate-400">发现身边的高分店铺</p>
+                </div>
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                  <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center text-pink-500 mb-3">
+                    <Heart className="w-5 h-5" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 mb-1">约会圣地</h4>
+                  <p className="text-xs text-slate-400">浪漫氛围感餐厅推荐</p>
+                </div>
+              </div>
+
+              {/* Scenario Selection (Directly Shown) */}
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-slate-900 mb-4 px-1">场景推荐</h3>
+                <div className="grid grid-cols-4 gap-3">
+                  {SCENARIOS.map((scenario) => (
+                    <button
+                      key={scenario.id}
+                      className="flex flex-col items-center gap-2 group"
+                    >
                       <div className={cn(
-                        "w-12 h-12 rounded-full border-2 overflow-hidden",
-                        (friend.gender === "female" || friend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
+                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-active:scale-95 shadow-sm",
+                        scenario.bg,
+                        scenario.color
                       )}>
-                        <img src={friend.avatar} alt="Friend" className="w-full h-full object-cover" />
+                        <scenario.icon className="w-6 h-6" />
                       </div>
-                      <div>
-                        <div className="font-bold text-slate-900">用户 {friend.id}</div>
-                        <div className="text-xs text-slate-500 flex items-center gap-1">
-                          <div className={cn("w-2 h-2 rounded-full", friend.status === "online" ? "bg-green-500" : "bg-gray-400")} />
-                          {friend.status === "online" ? "在线" : friend.status === "recent" ? "1小时内在线" : "离线"}
+                      <span className="text-xs font-medium text-slate-600">{scenario.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Popular Plans */}
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-4 px-1">热门方案</h3>
+                <div className="space-y-4">
+                  {PLANS.date.map((plan) => (
+                    <div key={plan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4">
+                      <div className="w-24 h-24 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0">
+                        <img src={plan.image} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 py-1">
+                        <h4 className="font-bold text-slate-900 mb-2">{plan.title}</h4>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {plan.tags.map(tag => (
+                            <span key={tag} className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-500 rounded-full">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          {plan.steps.map((step, i) => (
+                            <div key={i} className="flex items-center">
+                              <span>{step.label}</span>
+                              {i < plan.steps.length - 1 && <ChevronRight className="w-3 h-3 mx-1" />}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
                   ))}
-                  {/* Mock more friends with mixed genders */}
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(i => {
-                    const isFemale = i % 2 === 0;
-                    return (
-                      <div key={`mock-${i}`} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer">
-                        <div className={cn(
-                          "w-12 h-12 rounded-full border-2 overflow-hidden bg-slate-100",
-                          isFemale ? "border-pink-500" : "border-blue-500"
-                        )}>
-                          <img 
-                            src={isFemale
-                              ? `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&q=80&id=${i}` 
-                              : `https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&q=80&id=${i}`
-                            } 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-900">好友 {i}</div>
-                          <div className="text-xs text-slate-500">离线</div>
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
-              </motion.div>
-            </>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Filter Modal */}
+        {/* Store Mode Overlay */}
         <AnimatePresence>
-          {showFilterModal && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowFilterModal(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+          {isStoreMode && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-0 z-50 bg-white"
+            >
+              <StoreMode 
+                onExit={(targetTab) => {
+                  setIsStoreMode(false);
+                  if (targetTab === "encounter") {
+                    // Trigger the consumption marker logic
+                    handleAddConsumptionMarker();
+                  } else if (targetTab === "moments") {
+                    setActiveTab("moments");
+                  }
+                }} 
               />
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-3xl p-6 pb-safe max-h-[85vh] overflow-y-auto flex flex-col"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold text-slate-900">筛选</h3>
-                  <button onClick={() => setShowFilterModal(false)} className="p-2 hover:bg-slate-100 rounded-full">
-                    <X className="w-5 h-5 text-slate-500" />
-                  </button>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Gender Filter */}
-                  <div>
-                    <label className="text-sm font-bold text-slate-900 mb-3 block">性别</label>
-                    <div className="flex gap-3">
-                      <button 
-                        onClick={() => setGenderFilter("all")}
-                        className={cn(
-                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all",
-                          genderFilter === "all" ? "bg-slate-900 text-white shadow-lg" : "bg-slate-100 text-slate-600"
-                        )}
-                      >
-                        全部
-                      </button>
-                      <button 
-                        onClick={() => setGenderFilter("male")}
-                        className={cn(
-                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1 relative",
-                          genderFilter === "male" ? "bg-blue-500 text-white shadow-lg shadow-blue-200" : "bg-slate-100 text-slate-600"
-                        )}
-                      >
-                        <span className="text-lg leading-none flex items-center justify-center h-full absolute left-4 top-0 bottom-0">♂</span> 
-                        <span>男生</span>
-                      </button>
-                      <button 
-                        onClick={() => setGenderFilter("female")}
-                        className={cn(
-                          "flex-1 py-3 rounded-xl font-medium text-sm transition-all flex items-center justify-center gap-1 relative",
-                          genderFilter === "female" ? "bg-pink-500 text-white shadow-lg shadow-pink-200" : "bg-slate-100 text-slate-600"
-                        )}
-                      >
-                        <span className="text-lg leading-none flex items-center justify-center h-full absolute left-4 top-0 bottom-0">♀</span> 
-                        <span>女生</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Age Filter */}
-                  <div>
-                    <label className="text-sm font-bold text-slate-900 mb-3 block">年龄</label>
-                    <div className="flex gap-3">
-                      {["18-22", "23-26", "27-35", "35+"].map(age => (
-                        <button 
-                          key={age} 
-                          onClick={() => setAgeFilter(age === ageFilter ? null : age)}
-                          className={cn(
-                            "flex-1 py-2 rounded-lg text-xs font-medium transition-colors",
-                            age === ageFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                          )}
-                        >
-                          {age}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Zodiac Filter */}
-                  <div>
-                    <label className="text-sm font-bold text-slate-900 mb-3 block">星座</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"].map(zodiac => (
-                        <button 
-                          key={zodiac} 
-                          onClick={() => setZodiacFilter(zodiac === zodiacFilter ? null : zodiac)}
-                          className={cn(
-                            "py-2 rounded-lg text-xs font-medium transition-colors",
-                            zodiac === zodiacFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                          )}
-                        >
-                          {zodiac}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-8 pt-4 border-t border-slate-100 sticky bottom-0 bg-white pb-4">
-                  <button 
-                    onClick={() => setShowFilterModal(false)}
-                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform"
-                  >
-                    确认
-                  </button>
-                </div>
-              </motion.div>
-            </>
+            </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Map View */}
-        <MapView 
-          className="w-full h-full"
-          onMapReady={(map) => {
-            setMapInstance(map);
-          }}
-        />
-
-        {/* Filter Button (Floating) - Only show on Encounter tab */}
-        {activeTab === "encounter" && (
-          <div className="absolute top-32 right-4 z-10 flex flex-col gap-3">
-            <motion.button
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900 border border-slate-100"
-              onClick={() => setShowFilterModal(true)}
-            >
-              <Filter className="w-5 h-5" />
-            </motion.button>
-
-            <motion.button
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-900 border border-slate-100"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.nativeEvent.stopImmediatePropagation();
-                
-                // Update timestamp lock
-                lastToggleTimeRef.current = Date.now();
-
-                setIsNavVisible(prev => !prev);
-              }}
-              onMouseDown={(e) => {
-                // Aggressive blocking on mouse down
-                e.preventDefault();
-                e.stopPropagation();
-                e.nativeEvent.stopImmediatePropagation();
-                lastToggleTimeRef.current = Date.now();
-              }}
-              onTouchStart={(e) => {
-                // Aggressive blocking on touch start
-                e.stopPropagation();
-                e.nativeEvent.stopImmediatePropagation();
-                lastToggleTimeRef.current = Date.now();
-              }}
-              onPointerDown={(e) => {
-                // Aggressive blocking on pointer down (covers both mouse and touch)
-                e.stopPropagation();
-                e.nativeEvent.stopImmediatePropagation();
-                lastToggleTimeRef.current = Date.now();
-              }}
-            >
-              {isNavVisible ? (
-                <ChevronUp className="w-5 h-5" />
-              ) : (
-                <ChevronDown className="w-5 h-5" />
-              )}
-            </motion.button>
-          </div>
-        )}
-
-        {/* Detail Modals */}
+        {/* Friend Detail Modal */}
         <AnimatePresence>
           {selectedFriend && (
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-3xl shadow-2xl pb-safe"
-              drag="y"
-              dragConstraints={{ top: 0, bottom: 0 }}
-              onDragEnd={(_, info) => {
-                if (info.offset.y > 100) setSelectedFriend(null);
-              }}
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0, y: "100%" }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-safe"
+              style={{ maxHeight: "85vh" }}
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
-              <div className="px-6 pb-8">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className={cn(
-                    "w-20 h-20 rounded-full border-4 overflow-hidden shadow-lg",
-                    (selectedFriend.gender === "female" || selectedFriend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
-                  )}>
-                    <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 pt-1">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-bold text-slate-900">用户 {selectedFriend.id}</h2>
+              
+              <div className="px-6 pb-8 overflow-y-auto max-h-[calc(85vh-40px)]">
+                {/* Header Info */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex gap-4">
+                    <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden relative">
+                      <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
                       <div className={cn(
-                        "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5",
-                        selectedFriend.status === "online" ? "bg-green-100 text-green-700" : 
-                        selectedFriend.status === "recent" ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-600"
-                      )}>
-                        <div className={cn("w-2 h-2 rounded-full", 
-                          selectedFriend.status === "online" ? "bg-green-500" : 
-                          selectedFriend.status === "recent" ? "bg-yellow-500" : "bg-slate-400"
-                        )} />
-                        {selectedFriend.status === "online" ? "在线" : selectedFriend.status === "recent" ? "15分钟前" : "离线"}
+                        "absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white",
+                        selectedFriend.status === 'online' ? 'bg-green-500' : 'bg-slate-300'
+                      )} />
+                    </div>
+                    <div className="pt-2">
+                      <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        Alex
+                        <span className="px-2 py-0.5 bg-blue-100 text-blue-600 text-xs rounded-full font-bold">Lv.4</span>
+                      </h2>
+                      <p className="text-slate-400 text-sm mt-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> 500m · 刚刚活跃
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => { setSelectedFriend(null); setIsNavVisible(true); }}
+                    className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-2 mb-8">
+                  {["摄影控", "咖啡重度患者", "夜猫子", "ENFP"].map(tag => (
+                    <span key={tag} className="px-3 py-1.5 bg-slate-50 text-slate-600 text-xs rounded-full font-medium">
+                      # {tag}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Recent Moments */}
+                <div className="mb-8">
+                  <div className="flex justify-between items-end mb-4">
+                    <h3 className="font-bold text-slate-900">最近动态</h3>
+                    <button className="text-xs text-slate-400 flex items-center">
+                      全部 <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="w-32 h-40 bg-slate-100 rounded-xl flex-shrink-0 overflow-hidden relative">
+                        <img 
+                          src={`https://images.unsplash.com/photo-${1510000000000 + i}?w=200&h=300&fit=crop`} 
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                    </div>
-                    <p className="text-slate-500 mt-1">
-                      {selectedFriend.status === "online" ? "距离 0.5km" : "离线"}
-                    </p>
-                    <div className="flex gap-2 mt-3">
-                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">双子座</span>
-                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">摄影</span>
-                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">咖啡</span>
-                    </div>
+                    ))}
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    className="py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg active:scale-95 transition-transform"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Add interaction logic here
-                      console.log("Say Hi clicked");
-                    }}
-                  >
-                    打招呼
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-4">
+                  <button className="py-3.5 bg-slate-100 text-slate-900 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                    <User className="w-5 h-5" />
+                    加好友
                   </button>
-                  <button 
-                    className="py-3 rounded-xl bg-slate-100 text-slate-900 font-bold active:scale-95 transition-transform"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Add navigation logic here
-                      console.log("View Profile clicked");
-                    }}
-                  >
-                    查看主页
+                  <button className="py-3.5 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-transform">
+                    <MessageCircle className="w-5 h-5" />
+                    打招呼
                   </button>
                 </div>
               </div>
@@ -890,108 +794,15 @@ export default function Home() {
           )}
         </AnimatePresence>
 
+        {/* Moment Detail Modal */}
         <AnimatePresence>
           {selectedMoment && (
             <MomentDetail 
               moment={selectedMoment} 
-              onClose={() => setSelectedMoment(null)} 
+              onClose={() => { setSelectedMoment(null); setIsNavVisible(true); }} 
             />
           )}
         </AnimatePresence>
-
-        {/* Meet Page Overlay */}
-        <AnimatePresence>
-          {activeTab === "meet" && (
-            <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={cn(
-                "absolute inset-0 bg-slate-50 flex flex-col",
-                showStoreMode ? "z-[100]" : "z-20"
-              )}
-            >
-              {showStoreMode ? (
-                <StoreMode onExit={(targetTab) => {
-                  setShowStoreMode(false);
-                  if (targetTab) {
-                    setActiveTab(targetTab as TabType);
-                  }
-                }} />
-              ) : (
-                <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14 relative">
-                  {/* Back Button */}
-                  <button 
-                    onClick={() => setActiveTab("encounter")}
-                    className="absolute top-4 left-4 p-2 bg-white shadow-sm border border-slate-100 rounded-full text-slate-900 z-10 active:scale-95 transition-transform"
-                  >
-                    <ArrowLeft className="w-6 h-6" />
-                  </button>
-
-                  <div className="mb-6 pt-12">
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2">相见</h2>
-                    <p className="text-slate-500 mb-6">发现美好生活，开启社交之旅</p>
-                    
-                    {/* Scan Code Button - Moved to Top */}
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl mb-8">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-bold text-lg">扫码进店</h3>
-                          <p className="text-slate-400 text-sm">已在店内？直接扫码</p>
-                        </div>
-                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                          <Camera className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => setShowStoreMode(true)}
-                        className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Camera className="w-5 h-5" />
-                        模拟扫码
-                      </button>
-                    </div>
-
-                    {/* Hidden Scenario Selection - Now inside StoreMode */}
-                    {/* 
-                    <div className="grid grid-cols-2 gap-4">
-                      {SCENARIOS.map((scenario) => {
-                        const Icon = scenario.icon;
-                        return (
-                          <button
-                            key={scenario.id}
-                            onClick={() => {
-                              setActiveScenario(scenario.id);
-                              setShowStoreMode(true);
-                            }}
-                            className={cn(
-                              "relative p-4 rounded-2xl text-left transition-all active:scale-95 border-2",
-                              activeScenario === scenario.id 
-                                ? "bg-white border-blue-500 shadow-lg shadow-blue-100" 
-                                : "bg-white border-transparent shadow-sm hover:shadow-md"
-                            )}
-                          >
-                            <div className={cn(
-                              "w-12 h-12 rounded-xl flex items-center justify-center mb-3",
-                              scenario.bg
-                            )}>
-                              <Icon className={cn("w-6 h-6", scenario.color)} />
-                            </div>
-                            <div className="font-bold text-slate-900 text-lg mb-1">{scenario.label}</div>
-                            <div className="text-xs text-slate-400">点击进入</div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    */}
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
       </div>
     </Layout>
   );
