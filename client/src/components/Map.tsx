@@ -94,18 +94,13 @@ const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 
 function loadMapScript() {
   return new Promise(resolve => {
-    if (window.google && window.google.maps) {
-      resolve(null);
-      return;
-    }
-    
     const script = document.createElement("script");
     script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
     script.async = true;
     script.crossOrigin = "anonymous";
     script.onload = () => {
       resolve(null);
-      // Do not remove script tag as it might be needed by other components or re-renders
+      script.remove(); // Clean up immediately
     };
     script.onerror = () => {
       console.error("Failed to load Google Maps script");
@@ -119,16 +114,13 @@ interface MapViewProps {
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
   onMapReady?: (map: google.maps.Map) => void;
-  children?: React.ReactNode;
-  markers?: any[]; // Added to allow passing markers for dependency tracking if needed, though not used internally
 }
 
-export default function MapView({
+export function MapView({
   className,
   initialCenter = { lat: 37.7749, lng: -122.4194 },
   initialZoom = 12,
   onMapReady,
-  children,
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
@@ -139,23 +131,16 @@ export default function MapView({
       console.error("Map container not found");
       return;
     }
-    if (window.google && window.google.maps) {
-      map.current = new window.google.maps.Map(mapContainer.current, {
-        zoom: initialZoom,
-        center: initialCenter,
-        mapTypeControl: false,
-        fullscreenControl: false,
-        zoomControl: false,
-        streetViewControl: false,
-        scaleControl: false,
-        rotateControl: false,
-        panControl: false,
-        mapId: "DEMO_MAP_ID",
-        gestureHandling: "greedy", // Enable single-finger panning
-        clickableIcons: false, // Disable default POI clicks
-      });
-    }
-    if (onMapReady && map.current) {
+    map.current = new window.google.maps.Map(mapContainer.current, {
+      zoom: initialZoom,
+      center: initialCenter,
+      mapTypeControl: true,
+      fullscreenControl: true,
+      zoomControl: true,
+      streetViewControl: true,
+      mapId: "DEMO_MAP_ID",
+    });
+    if (onMapReady) {
       onMapReady(map.current);
     }
   });
@@ -165,8 +150,6 @@ export default function MapView({
   }, [init]);
 
   return (
-    <div ref={mapContainer} className={cn("w-full h-full min-h-screen absolute inset-0", className)}>
-      {children}
-    </div>
+    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
   );
 }
