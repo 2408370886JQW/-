@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { MapPin, Users, Plus, MessageSquare, User, X, Image as ImageIcon, Video, Smile, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, Dispatch, SetStateAction } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -16,15 +16,8 @@ const NEARBY_LOCATIONS = [
   "798艺术区"
 ];
 
-type TabType = "encounter" | "friends" | "moments" | "meet";
-
-interface BottomNavProps {
-  activeTab?: TabType;
-  onTabChange?: Dispatch<SetStateAction<TabType>>;
-}
-
-export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
-  const [location, setLocation] = useLocation();
+export default function BottomNav() {
+  const [location] = useLocation();
   const [isPublishOpen, setIsPublishOpen] = useState(false);
   
   // State for media preview
@@ -274,63 +267,60 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="absolute bottom-20 left-4 right-4 bg-white rounded-xl shadow-xl border border-slate-100 p-4 z-20"
+                    className="absolute bottom-20 left-4 right-4 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-20"
                   >
-                    <h4 className="text-sm font-bold text-slate-900 mb-3">选择位置</h4>
-                    <div className="space-y-2">
-                      {NEARBY_LOCATIONS.map(loc => (
-                        <button
-                          key={loc}
-                          onClick={() => {
-                            setSelectedLocation(loc);
-                            setShowLocationPicker(false);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 text-sm text-slate-600 flex items-center gap-2"
-                        >
-                          <MapPin className="w-4 h-4 text-slate-400" />
-                          {loc}
-                        </button>
-                      ))}
-                    </div>
+                    <div className="text-xs font-bold text-slate-400 px-3 py-2">附近地点</div>
+                    {NEARBY_LOCATIONS.map(loc => (
+                      <button
+                        key={loc}
+                        onClick={() => {
+                          setSelectedLocation(loc);
+                          setShowLocationPicker(false);
+                        }}
+                        className="w-full text-left px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <MapPin className="w-4 h-4 text-slate-400" />
+                        {loc}
+                      </button>
+                    ))}
                   </motion.div>
                 )}
               </AnimatePresence>
 
               {/* Toolbar */}
-              <div className="border-t border-slate-100 pt-4 flex items-center gap-6">
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-slate-400 hover:text-blue-500 transition-colors"
-                >
-                  <ImageIcon className="w-6 h-6" />
-                </button>
-                <button 
-                  onClick={() => {
-                    setShowLocationPicker(!showLocationPicker);
-                    setShowHashtagInput(false);
-                  }}
-                  className={cn(
-                    "transition-colors",
-                    showLocationPicker || selectedLocation ? "text-blue-500" : "text-slate-400 hover:text-blue-500"
-                  )}
-                >
-                  <MapPin className="w-6 h-6" />
-                </button>
-                <button 
-                  onClick={() => {
-                    setShowHashtagInput(!showHashtagInput);
-                    setShowLocationPicker(false);
-                  }}
-                  className={cn(
-                    "text-lg font-bold transition-colors",
-                    showHashtagInput || hashtags.length > 0 ? "text-pink-500" : "text-slate-400 hover:text-pink-500"
-                  )}
-                >
-                  #
-                </button>
-                <button className="text-slate-400 hover:text-yellow-500 transition-colors">
-                  <Smile className="w-6 h-6" />
-                </button>
+              <div className="border-t border-slate-100 pt-4 mt-4">
+                <div className="flex items-center gap-6">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 text-slate-600"
+                  >
+                    <ImageIcon className="w-6 h-6 text-green-500" />
+                    <span className="text-sm font-medium">图片</span>
+                  </button>
+                  <button 
+                    onClick={() => setShowHashtagInput(!showHashtagInput)}
+                    className={cn(
+                      "flex items-center gap-2 transition-colors",
+                      hashtags.length > 0 ? "text-pink-600" : "text-slate-600"
+                    )}
+                  >
+                    <span className="text-lg font-bold text-pink-500">#</span>
+                    <span className="text-sm font-medium">话题</span>
+                  </button>
+                  <button 
+                    onClick={() => setShowLocationPicker(!showLocationPicker)}
+                    className={cn(
+                      "flex items-center gap-2 transition-colors",
+                      selectedLocation ? "text-blue-600" : "text-slate-600"
+                    )}
+                  >
+                    <MapPin className={cn("w-6 h-6", selectedLocation ? "text-blue-600" : "text-blue-500")} />
+                    <span className="text-sm font-medium">{selectedLocation ? "已定位" : "所在位置"}</span>
+                  </button>
+                  <button className="flex items-center gap-2 text-slate-600 ml-auto">
+                    <Smile className="w-6 h-6 text-amber-500" />
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -338,73 +328,103 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
       </AnimatePresence>
 
       {/* Bottom Navigation Bar */}
-      <div className="bg-white/90 backdrop-blur-xl border-t border-slate-200/60 pb-safe pt-2 px-6 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
-        <div className="flex justify-between items-center h-14">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-slate-100 pb-safe rounded-t-[32px] shadow-[0_-4px_30px_rgba(0,0,0,0.05)]">
+        <div className="flex justify-around items-end h-20 px-2 max-w-md mx-auto relative">
           {navItems.map((item) => {
-            const isActive = item.isMap 
-              ? location === "/" && activeTab === "encounter"
-              : location === item.path;
-              
+            const isActive = location === item.path;
+            
             if (item.isSpecial) {
               return (
-                <button
-                  key={item.path}
-                  onClick={togglePublish}
-                  className="relative -top-5"
-                >
-                  <div className="w-14 h-14 bg-slate-900 rounded-full shadow-lg shadow-slate-900/20 flex items-center justify-center text-white active:scale-95 transition-transform">
-                    <item.icon className="w-6 h-6" />
+                <div key={item.path} onClick={togglePublish}>
+                  <div className="relative -top-8 flex flex-col items-center justify-center cursor-pointer group">
+                    <motion.div 
+                      animate={isPublishOpen ? { rotate: 45, scale: 1.1 } : { rotate: 0, scale: 1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center shadow-xl shadow-slate-900/20 border-4 border-white mb-1"
+                    >
+                      <Plus className="w-8 h-8 text-white" strokeWidth={3} />
+                    </motion.div>
+                    <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 transition-colors">
+                      发布动态
+                    </span>
                   </div>
-                </button>
+                </div>
               );
             }
 
-            // Handle "Circles" tab specifically to switch to Friends tab in Home
-            if (item.path === "/circles") {
+            // Special handling for Map icon with animation
+            if (item.isMap) {
               return (
-                <button
-                  key={item.path}
-                  onClick={() => {
-                    if (onTabChange) {
-                      onTabChange("friends");
-                      setLocation("/");
-                    } else {
-                      setLocation("/");
-                    }
-                  }}
-                  className="flex flex-col items-center gap-1 w-12"
-                >
-                  <div className={cn(
-                    "transition-colors duration-300",
-                    activeTab === "friends" ? item.activeColor : "text-slate-300"
-                  )}>
-                    <item.icon className={cn("w-6 h-6", activeTab === "friends" && "fill-current")} />
+                <Link key={item.path} href={item.path}>
+                  <div className="flex flex-col items-center justify-center w-16 h-full pb-3 cursor-pointer relative">
+                    {/* Animated Background Effect when Active */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-blue-100/50 blur-md -z-10"
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      />
+                    )}
+                    
+                    <motion.div
+                      animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
+                      whileTap={{ scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      className="flex flex-col items-center gap-1"
+                    >
+                      <item.icon 
+                        className={cn(
+                          "w-6 h-6 transition-colors duration-300",
+                          isActive ? "text-blue-600 fill-blue-600" : "text-slate-400"
+                        )} 
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                      <span className={cn(
+                        "text-[10px] font-medium transition-colors duration-300",
+                        isActive ? "text-blue-600" : "text-slate-400"
+                      )}>
+                        {item.label}
+                      </span>
+                    </motion.div>
                   </div>
-                  <span className={cn(
-                    "text-[10px] font-medium transition-colors duration-300",
-                    activeTab === "friends" ? "text-slate-900" : "text-slate-400"
-                  )}>
-                    {item.label}
-                  </span>
-                </button>
+                </Link>
               );
             }
 
             return (
               <Link key={item.path} href={item.path}>
-                <div className="flex flex-col items-center gap-1 w-12 cursor-pointer">
-                  <div className={cn(
-                    "transition-colors duration-300",
-                    isActive ? item.activeColor : "text-slate-300"
-                  )}>
-                    <item.icon className={cn("w-6 h-6", isActive && "fill-current")} />
-                  </div>
-                  <span className={cn(
-                    "text-[10px] font-medium transition-colors duration-300",
-                    isActive ? "text-slate-900" : "text-slate-400"
-                  )}>
-                    {item.label}
-                  </span>
+                <div className="flex flex-col items-center justify-center w-16 h-full pb-3 cursor-pointer relative">
+                  {isActive && (
+                    <motion.div
+                      className={cn(
+                        "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full blur-md -z-10 opacity-20",
+                        item.activeColor?.replace("text-", "bg-").replace("500", "100")
+                      )}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    />
+                  )}
+
+                  <motion.div
+                    animate={isActive ? { y: -4, scale: 1.1 } : { y: 0, scale: 1 }}
+                    whileTap={{ scale: 0.8 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <item.icon 
+                      className={cn(
+                        "w-6 h-6 transition-colors duration-300",
+                        isActive ? item.activeColor : "text-slate-400"
+                      )} 
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    <span className={cn(
+                      "text-[10px] font-medium transition-colors duration-300",
+                      isActive ? item.activeColor : "text-slate-400"
+                    )}>
+                      {item.label}
+                    </span>
+                  </motion.div>
                 </div>
               </Link>
             );

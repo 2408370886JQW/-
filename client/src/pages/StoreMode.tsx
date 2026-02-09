@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, MapPin, ShoppingBag, Users, CheckCircle, Share2, Camera, ScanFace, Fingerprint, Wallet, QrCode, Heart, Beer, Cake, Briefcase, Coffee, Moon, MessageCircle } from "lucide-react";
+import { ArrowRight, MapPin, ShoppingBag, Users, CheckCircle, Share2, Camera, ScanFace, Fingerprint, Wallet, QrCode, Heart, Beer, Cake, Briefcase, Coffee, Moon } from "lucide-react";
 import { MOCK_STORE, RELATIONSHIP_OPTIONS, SCENARIO_ADVICE, STORE_PACKAGES } from "@/data/mockStoreData";
 import StoreHeader from "@/components/StoreHeader";
 import RelationshipModal from "@/components/RelationshipModal";
 import { cn } from "@/lib/utils";
-import confetti from "canvas-confetti";
 
 // Types for Flow State
 type FlowStep = "entry" | "login" | "home" | "scenario" | "package" | "payment" | "success";
@@ -46,16 +45,7 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         
         const processTimer = setTimeout(() => {
           setPaymentState("success");
-          setTimeout(() => {
-            setStep("success");
-            // Trigger confetti when entering success state
-            confetti({
-              particleCount: 100,
-              spread: 70,
-              origin: { y: 0.6 },
-              colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
-            });
-          }, 500);
+          setTimeout(() => setStep("success"), 500);
         }, 1500);
         
         return () => clearTimeout(processTimer);
@@ -279,7 +269,6 @@ export default function StoreMode({ onExit }: StoreModeProps) {
           <button 
             onClick={() => setStep("payment")}
             className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
-            style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
           >
             <Wallet className="w-5 h-5" />
             立即支付 {selectedPackage.price}
@@ -289,10 +278,14 @@ export default function StoreMode({ onExit }: StoreModeProps) {
     );
   }
 
-  // 6. Payment & Success (Restored to original style)
+  // 6. Payment & Success (Same as before)
   if (step === "payment" || step === "success") {
     return (
-      <div className="min-h-screen bg-white text-slate-900 flex flex-col items-center justify-center p-8 relative overflow-hidden font-serif">
+      <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-8 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 via-slate-900/80 to-slate-900"></div>
+
         <AnimatePresence mode="wait">
           {step === "payment" ? (
             <motion.div 
@@ -303,24 +296,24 @@ export default function StoreMode({ onExit }: StoreModeProps) {
               className="relative z-10 w-full max-w-sm text-center"
             >
               <div className="mb-12 relative">
-                <div className="w-48 h-48 mx-auto bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100 relative overflow-hidden shadow-inner">
+                <div className="w-32 h-32 mx-auto bg-white/10 rounded-3xl flex items-center justify-center backdrop-blur-md border border-white/20 relative overflow-hidden">
                   {paymentState === "scanning" && (
                     <motion.div 
-                      className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/10 to-transparent"
+                      className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
                       animate={{ y: ["-100%", "100%"] }}
                       transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
                     />
                   )}
                   {paymentState === "processing" ? (
                     <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                      <ScanFace className="w-16 h-16 text-blue-500" strokeWidth={1.5} />
+                      <ScanFace className="w-12 h-12 text-blue-400" />
                     </motion.div>
                   ) : (
-                    <QrCode className="w-20 h-20 text-slate-300" strokeWidth={1} />
+                    <QrCode className="w-12 h-12 text-white" />
                   )}
                 </div>
-                <div className="mt-8 space-y-3">
-                  <h2 className="text-2xl font-bold text-slate-900">
+                <div className="mt-6 space-y-2">
+                  <h2 className="text-2xl font-bold">
                     {paymentState === "scanning" ? "正在识别..." : "支付处理中..."}
                   </h2>
                   <p className="text-slate-400 text-sm">请保持手机靠近感应区</p>
@@ -338,38 +331,27 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", damping: 12 }}
-                className="w-24 h-24 mx-auto bg-green-50 rounded-full flex items-center justify-center mb-6"
+                className="w-24 h-24 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-8 shadow-2xl shadow-green-500/30"
               >
-                <CheckCircle className="w-12 h-12 text-green-500" strokeWidth={2} />
+                <CheckCircle className="w-12 h-12 text-white" strokeWidth={3} />
               </motion.div>
               
-              <h2 className="text-3xl font-bold mb-2 text-slate-900">缘分已在路上</h2>
-              
-              {/* QR Code Section */}
-              <div className="my-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 inline-block shadow-sm">
-                <QrCode className="w-32 h-32 text-slate-800 mx-auto" strokeWidth={1} />
-                <p className="text-xs text-slate-400 mt-3 font-mono tracking-widest">NO.839201</p>
-              </div>
+              <h2 className="text-3xl font-bold mb-2">支付成功</h2>
+              <p className="text-slate-400 mb-12">订单已确认，祝您用餐愉快</p>
 
-              <p className="text-slate-500 mb-10 text-sm leading-relaxed max-w-[260px] mx-auto">
-                凭此码到店消费<br/>
-                此刻，也许正有人在附近的动态里等你...
-              </p>
-
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <button 
                   onClick={handleGoEncounter}
-                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
                   <Users className="w-5 h-5" />
-                  去偶遇吧
+                  去偶遇
                 </button>
                 <button 
-                  onClick={() => onExit("moments")}
-                  className="w-full py-4 bg-white text-slate-600 rounded-2xl font-bold text-lg active:scale-95 transition-transform border border-slate-200 hover:bg-slate-50 flex items-center justify-center gap-2"
+                  onClick={() => onExit()}
+                  className="w-full py-4 bg-white/10 text-white rounded-2xl font-bold text-lg active:scale-95 transition-transform"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  看看大家都在干嘛
+                  返回首页
                 </button>
               </div>
             </motion.div>
