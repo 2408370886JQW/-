@@ -1,502 +1,500 @@
-import { useState, useEffect, useRef } from "react";
-import Layout from "@/components/Layout";
-import StoreMode from "./StoreMode";
-import MomentDetail from "@/components/MomentDetail";
-import { Input } from "@/components/ui/input";
-import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronUp, ChevronDown, ScanFace } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { 
+  MapPin, 
+  Search, 
+  Bell, 
+  User, 
+  Filter, 
+  Navigation, 
+  Heart, 
+  MessageCircle, 
+  Users, 
+  Clock, 
+  Star, 
+  ChevronRight, 
+  Zap, 
+  ScanFace, 
+  ArrowRight, 
+  ChevronUp, 
+  X, 
+  MoreHorizontal, 
+  Share2, 
+  ThumbsUp, 
+  MessageSquare,
+  Coffee,
+  Utensils,
+  Wine,
+  Music,
+  Camera,
+  BookOpen,
+  Briefcase,
+  Gamepad2,
+
+  Sparkles
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
-import { Link } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
-import { createRoot } from "react-dom/client";
+import Layout from "@/components/Layout";
+import StoreMode from "./StoreMode";
 
-// Mock data for map markers
-const INITIAL_MARKERS = {
-  encounter: [
-    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
-    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "15分钟前在线" },
-    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male", lastSeen: "在线" },
-    { id: 12, lat: 39.912, lng: 116.402, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "5小时前在线" },
-  ],
-  friends: [
-    { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male", lastSeen: "在线" },
-    { id: 5, lat: 39.912, lng: 116.415, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", status: "offline", gender: "female", lastSeen: "离线" },
-    { id: 9, lat: 39.910, lng: 116.400, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
-    { id: 10, lat: 39.905, lng: 116.410, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "10分钟前在线" },
-    { id: 11, lat: 39.915, lng: 116.395, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "离线" },
-  ],
-  moments: [
-    { 
-      id: 5, 
-      lat: 39.902, 
-      lng: 116.395, 
-      type: "moment", 
-      icon: ImageIcon,
-      content: "今天天气真好！",
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop",
-      likes: 24,
-      comments: 5
-    },
-    { 
-      id: 6, 
-      lat: 39.918, 
-      lng: 116.408, 
-      type: "moment", 
-      icon: ImageIcon,
-      content: "打卡网红咖啡店",
-      image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop",
-      likes: 156,
-      comments: 32
-    },
-    { 
-      id: 13, 
-      lat: 39.910, 
-      lng: 116.400, 
-      type: "moment", 
-      icon: ImageIcon,
-      content: "周末的快乐时光",
-      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=200&fit=crop",
-      likes: 45,
-      comments: 12
-    },
-    { 
-      id: 14, 
-      lat: 39.905, 
-      lng: 116.415, 
-      type: "moment", 
-      icon: ImageIcon,
-      content: "偶遇一只可爱的小猫",
-      image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop",
-      likes: 89,
-      comments: 21
-    },
-  ],
-  meet: [ 
-    { id: 7, lat: 39.906, lng: 116.412, type: "meet", icon: ShoppingBag },
-    { id: 8, lat: 39.910, lng: 116.402, type: "meet", icon: ShoppingBag },
-  ],
+// Types
+type TabType = "encounter" | "friends" | "moments" | "meet";
+type UserStatus = "online" | "offline" | "busy";
 
-};
+interface Friend {
+  id: string;
+  name: string;
+  avatar: string;
+  status: UserStatus;
+  lastSeen?: string;
+  distance?: string;
+  location?: { lat: number; lng: number };
+  tags?: string[];
+  bio?: string;
+  photos?: string[];
+  age?: number;
+  gender?: "male" | "female";
+  constellation?: string;
+}
 
-// --- NEW DATA STRUCTURES FOR SCENARIO-BASED MEET PAGE ---
+interface Moment {
+  id: string;
+  user: Friend;
+  content: string;
+  image?: string;
+  likes: number;
+  comments: number;
+  time: string;
+  location?: string;
+  isConsumption?: boolean;
+}
 
-// 1. Scenarios (Entry Level)
-const SCENARIOS = [
-  { id: "date", label: "约会", icon: Heart, color: "text-pink-500", bg: "bg-pink-50" },
-  { id: "bestie", label: "闺蜜", icon: Camera, color: "text-purple-500", bg: "bg-purple-50" },
-  { id: "bros", label: "兄弟", icon: Beer, color: "text-blue-500", bg: "bg-blue-50" },
-  { id: "birthday", label: "生日", icon: Cake, color: "text-red-500", bg: "bg-red-50" },
-  { id: "business", label: "商务", icon: Briefcase, color: "text-slate-600", bg: "bg-slate-100" },
-  { id: "chill", label: "坐坐", icon: Coffee, color: "text-amber-500", bg: "bg-amber-50" },
-  { id: "night", label: "深夜", icon: Moon, color: "text-indigo-500", bg: "bg-indigo-50" },
+interface Plan {
+  id: string;
+  title: string;
+  image: string;
+  tags: string[];
+  steps: { icon: any; label: string }[];
+  rating: number;
+  price: number;
+  category: string;
+}
+
+// Mock Data
+const FRIENDS: Friend[] = [
+  { 
+    id: "1", 
+    name: "Sarah", 
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop", 
+    status: "online",
+    distance: "0.8km",
+    location: { lat: 39.9042, lng: 116.4074 },
+    tags: ["Coffee Lover", "Designer"],
+    bio: "Always looking for the perfect latte art ☕️",
+    photos: [
+      "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=400&h=400&fit=crop"
+    ],
+    age: 24,
+    gender: "female",
+    constellation: "处女座"
+  },
+  { 
+    id: "2", 
+    name: "Mike", 
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop", 
+    status: "busy",
+    distance: "1.2km",
+    location: { lat: 39.915, lng: 116.404 },
+    tags: ["Tech", "Gym"],
+    bio: "Coding by day, lifting by night 💪",
+    photos: [
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=400&fit=crop"
+    ],
+    age: 28,
+    gender: "male",
+    constellation: "狮子座"
+  },
+  { 
+    id: "3", 
+    name: "Emma", 
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop", 
+    status: "offline",
+    lastSeen: "5m ago",
+    distance: "2.5km",
+    location: { lat: 39.908, lng: 116.397 },
+    tags: ["Art", "Travel"],
+    bio: "Collecting moments, not things ✨",
+    photos: [
+      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&h=400&fit=crop",
+      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=400&fit=crop"
+    ],
+    age: 22,
+    gender: "female",
+    constellation: "双鱼座"
+  },
+  { 
+    id: "4", 
+    name: "Alex", 
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop", 
+    status: "online",
+    distance: "0.3km",
+    location: { lat: 39.902, lng: 116.410 },
+    tags: ["Foodie", "Music"],
+    bio: "Music is life 🎵",
+    photos: [
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=400&fit=crop"
+    ],
+    age: 26,
+    gender: "male",
+    constellation: "天秤座"
+  },
+  { 
+    id: "5", 
+    name: "Linda", 
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop", 
+    status: "online",
+    distance: "1.5km",
+    location: { lat: 39.912, lng: 116.415 },
+    tags: ["Yoga", "Nature"],
+    bio: "Namaste 🙏",
+    photos: [
+      "https://images.unsplash.com/photo-1544367563-12123d8965cd?w=400&h=400&fit=crop"
+    ],
+    age: 25,
+    gender: "female",
+    constellation: "金牛座"
+  },
 ];
 
-// 2. Plans (Solution Level)
-const PLANS = {
-  date: [
-    {
-      id: "date-first",
-      title: "第一次约会标准流程",
-      tags: ["#不尴尬", "#氛围感", "#高成功率"],
-      steps: [
-        { icon: "🍽", label: "吃饭", desc: "安静适合聊天" },
-        { icon: "🎬", label: "看电影", desc: "拉近距离" },
-        { icon: "☕️", label: "咖啡", desc: "意犹未尽" }
-      ],
-      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=200&fit=crop"
-    },
-    {
-      id: "date-anniversary",
-      title: "纪念日浪漫之夜",
-      tags: ["#仪式感", "#高端", "#难忘"],
-      steps: [
-        { icon: "🌹", label: "送花", desc: "惊喜开场" },
-        { icon: "🍽", label: "法餐", desc: "烛光晚餐" },
-        { icon: "🌃", label: "江景", desc: "浪漫散步" }
-      ],
-      image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=200&fit=crop"
-    }
-  ],
-  bestie: [
-    {
-      id: "bestie-photo",
-      title: "闺蜜出片一日游",
-      tags: ["#超好拍", "#网红店", "#精致"],
-      steps: [
-        { icon: "🍰", label: "下午茶", desc: "高颜值甜点" },
-        { icon: "📸", label: "拍照", desc: "艺术展/公园" },
-        { icon: "🍸", label: "小酌", desc: "微醺时刻" }
-      ],
-      image: "https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=400&h=200&fit=crop"
-    }
-  ],
-  bros: [
-    {
-      id: "bros-hangout",
-      title: "兄弟聚一聚",
-      tags: ["#放松", "#畅聊", "#解压"],
-      steps: [
-        { icon: "🍺", label: "烧烤", desc: "大口吃肉" },
-        { icon: "🎱", label: "台球", desc: "切磋球技" },
-        { icon: "🎮", label: "网咖", desc: "开黑一把" }
-      ],
-      image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=200&fit=crop"
-    }
-  ],
-  birthday: [
-    {
-      id: "birthday-party",
-      title: "难忘生日趴",
-      tags: ["#狂欢", "#仪式感", "#多人"],
-      steps: [
-        { icon: "🍽", label: "大餐", desc: "聚会首选" },
-        { icon: "🎤", label: "KTV", desc: "嗨唱整晚" },
-        { icon: "🎂", label: "许愿", desc: "切蛋糕" }
-      ],
-      image: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=400&h=200&fit=crop"
-    }
-  ],
-  business: [
-    {
-      id: "business-banquet",
-      title: "高端商务局",
-      tags: ["#私密", "#排面", "#谈事"],
-      steps: [
-        { icon: "🍵", label: "茶室", desc: "静心叙旧" },
-        { icon: "🥢", label: "私房菜", desc: "精致位上" },
-        { icon: "🥃", label: "Lounge", desc: "雪茄威士忌" }
-      ],
-      image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=200&fit=crop"
-    }
-  ],
-  chill: [],
-  night: []
-};
+const MOMENTS: Moment[] = [
+  {
+    id: "1",
+    user: FRIENDS[0],
+    content: "Found this amazing hidden cafe! The atmosphere is just perfect for working. ☕️✨",
+    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&h=600&fit=crop",
+    likes: 24,
+    comments: 5,
+    time: "2h ago",
+    location: "Blue Bottle Coffee"
+  },
+  {
+    id: "2",
+    user: FRIENDS[3],
+    content: "Weekend vibes with the crew! 🎸",
+    image: "https://images.unsplash.com/photo-1501612766622-27c7f6484984?w=800&h=600&fit=crop",
+    likes: 45,
+    comments: 12,
+    time: "4h ago",
+    location: "Live House Beijing"
+  },
+  {
+    id: "3",
+    user: FRIENDS[2],
+    content: "Sunset view from the rooftop bar. 🌆",
+    image: "https://images.unsplash.com/photo-1536250853075-e8504ee040b9?w=800&h=600&fit=crop",
+    likes: 89,
+    comments: 8,
+    time: "6h ago",
+    location: "Atmosphere Bar"
+  }
+];
 
-type TabType = "encounter" | "friends" | "moments" | "meet";
+const SCENARIOS = [
+  { id: "date", label: "约会", icon: Heart, color: "text-pink-500", bg: "bg-pink-50" },
+  { id: "party", label: "聚会", icon: Wine, color: "text-purple-500", bg: "bg-purple-50" },
+  { id: "chill", label: "独处", icon: Coffee, color: "text-amber-500", bg: "bg-amber-50" },
+  { id: "business", label: "商务", icon: Briefcase, color: "text-blue-500", bg: "bg-blue-50" },
+];
+
+const ALL_PLANS: Plan[] = [
+  // Date Plans
+  {
+    id: "d1",
+    title: "浪漫屋顶晚餐",
+    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&h=600&fit=crop",
+    tags: ["夜景绝美", "西餐", "氛围感"],
+    steps: [{ icon: Utensils, label: "晚餐" }, { icon: Wine, label: "小酌" }],
+    rating: 4.9,
+    price: 580,
+    category: "date"
+  },
+  {
+    id: "d2",
+    title: "午后艺术漫步",
+    image: "https://images.unsplash.com/photo-1561839561-b13bcfe95249?w=800&h=600&fit=crop",
+    tags: ["看展", "咖啡", "拍照"],
+    steps: [{ icon: Camera, label: "看展" }, { icon: Coffee, label: "下午茶" }],
+    rating: 4.7,
+    price: 120,
+    category: "date"
+  },
+  // Party Plans
+  {
+    id: "p1",
+    title: "周末狂欢夜",
+    image: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=800&h=600&fit=crop",
+    tags: ["Livehouse", "精酿", "热闹"],
+    steps: [{ icon: Music, label: "演出" }, { icon: Wine, label: "畅饮" }],
+    rating: 4.8,
+    price: 200,
+    category: "party"
+  },
+  {
+    id: "p2",
+    title: "剧本杀通宵",
+    image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&h=600&fit=crop",
+    tags: ["烧脑", "社交", "沉浸式"],
+    steps: [{ icon: Gamepad2, label: "剧本杀" }, { icon: Utensils, label: "夜宵" }],
+    rating: 4.6,
+    price: 158,
+    category: "party"
+  },
+  // Chill Plans (Solo)
+  {
+    id: "c1",
+    title: "深夜书房",
+    image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&h=600&fit=crop",
+    tags: ["安静", "24小时", "阅读"],
+    steps: [{ icon: BookOpen, label: "阅读" }, { icon: Coffee, label: "咖啡" }],
+    rating: 4.9,
+    price: 45,
+    category: "chill"
+  },
+  {
+    id: "c2",
+    title: "街角便利店",
+    image: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?w=800&h=600&fit=crop",
+    tags: ["关东煮", "治愈", "烟火气"],
+    steps: [{ icon: Utensils, label: "觅食" }],
+    rating: 4.5,
+    price: 25,
+    category: "chill"
+  },
+  // Business Plans
+  {
+    id: "b1",
+    title: "商务洽谈茶室",
+    image: "https://images.unsplash.com/photo-1576014131341-fe1486fb2475?w=800&h=600&fit=crop",
+    tags: ["私密", "高端", "茶道"],
+    steps: [{ icon: Coffee, label: "品茶" }],
+    rating: 4.8,
+    price: 300,
+    category: "business"
+  }
+];
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("encounter");
   const [searchQuery, setSearchQuery] = useState("");
-  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
-  const [markerData, setMarkerData] = useState<any>(INITIAL_MARKERS);
-
-  // Force reset marker data on mount to ensure it's not empty
-  useEffect(() => {
-    if (!markerData.encounter || markerData.encounter.length === 0) {
-      setMarkerData(INITIAL_MARKERS);
-    }
-  }, []);
-
-  // Manage map click listener separately to ensure proper cleanup and prevent duplicates
-  useEffect(() => {
-    if (!mapInstance) return;
-
-    const listener = mapInstance.addListener('click', () => {
-      // Check timestamp lock to prevent map click from interfering with toggle button
-      // If less than 1000ms has passed since the last toggle, ignore this click
-      if (Date.now() - lastToggleTimeRef.current < 1000) {
-        console.log("Map click ignored due to lock");
-        return;
-      }
-
-      console.log("Map clicked, resetting UI state");
-      setSelectedFriend(null);
-      setSelectedMoment(null);
-      setIsNavVisible(true);
-    });
-
-    // Set custom map style
-    mapInstance.setOptions({
-      styles: [
-        {
-          "featureType": "all",
-          "elementType": "labels.text.fill",
-          "stylers": [{"saturation": 36}, {"color": "#333333"}, {"lightness": 40}]
-        },
-        {
-          "featureType": "all",
-          "elementType": "labels.text.stroke",
-          "stylers": [{"visibility": "on"}, {"color": "#ffffff"}, {"lightness": 16}]
-        },
-        {
-          "featureType": "all",
-          "elementType": "labels.icon",
-          "stylers": [{"visibility": "off"}]
-        },
-        {
-          "featureType": "administrative",
-          "elementType": "geometry.fill",
-          "stylers": [{"color": "#fefefe"}, {"lightness": 20}]
-        },
-        {
-          "featureType": "administrative",
-          "elementType": "geometry.stroke",
-          "stylers": [{"color": "#fefefe"}, {"lightness": 17}, {"weight": 1.2}]
-        },
-        {
-          "featureType": "landscape",
-          "elementType": "geometry",
-          "stylers": [{"color": "#f5f5f5"}, {"lightness": 20}]
-        },
-        {
-          "featureType": "poi",
-          "elementType": "geometry",
-          "stylers": [{"color": "#f5f5f5"}, {"lightness": 21}]
-        },
-        {
-          "featureType": "poi.park",
-          "elementType": "geometry",
-          "stylers": [{"color": "#dedede"}, {"lightness": 21}]
-        },
-        {
-          "featureType": "road.highway",
-          "elementType": "geometry.fill",
-          "stylers": [{"color": "#ffffff"}, {"lightness": 17}]
-        },
-        {
-          "featureType": "road.highway",
-          "elementType": "geometry.stroke",
-          "stylers": [{"color": "#ffffff"}, {"lightness": 29}, {"weight": 0.2}]
-        },
-        {
-          "featureType": "road.arterial",
-          "elementType": "geometry",
-          "stylers": [{"color": "#ffffff"}, {"lightness": 18}]
-        },
-        {
-          "featureType": "road.arterial",
-          "elementType": "geometry.stroke",
-          "stylers": [{"color": "#ffffff"}, {"lightness": 18}]
-        },
-        {
-          "featureType": "road.local",
-          "elementType": "geometry",
-          "stylers": [{"color": "#ffffff"}, {"lightness": 16}]
-        },
-        {
-          "featureType": "road.local",
-          "elementType": "geometry.stroke",
-          "stylers": [{"color": "#ffffff"}, {"lightness": 16}]
-        },
-        {
-          "featureType": "transit",
-          "elementType": "geometry",
-          "stylers": [{"color": "#f2f2f2"}, {"lightness": 19}]
-        },
-        {
-          "featureType": "water",
-          "elementType": "geometry",
-          "stylers": [{"color": "#e9e9e9"}, {"lightness": 17}]
-        }
-      ]
-    });
-
-    return () => {
-      google.maps.event.removeListener(listener);
-    };
-  }, [mapInstance]);
-
-  const [selectedFriend, setSelectedFriend] = useState<any>(null);
-  const [selectedMoment, setSelectedMoment] = useState<any>(null);
-  const [isNavVisible, setIsNavVisible] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+  const [isNavVisible, setIsNavVisible] = useState(true);
   const [isStoreMode, setIsStoreMode] = useState(false);
-  const lastToggleTimeRef = useRef(0);
+  const [moments, setMoments] = useState<Moment[]>(MOMENTS);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Function to add a new consumption marker
+  // Map related refs
+  const mapRef = useRef<any>(null);
+  const setMarkerDataRef = useRef<((data: any[]) => void) | null>(null);
+
+  // Filter plans based on selected category
+  const filteredPlans = selectedCategory 
+    ? ALL_PLANS.filter(plan => plan.category === selectedCategory)
+    : ALL_PLANS;
+
+  // Handle adding a consumption marker
   const handleAddConsumptionMarker = () => {
-    const newMarker = {
-      id: Date.now(),
-      lat: 39.908, // Near the center
-      lng: 116.404,
-      type: "moment",
-      icon: ShoppingBag,
+    // Switch to encounter tab (map view)
+    setActiveTab("encounter");
+    
+    // Create a new consumption moment
+    const newMoment: Moment = {
+      id: `consumption-${Date.now()}`,
+      user: {
+        id: "me",
+        name: "我",
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop",
+        status: "online",
+        location: { lat: 39.9042, lng: 116.4074 } // Current user location (mock)
+      },
       content: "我在这里消费了",
-      image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop",
       likes: 0,
       comments: 0,
-      isNew: true // Flag for animation
+      time: "刚刚",
+      location: "当前店铺",
+      isConsumption: true
     };
 
-    setMarkerData((prev: any) => ({
-      ...prev,
-      moments: [...prev.moments, newMarker]
-    }));
+    // Add to moments list
+    setMoments(prev => [newMoment, ...prev]);
 
-    // Switch to moments tab to see the new marker
-    setActiveTab("moments");
-    
-    // Show toast or notification could go here
+    // Add marker to map if map is ready
+    if (setMarkerDataRef.current) {
+      // Get current markers
+      const currentMarkers = FRIENDS.map(f => ({
+        id: f.id,
+        lat: f.location!.lat,
+        lng: f.location!.lng,
+        type: "user",
+        data: f
+      }));
+
+      // Add new consumption marker
+      const consumptionMarker = {
+        id: newMoment.id,
+        lat: 39.9042, // Slightly offset or same as user
+        lng: 116.4074,
+        type: "moment",
+        data: newMoment
+      };
+
+      setMarkerDataRef.current([...currentMarkers, consumptionMarker]);
+    }
   };
 
+  // Initialize map data when tab changes to encounter
   useEffect(() => {
-    if (!mapInstance) return;
-
-    // Clear existing markers
-    markers.forEach(marker => marker.setMap(null));
-
-    // Define CustomOverlay class inside useEffect to ensure google is defined
-    class CustomOverlay extends google.maps.OverlayView {
-      private position: google.maps.LatLng;
-      private content: HTMLElement;
-      private markerData: any;
-
-      constructor(position: google.maps.LatLng, content: HTMLElement, markerData: any) {
-        super();
-        this.position = position;
-        this.content = content;
-        this.markerData = markerData;
-      }
-
-      onAdd() {
-        const panes = this.getPanes();
-        if (panes) {
-          panes.overlayMouseTarget.appendChild(this.content);
-        }
-      }
-
-      draw() {
-        const projection = this.getProjection();
-        if (!projection) return;
-
-        const point = projection.fromLatLngToDivPixel(this.position);
-        if (point) {
-          this.content.style.left = point.x + 'px';
-          this.content.style.top = point.y + 'px';
-        }
-      }
-
-      onRemove() {
-        if (this.content.parentElement) {
-          this.content.parentElement.removeChild(this.content);
-        }
-      }
+    if (activeTab === "encounter" && setMarkerDataRef.current) {
+      const markers = FRIENDS.map(f => ({
+        id: f.id,
+        lat: f.location!.lat,
+        lng: f.location!.lng,
+        type: "user",
+        data: f
+      }));
+      setMarkerDataRef.current(markers);
     }
-
-    // Create new markers based on active tab
-    const currentMarkers = markerData[activeTab] || [];
-    const newMarkers = currentMarkers.map((marker: any) => {
-      const div = document.createElement('div');
-      div.style.position = 'absolute';
-      div.style.cursor = 'pointer';
-      div.style.transform = 'translate(-50%, -50%)'; // Center the marker
-      
-      // Render marker content based on type
-      const root = createRoot(div);
-      
-      if (activeTab === 'moments') {
-        // Moment Marker (Large Rectangle)
-        root.render(
-          <div 
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent map click
-              setSelectedMoment(marker);
-              setIsNavVisible(false);
-            }}
-            className={cn(
-              "relative group transition-transform hover:scale-105 hover:z-50",
-              marker.isNew ? "animate-bounce" : ""
-            )}
-          >
-            {/* Large Rectangle Bubble */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden w-40 border-2 border-white">
-              <div className="h-24 bg-slate-100 relative">
-                <img src={marker.image} className="w-full h-full object-cover" />
-                {marker.isNew && (
-                  <div className="absolute top-2 right-2 bg-yellow-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                    刚刚发布
-                  </div>
-                )}
-              </div>
-              <div className="p-2">
-                <p className="text-xs font-medium text-slate-900 line-clamp-1 mb-1">{marker.content}</p>
-                <div className="flex items-center justify-between text-[10px] text-slate-400">
-                  <div className="flex items-center gap-1">
-                    <Heart className="w-3 h-3 fill-slate-300 text-slate-300" />
-                    <span>{marker.likes}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MessageCircle className="w-3 h-3" />
-                    <span>{marker.comments}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Triangle Pointer */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white drop-shadow-sm"></div>
-          </div>
-        );
-      } else if (activeTab === 'encounter' || activeTab === 'friends') {
-        // User Avatar Marker
-        const isOnline = marker.status === 'online';
-        const isRecent = marker.status === 'recent';
-        const borderColor = marker.gender === 'female' ? 'border-pink-500' : 'border-blue-500';
-        
-        root.render(
-          <div 
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent map click
-              setSelectedFriend(marker);
-              setIsNavVisible(false);
-            }}
-            className="relative group"
-          >
-            {/* Avatar Container */}
-            <div className={cn(
-              "w-12 h-12 rounded-full border-2 shadow-lg overflow-hidden bg-white transition-transform group-hover:scale-110",
-              borderColor
-            )}>
-              <img src={marker.avatar} className="w-full h-full object-cover" />
-            </div>
-            
-            {/* Status Dot (Outside Avatar) */}
-            <div className={cn(
-              "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm z-10",
-              isOnline ? "bg-green-500" : 
-              isRecent ? "bg-yellow-500" : "bg-slate-300"
-            )} />
-            
-            {/* Name Tag (Optional, visible on hover) */}
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              {marker.lastSeen}
-            </div>
-          </div>
-        );
-      } else {
-        // Default Marker
-        root.render(
-          <div className="w-8 h-8 bg-blue-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white">
-            <marker.icon className="w-4 h-4" />
-          </div>
-        );
-      }
-
-      // Create Overlay
-      const overlay = new CustomOverlay(
-        new google.maps.LatLng(marker.lat, marker.lng),
-        div,
-        marker
-      );
-      
-      overlay.setMap(mapInstance);
-      
-      // Return a dummy marker object for cleanup (since we use OverlayView)
-      return { setMap: () => overlay.setMap(null) } as any;
-    });
-
-    setMarkers(newMarkers);
-
-  }, [activeTab, mapInstance, markerData]); // Re-run when markerData changes
+  }, [activeTab]);
 
   return (
-    <Layout showNav={isNavVisible}>
-      <div className="relative h-screen w-full bg-slate-50">
-        {/* Map Container */}
-        <div className="absolute inset-0 z-0">
-          <MapView onMapReady={setMapInstance} />
+    <Layout showNav={isNavVisible} activeTab={activeTab} onTabChange={setActiveTab}>
+      <div className="relative h-full w-full bg-slate-50">
+        
+        {/* Map View (Always rendered but hidden when not active to preserve state) */}
+        <div className={cn("absolute inset-0 z-0", activeTab === "encounter" ? "opacity-100" : "opacity-0 pointer-events-none")}>
+          <MapView 
+            onMapReady={(map) => {
+              mapRef.current = map;
+              
+              // Define CustomOverlay
+              class CustomOverlay extends google.maps.OverlayView {
+                position: google.maps.LatLng;
+                container: HTMLDivElement;
+                data: any;
+                onClick: (data: any) => void;
+
+                constructor(position: google.maps.LatLng, data: any, onClick: (data: any) => void) {
+                  super();
+                  this.position = position;
+                  this.data = data;
+                  this.onClick = onClick;
+                  this.container = document.createElement('div');
+                  this.container.style.position = 'absolute';
+                  this.container.style.cursor = 'pointer';
+                  
+                  // Create marker content based on type
+                  const content = document.createElement('div');
+                  if (data.type === 'user') {
+                    content.innerHTML = `
+                      <div class="relative group">
+                        <div class="w-10 h-10 rounded-full border-2 border-white shadow-lg overflow-hidden bg-white">
+                          <img src="${data.data.avatar}" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-3 h-3 border-2 border-white rounded-full ${
+                          data.data.status === 'online' ? 'bg-green-500' : 
+                          data.data.status === 'busy' ? 'bg-red-500' : 'bg-slate-300'
+                        }"></div>
+                      </div>
+                    `;
+                  } else if (data.type === 'moment') {
+                    content.innerHTML = `
+                      <div class="bg-white p-2 rounded-xl shadow-lg border border-slate-100 flex items-center gap-2 w-48">
+                        <div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                          <img src="${data.data.user.avatar}" class="w-full h-full object-cover" />
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="text-xs font-bold text-slate-900 truncate">${data.data.user.name}</div>
+                          <div class="text-[10px] text-slate-500 truncate">${data.data.content}</div>
+                        </div>
+                      </div>
+                    `;
+                  }
+                  
+                  content.onclick = (e) => {
+                    e.stopPropagation();
+                    this.onClick(this.data.data);
+                  };
+                  
+                  this.container.appendChild(content);
+                }
+
+                onAdd() {
+                  const panes = this.getPanes();
+                  if (panes) {
+                    panes.overlayMouseTarget.appendChild(this.container);
+                  }
+                }
+
+                draw() {
+                  const projection = this.getProjection();
+                  if (!projection) return;
+                  
+                  const point = projection.fromLatLngToDivPixel(this.position);
+                  if (point) {
+                    this.container.style.left = (point.x - 20) + 'px'; // Center horizontally (assuming 40px width)
+                    this.container.style.top = (point.y - 40) + 'px'; // Bottom anchor
+                  }
+                }
+
+                onRemove() {
+                  if (this.container.parentNode) {
+                    this.container.parentNode.removeChild(this.container);
+                  }
+                }
+              }
+
+              // Function to update markers
+              let overlays: any[] = [];
+              
+              setMarkerDataRef.current = (data: any[]) => {
+                // Clear existing
+                overlays.forEach(o => o.setMap(null));
+                overlays = [];
+                
+                // Add new
+                data.forEach(item => {
+                  const overlay = new CustomOverlay(
+                    new google.maps.LatLng(item.lat, item.lng),
+                    item,
+                    (clickedData) => {
+                      if (item.type === 'user') {
+                        setSelectedFriend(clickedData);
+                        setIsNavVisible(false);
+                      } else {
+                        console.log("Clicked moment", clickedData);
+                      }
+                    }
+                  );
+                  overlay.setMap(map);
+                  overlays.push(overlay);
+                });
+              };
+              
+              // Initial load
+              const markers = FRIENDS.map(f => ({
+                id: f.id,
+                lat: f.location!.lat,
+                lng: f.location!.lng,
+                type: "user",
+                data: f
+              }));
+              if (setMarkerDataRef.current) {
+                setMarkerDataRef.current(markers);
+              }
+            }}
+          />
         </div>
 
         {/* Top Search Bar & Tabs */}
@@ -512,7 +510,10 @@ export default function Home() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <button className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-200/60 flex items-center justify-center active:scale-95 transition-transform">
+            <button 
+              onClick={() => setActiveTab("friends")}
+              className="w-10 h-10 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-200/60 flex items-center justify-center active:scale-95 transition-transform"
+            >
               <Users className="w-5 h-5 text-slate-600" />
             </button>
           </div>
@@ -548,35 +549,167 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Side Actions */}
-        <div className="absolute top-40 right-4 z-10 flex flex-col gap-3">
-          <button 
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 active:scale-95 transition-transform"
-          >
-            <Filter className="w-5 h-5" />
-          </button>
-          <AnimatePresence>
-            {isFilterOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -10, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.9 }}
-                className="absolute top-12 right-0 bg-white rounded-2xl shadow-xl p-3 w-32 flex flex-col gap-2 origin-top-right"
-              >
-                <button className="text-xs font-medium text-slate-600 py-2 px-3 hover:bg-slate-50 rounded-lg text-left">只看女生</button>
-                <button className="text-xs font-medium text-slate-600 py-2 px-3 hover:bg-slate-50 rounded-lg text-left">只看男生</button>
-                <button className="text-xs font-medium text-slate-600 py-2 px-3 hover:bg-slate-50 rounded-lg text-left">在线用户</button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          <button className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 active:scale-95 transition-transform">
-            <ChevronUp className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Right Side Actions (Only for Map) */}
+        {activeTab === "encounter" && (
+          <div className="absolute top-40 right-4 z-10 flex flex-col gap-3">
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 active:scale-95 transition-transform"
+            >
+              <Filter className="w-5 h-5" />
+            </button>
+            <AnimatePresence>
+              {isFilterOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.9 }}
+                  className="absolute top-12 right-0 bg-white rounded-2xl shadow-xl p-4 w-48 flex flex-col gap-4 origin-top-right"
+                >
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 mb-2">性别</div>
+                    <div className="flex gap-2">
+                      <button className="flex-1 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">男生</button>
+                      <button className="flex-1 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-pink-50 hover:text-pink-600 transition-colors">女生</button>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 mb-2">年龄</div>
+                    <div className="flex gap-2">
+                      <button className="flex-1 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors">18-25</button>
+                      <button className="flex-1 py-1.5 bg-slate-100 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-200 transition-colors">26-35</button>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900 mb-2">星座</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <button className="py-1.5 bg-slate-100 rounded-lg text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors">火象</button>
+                      <button className="py-1.5 bg-slate-100 rounded-lg text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors">土象</button>
+                      <button className="py-1.5 bg-slate-100 rounded-lg text-[10px] font-medium text-slate-600 hover:bg-slate-200 transition-colors">风象</button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            <button className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-600 active:scale-95 transition-transform">
+              <ChevronUp className="w-5 h-5" />
+            </button>
+          </div>
+        )}
 
-        {/* Meet Tab Content (Overlay) */}
+        {/* Friends Tab Content */}
+        <AnimatePresence>
+          {activeTab === "friends" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-20 bg-slate-50 pt-32 px-4 pb-24 overflow-y-auto"
+            >
+              <div className="space-y-3">
+                {FRIENDS.map((friend) => (
+                  <div key={friend.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 active:scale-[0.99] transition-transform" onClick={() => {
+                    setSelectedFriend(friend);
+                    setIsNavVisible(false);
+                  }}>
+                    <div className="relative">
+                      <img src={friend.avatar} className="w-12 h-12 rounded-full object-cover" />
+                      <div className={cn(
+                        "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-white rounded-full",
+                        friend.status === "online" ? "bg-green-500" : 
+                        friend.status === "busy" ? "bg-red-500" : "bg-slate-300"
+                      )} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-bold text-slate-900">{friend.name}</h3>
+                        <span className="text-xs text-slate-400">{friend.distance}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 line-clamp-1">{friend.bio}</p>
+                      <div className="flex gap-2 mt-2">
+                        {friend.tags?.map(tag => (
+                          <span key={tag} className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-500 rounded-full">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Moments Tab Content */}
+        <AnimatePresence>
+          {activeTab === "moments" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-20 bg-slate-50 pt-32 px-4 pb-24 overflow-y-auto"
+            >
+              <div className="space-y-4">
+                {moments.map((moment) => (
+                  <div key={moment.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    {/* Header */}
+                    <div className="p-3 flex items-center gap-3">
+                      <div className="relative">
+                        <img src={moment.user.avatar} className="w-8 h-8 rounded-full object-cover" />
+                        <div className={cn(
+                          "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white rounded-full",
+                          moment.user.status === "online" ? "bg-green-500" : "bg-slate-300"
+                        )} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-slate-900 text-sm">{moment.user.name}</h3>
+                        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                          <span>{moment.time}</span>
+                          <span>•</span>
+                          <span>{moment.location}</span>
+                        </div>
+                      </div>
+                      <button className="text-slate-400">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Content */}
+                    <div className="px-3 pb-3">
+                      <p className="text-slate-700 text-sm leading-relaxed mb-2">{moment.content}</p>
+                      {moment.image && (
+                        <div className="rounded-xl overflow-hidden aspect-[16/9]">
+                          <img src={moment.image} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="px-3 py-2 border-t border-slate-50 flex items-center justify-between">
+                      <div className="flex gap-4">
+                        <button className="flex items-center gap-1 text-slate-500 hover:text-red-500 transition-colors">
+                          <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                          <span className="text-xs font-medium text-red-500">{moment.likes}</span>
+                        </button>
+                        <button className="flex items-center gap-1 text-slate-500 hover:text-blue-500 transition-colors">
+                          <MessageCircle className="w-4 h-4 text-blue-500" />
+                          <span className="text-xs font-medium text-blue-500">{moment.comments}</span>
+                        </button>
+                        <button className="flex items-center gap-1 text-slate-500 hover:text-green-500 transition-colors">
+                          <Share2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Meet Tab Content (Refactored) */}
         <AnimatePresence>
           {activeTab === "meet" && (
             <motion.div
@@ -622,53 +755,89 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Relationship Selection (Restored) */}
+              {/* Relationship Filter (Modified to be a filter) */}
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-slate-900 mb-4 px-1">和谁去？</h3>
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <h3 className="text-lg font-bold text-slate-900">和谁去？</h3>
+                  {selectedCategory && (
+                    <button 
+                      onClick={() => setSelectedCategory(null)}
+                      className="text-xs text-blue-500 font-medium"
+                    >
+                      清除筛选
+                    </button>
+                  )}
+                </div>
                 <div className="grid grid-cols-4 gap-3">
                   {SCENARIOS.map((scenario) => (
                     <button
                       key={scenario.id}
+                      onClick={() => setSelectedCategory(selectedCategory === scenario.id ? null : scenario.id)}
                       className="flex flex-col items-center gap-2 group"
                     >
                       <div className={cn(
-                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-active:scale-95 shadow-sm",
-                        scenario.bg,
-                        scenario.color
+                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-sm",
+                        selectedCategory === scenario.id 
+                          ? "bg-slate-900 text-white scale-105 shadow-md" 
+                          : cn(scenario.bg, scenario.color, "group-active:scale-95")
                       )}>
                         <scenario.icon className="w-6 h-6" />
                       </div>
-                      <span className="text-xs font-medium text-slate-600">{scenario.label}</span>
+                      <span className={cn(
+                        "text-xs font-medium transition-colors",
+                        selectedCategory === scenario.id ? "text-slate-900 font-bold" : "text-slate-600"
+                      )}>
+                        {scenario.label}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Popular Plans */}
+              {/* Shop/Plan List (Filtered) */}
               <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-4 px-1">热门方案</h3>
+                <h3 className="text-lg font-bold text-slate-900 mb-4 px-1">
+                  {selectedCategory ? `${SCENARIOS.find(s => s.id === selectedCategory)?.label}推荐` : "猜你喜欢"}
+                </h3>
                 <div className="space-y-4">
-                  {PLANS.date.map((plan) => (
-                    <div key={plan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex gap-4">
-                      <div className="w-24 h-24 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0">
+                  {filteredPlans.map((plan) => (
+                    <div key={plan.id} className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 flex gap-3 active:scale-[0.99] transition-transform">
+                      <div className="w-28 h-28 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 relative">
                         <img src={plan.image} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 py-1">
-                        <h4 className="font-bold text-slate-900 mb-2">{plan.title}</h4>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {plan.tags.map(tag => (
-                            <span key={tag} className="text-[10px] px-2 py-0.5 bg-slate-50 text-slate-500 rounded-full">
-                              {tag}
-                            </span>
-                          ))}
+                        <div className="absolute top-1.5 left-1.5 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                          <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
+                          <span className="text-[10px] font-bold text-slate-900">{plan.rating}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                          {plan.steps.map((step, i) => (
-                            <div key={i} className="flex items-center">
-                              <span>{step.label}</span>
-                              {i < plan.steps.length - 1 && <ChevronRight className="w-3 h-3 mx-1" />}
+                      </div>
+                      <div className="flex-1 py-0.5 flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-base mb-1 line-clamp-1">{plan.title}</h4>
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            {plan.tags.map(tag => (
+                              <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-slate-50 text-slate-500 rounded-md border border-slate-100">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-end justify-between">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1 text-xs text-slate-400">
+                              {plan.steps.map((step, i) => (
+                                <React.Fragment key={i}>
+                                  <span>{step.label}</span>
+                                  {i < plan.steps.length - 1 && <span className="text-slate-300">·</span>}
+                                </React.Fragment>
+                              ))}
                             </div>
-                          ))}
+                            <div className="text-xs text-slate-400">
+                              人均 <span className="text-orange-500 font-bold text-sm">¥{plan.price}</span>
+                            </div>
+                          </div>
+                          <button className="bg-slate-900 text-white px-3 py-1.5 rounded-full text-xs font-bold">
+                            去看看
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -746,96 +915,110 @@ export default function Home() {
                     setSelectedFriend(null);
                     setIsNavVisible(true);
                   }}
-                  className="absolute top-4 right-4 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 active:scale-95 transition-transform"
+                  className="absolute top-4 right-4 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors z-50"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
-                
-                <div className="px-6 pb-8 overflow-y-auto max-h-[calc(85vh-40px)]">
-                  {/* Header Info */}
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex gap-4">
-                      <div className="relative">
-                        <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden">
-                          <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
-                        </div>
-                        {/* Status Dot (Outside Avatar) */}
-                        <div className={cn(
-                          "absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-white shadow-sm z-10",
-                          selectedFriend.status === 'online' ? 'bg-green-500' : 
-                          selectedFriend.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-300'
-                        )} />
+
+                <div className="px-6 pb-8 overflow-y-auto max-h-[calc(85vh-3rem)]">
+                  {/* Header */}
+                  <div className="flex items-start gap-4 mb-6">
+                    <div className="relative">
+                      <img src={selectedFriend.avatar} className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg" />
+                      <div className={cn(
+                        "absolute -bottom-1 -right-1 w-6 h-6 border-4 border-white rounded-full flex items-center justify-center",
+                        selectedFriend.status === "online" ? "bg-green-500" : 
+                        selectedFriend.status === "busy" ? "bg-red-500" : "bg-slate-300"
+                      )}>
+                        {selectedFriend.status === "online" && (
+                          <div className="w-full h-full rounded-full bg-green-400 animate-ping opacity-75" />
+                        )}
                       </div>
-                      <div className="pt-2">
-                        <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                          Alex
-                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full font-medium">
-                            {selectedFriend.gender === 'male' ? '♂ 24' : '♀ 22'}
+                    </div>
+                    <div className="flex-1 pt-2">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-1">{selectedFriend.name}</h2>
+                      
+                      {/* Info Row: Distance + Status + Age/Gender */}
+                      <div className="flex items-center gap-3 text-slate-500 text-sm mb-2">
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span>{selectedFriend.distance}</span>
+                        </div>
+                        {selectedFriend.lastSeen && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{selectedFriend.lastSeen}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tags & Age/Gender */}
+                      <div className="flex flex-wrap gap-2">
+                        {/* Age/Gender Capsule */}
+                        {(selectedFriend.age || selectedFriend.gender) && (
+                          <div className={cn(
+                            "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white",
+                            selectedFriend.gender === "female" ? "bg-pink-400" : "bg-blue-400"
+                          )}>
+                            {selectedFriend.gender === "female" ? <span className="text-[10px]">♀</span> : <span className="text-[10px]">♂</span>}
+                            <span>{selectedFriend.age}</span>
+                          </div>
+                        )}
+                        
+                        {/* Constellation */}
+                        {selectedFriend.constellation && (
+                          <div className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-600 rounded-full text-xs font-medium">
+                            <Sparkles className="w-3 h-3" />
+                            <span>{selectedFriend.constellation}</span>
+                          </div>
+                        )}
+
+                        {selectedFriend.tags?.map(tag => (
+                          <span key={tag} className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-lg font-medium">
+                            {tag}
                           </span>
-                        </h2>
-                        <p className="text-slate-500 text-sm mt-1 flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          距离 0.8km · {selectedFriend.lastSeen}
-                        </p>
+                        ))}
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                        <Heart className="w-5 h-5" />
-                      </button>
-                      <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                        <MessageCircle className="w-5 h-5" />
-                      </button>
-                    </div>
                   </div>
 
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    {["摄影控", "咖啡重度患者", "健身达人", "猫奴"].map(tag => (
-                      <span key={tag} className="px-3 py-1 bg-slate-50 text-slate-600 text-xs rounded-full border border-slate-100">
-                        # {tag}
-                      </span>
-                    ))}
+                  {/* Bio */}
+                  <div className="bg-slate-50 p-4 rounded-2xl mb-6">
+                    <p className="text-slate-600 italic">"{selectedFriend.bio}"</p>
                   </div>
 
-                  {/* Recent Moments */}
-                  <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold text-slate-900">最近动态</h3>
-                      <button className="text-xs text-slate-400 flex items-center">
-                        查看全部 <ChevronRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                    <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="w-32 h-40 flex-shrink-0 rounded-xl overflow-hidden relative group">
-                          <img src={`https://images.unsplash.com/photo-${1510000000000 + i}?w=200&h=300&fit=crop`} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                        </div>
-                      ))}
-                    </div>
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-3 mb-8">
+                    <button className="bg-slate-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+                      <MessageCircle className="w-5 h-5" />
+                      打招呼
+                    </button>
+                    <button className="bg-white border border-slate-200 text-slate-900 py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+                      <User className="w-5 h-5" />
+                      加好友
+                    </button>
                   </div>
 
-                  {/* Action Button */}
-                  <button className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-[0.98] transition-transform">
-                    打招呼
-                  </button>
+                  {/* Photos (Recent Moments) */}
+                  <div>
+                    <h3 className="font-bold text-slate-900 mb-3">最近动态</h3>
+                    {selectedFriend.photos && selectedFriend.photos.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        {selectedFriend.photos.map((photo, i) => (
+                          <div key={i} className="aspect-square rounded-2xl overflow-hidden bg-slate-100">
+                            <img src={photo} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-slate-400 text-sm bg-slate-50 rounded-2xl">
+                        暂无动态
+                      </div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             </>
-          )}
-        </AnimatePresence>
-
-        {/* Moment Detail Modal */}
-        <AnimatePresence>
-          {selectedMoment && (
-            <MomentDetail 
-              moment={selectedMoment} 
-              onClose={() => {
-                setSelectedMoment(null);
-                setIsNavVisible(true);
-              }} 
-            />
           )}
         </AnimatePresence>
       </div>
