@@ -92,24 +92,43 @@ const FORGE_BASE_URL =
   "https://forge.butterfly-effect.dev";
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 
-function loadMapScript() {
-  return new Promise(resolve => {
+function loadMapScript(retries = 3) {
+  return new Promise((resolve, reject) => {
     if (window.google && window.google.maps) {
       resolve(null);
       return;
     }
     
+    // Check if script is already loading
+    const existingScript = document.querySelector(`script[src*="${MAPS_PROXY_URL}/maps/api/js"]`);
+    if (existingScript) {
+      existingScript.addEventListener('load', () => resolve(null));
+      existingScript.addEventListener('error', () => reject(new Error("Existing script failed")));
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
     script.async = true;
     script.crossOrigin = "anonymous";
+    
     script.onload = () => {
       resolve(null);
-      // Do not remove script tag as it might be needed by other components or re-renders
     };
+    
     script.onerror = () => {
-      console.error("Failed to load Google Maps script");
+      document.head.removeChild(script);
+      if (retries > 0) {
+        console.log(`Retrying Google Maps script load... (${retries} attempts left)`);
+        setTimeout(() => {
+          loadMapScript(retries - 1).then(resolve).catch(reject);
+        }, 1000);
+      } else {
+        console.error("Failed to load Google Maps script after multiple attempts");
+        reject(new Error("Failed to load Google Maps script"));
+      }
     };
+    
     document.head.appendChild(script);
   });
 }
@@ -134,29 +153,36 @@ export default function MapView({
   const map = useRef<google.maps.Map | null>(null);
 
   const init = usePersistFn(async () => {
-    await loadMapScript();
-    if (!mapContainer.current) {
-      console.error("Map container not found");
-      return;
-    }
-    if (window.google && window.google.maps) {
-      map.current = new window.google.maps.Map(mapContainer.current, {
-        zoom: initialZoom,
-        center: initialCenter,
-        mapTypeControl: false,
-        fullscreenControl: false,
-        zoomControl: false,
-        streetViewControl: false,
-        scaleControl: false,
-        rotateControl: false,
-        panControl: false,
-        mapId: "DEMO_MAP_ID",
-        gestureHandling: "greedy", // Enable single-finger panning
-        clickableIcons: false, // Disable default POI clicks
-      });
-    }
-    if (onMapReady && map.current) {
-      onMapReady(map.current);
+    try {
+      await loadMapScript();
+      if (!mapContainer.current) {
+        console.error("Map container not found");
+        return;
+      }
+      if (window.google && window.google.maps) {
+        // Prevent re-initialization if map already exists
+        if (map.current) return;
+
+        map.current = new window.google.maps.Map(mapContainer.current, {
+          zoom: initialZoom,
+          center: initialCenter,
+          mapTypeControl: false,
+          fullscreenControl: false,
+          zoomControl: false,
+          streetViewControl: false,
+          scaleControl: false,
+          rotateControl: false,
+          panControl: false,
+          mapId: "DEMO_MAP_ID",
+          gestureHandling: "greedy", // Enable single-finger panning
+          clickableIcons: false, // Disable default POI clicks
+        });
+      }
+      if (onMapReady && map.current) {
+        onMapReady(map.current);
+      }
+    } catch (error) {
+      console.error("Map initialization failed:", error);
     }
   });
 
