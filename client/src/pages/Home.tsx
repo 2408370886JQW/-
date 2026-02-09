@@ -706,87 +706,123 @@ export default function Home() {
         {/* Friend Detail Modal */}
         <AnimatePresence>
           {selectedFriend && (
-            <motion.div
-              initial={{ opacity: 0, y: "100%" }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-safe"
-              style={{ maxHeight: "85vh" }}
-            >
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  setSelectedFriend(null);
+                  setIsNavVisible(true);
+                }}
+                className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm"
+              />
               
-              <div className="px-6 pb-8 overflow-y-auto max-h-[calc(85vh-40px)]">
-                {/* Header Info */}
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex gap-4">
-                    <div className="relative">
-                      <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden">
-                        <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
+              {/* Modal */}
+              <motion.div
+                initial={{ opacity: 0, y: "100%" }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                drag="y"
+                dragConstraints={{ top: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100) {
+                    setSelectedFriend(null);
+                    setIsNavVisible(true);
+                  }
+                }}
+                className="fixed inset-x-0 bottom-0 z-40 bg-white rounded-t-3xl shadow-2xl pb-safe"
+                style={{ maxHeight: "85vh" }}
+              >
+                {/* Drag Handle */}
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
+                
+                {/* Close Button */}
+                <button 
+                  onClick={() => {
+                    setSelectedFriend(null);
+                    setIsNavVisible(true);
+                  }}
+                  className="absolute top-4 right-4 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 active:scale-95 transition-transform"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                
+                <div className="px-6 pb-8 overflow-y-auto max-h-[calc(85vh-40px)]">
+                  {/* Header Info */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex gap-4">
+                      <div className="relative">
+                        <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden">
+                          <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
+                        </div>
+                        {/* Status Dot (Outside Avatar) */}
+                        <div className={cn(
+                          "absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-white shadow-sm z-10",
+                          selectedFriend.status === 'online' ? 'bg-green-500' : 
+                          selectedFriend.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-300'
+                        )} />
                       </div>
-                      {/* Status Dot (Outside Avatar) */}
-                      <div className={cn(
-                        "absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-white shadow-sm z-10",
-                        selectedFriend.status === 'online' ? 'bg-green-500' : 
-                        selectedFriend.status === 'recent' ? 'bg-yellow-500' : 'bg-slate-300'
-                      )} />
-                    </div>
-                    <div className="pt-2">
-                      <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                        Alex
-                        <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full font-medium">
-                          {selectedFriend.gender === 'male' ? '♂ 24' : '♀ 22'}
-                        </span>
-                      </h2>
-                      <p className="text-slate-500 text-sm mt-1 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        距离 0.8km · {selectedFriend.lastSeen}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                      <Heart className="w-5 h-5" />
-                    </button>
-                    <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                      <MessageCircle className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {["摄影控", "咖啡重度患者", "健身达人", "猫奴"].map(tag => (
-                    <span key={tag} className="px-3 py-1 bg-slate-50 text-slate-600 text-xs rounded-full border border-slate-100">
-                      # {tag}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Recent Moments */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-slate-900">最近动态</h3>
-                    <button className="text-xs text-slate-400 flex items-center">
-                      查看全部 <ChevronRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                  <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-32 h-40 flex-shrink-0 rounded-xl overflow-hidden relative group">
-                        <img src={`https://images.unsplash.com/photo-${1510000000000 + i}?w=200&h=300&fit=crop`} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                      <div className="pt-2">
+                        <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                          Alex
+                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full font-medium">
+                            {selectedFriend.gender === 'male' ? '♂ 24' : '♀ 22'}
+                          </span>
+                        </h2>
+                        <p className="text-slate-500 text-sm mt-1 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          距离 0.8km · {selectedFriend.lastSeen}
+                        </p>
                       </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+                        <Heart className="w-5 h-5" />
+                      </button>
+                      <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+                        <MessageCircle className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-8">
+                    {["摄影控", "咖啡重度患者", "健身达人", "猫奴"].map(tag => (
+                      <span key={tag} className="px-3 py-1 bg-slate-50 text-slate-600 text-xs rounded-full border border-slate-100">
+                        # {tag}
+                      </span>
                     ))}
                   </div>
-                </div>
 
-                {/* Action Button */}
-                <button className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-[0.98] transition-transform">
-                  打招呼
-                </button>
-              </div>
-            </motion.div>
+                  {/* Recent Moments */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-slate-900">最近动态</h3>
+                      <button className="text-xs text-slate-400 flex items-center">
+                        查看全部 <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <div className="flex gap-3 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="w-32 h-40 flex-shrink-0 rounded-xl overflow-hidden relative group">
+                          <img src={`https://images.unsplash.com/photo-${1510000000000 + i}?w=200&h=300&fit=crop`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <button className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl active:scale-[0.98] transition-transform">
+                    打招呼
+                  </button>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
 
