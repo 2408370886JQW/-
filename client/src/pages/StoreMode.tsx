@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, MapPin, ShoppingBag, Users, CheckCircle, Share2, Camera, ScanFace, Fingerprint, Wallet, QrCode, Heart, Beer, Cake, Briefcase, Coffee, Moon } from "lucide-react";
+import { ArrowRight, MapPin, ShoppingBag, Users, CheckCircle, Share2, Camera, ScanFace, Fingerprint, Wallet, QrCode, Heart, Beer, Cake, Briefcase, Coffee, Moon, MessageCircle } from "lucide-react";
 import { MOCK_STORE, RELATIONSHIP_OPTIONS, SCENARIO_ADVICE, STORE_PACKAGES } from "@/data/mockStoreData";
 import StoreHeader from "@/components/StoreHeader";
 import RelationshipModal from "@/components/RelationshipModal";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 
 // Types for Flow State
 type FlowStep = "entry" | "login" | "home" | "scenario" | "package" | "payment" | "success";
@@ -45,7 +46,16 @@ export default function StoreMode({ onExit }: StoreModeProps) {
         
         const processTimer = setTimeout(() => {
           setPaymentState("success");
-          setTimeout(() => setStep("success"), 500);
+          setTimeout(() => {
+            setStep("success");
+            // Trigger confetti when entering success state
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+            });
+          }, 500);
         }, 1500);
         
         return () => clearTimeout(processTimer);
@@ -328,27 +338,38 @@ export default function StoreMode({ onExit }: StoreModeProps) {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", damping: 12 }}
-                className="w-24 h-24 mx-auto bg-green-50 rounded-full flex items-center justify-center mb-8"
+                className="w-24 h-24 mx-auto bg-green-50 rounded-full flex items-center justify-center mb-6"
               >
                 <CheckCircle className="w-12 h-12 text-green-500" strokeWidth={2} />
               </motion.div>
               
-              <h2 className="text-3xl font-bold mb-3 text-slate-900">支付成功</h2>
-              <p className="text-slate-400 mb-12">订单已确认，祝您用餐愉快</p>
+              <h2 className="text-3xl font-bold mb-2 text-slate-900">缘分已在路上</h2>
+              
+              {/* QR Code Section */}
+              <div className="my-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 inline-block shadow-sm">
+                <QrCode className="w-32 h-32 text-slate-800 mx-auto" strokeWidth={1} />
+                <p className="text-xs text-slate-400 mt-3 font-mono tracking-widest">NO.839201</p>
+              </div>
 
-              <div className="space-y-4">
+              <p className="text-slate-500 mb-10 text-sm leading-relaxed max-w-[260px] mx-auto">
+                凭此码到店消费<br/>
+                此刻，也许正有人在附近的动态里等你...
+              </p>
+
+              <div className="space-y-3">
                 <button 
                   onClick={handleGoEncounter}
                   className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl active:scale-95 transition-transform flex items-center justify-center gap-2"
                 >
                   <Users className="w-5 h-5" />
-                  去偶遇
+                  去偶遇吧
                 </button>
                 <button 
-                  onClick={() => onExit()}
-                  className="w-full py-4 bg-slate-50 text-slate-600 rounded-2xl font-bold text-lg active:scale-95 transition-transform hover:bg-slate-100"
+                  onClick={() => onExit("moments")}
+                  className="w-full py-4 bg-white text-slate-600 rounded-2xl font-bold text-lg active:scale-95 transition-transform border border-slate-200 hover:bg-slate-50 flex items-center justify-center gap-2"
                 >
-                  返回首页
+                  <MessageCircle className="w-5 h-5" />
+                  看看大家都在干嘛
                 </button>
               </div>
             </motion.div>
