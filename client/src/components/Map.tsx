@@ -92,43 +92,19 @@ const FORGE_BASE_URL =
   "https://forge.butterfly-effect.dev";
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 
-function loadMapScript(retries = 3) {
-  return new Promise((resolve, reject) => {
-    if (window.google && window.google.maps) {
-      resolve(null);
-      return;
-    }
-    
-    // Check if script is already loading
-    const existingScript = document.querySelector(`script[src*="${MAPS_PROXY_URL}/maps/api/js"]`);
-    if (existingScript) {
-      existingScript.addEventListener('load', () => resolve(null));
-      existingScript.addEventListener('error', () => reject(new Error("Existing script failed")));
-      return;
-    }
-
+function loadMapScript() {
+  return new Promise(resolve => {
     const script = document.createElement("script");
     script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
     script.async = true;
     script.crossOrigin = "anonymous";
-    
     script.onload = () => {
       resolve(null);
+      script.remove(); // Clean up immediately
     };
-    
     script.onerror = () => {
-      document.head.removeChild(script);
-      if (retries > 0) {
-        console.log(`Retrying Google Maps script load... (${retries} attempts left)`);
-        setTimeout(() => {
-          loadMapScript(retries - 1).then(resolve).catch(reject);
-        }, 1000);
-      } else {
-        console.error("Failed to load Google Maps script after multiple attempts");
-        reject(new Error("Failed to load Google Maps script"));
-      }
+      console.error("Failed to load Google Maps script");
     };
-    
     document.head.appendChild(script);
   });
 }
@@ -137,172 +113,35 @@ interface MapViewProps {
   className?: string;
   initialCenter?: google.maps.LatLngLiteral;
   initialZoom?: number;
-  onMapReady?: (map: google.maps.Map, setMarkerData?: (data: any[]) => void) => void;
-  children?: React.ReactNode;
-  markers?: any[]; // Added to allow passing markers for dependency tracking if needed, though not used internally
+  onMapReady?: (map: google.maps.Map) => void;
 }
 
-export default function MapView({
+export function MapView({
   className,
-  initialCenter = { lat: 39.9042, lng: 116.4074 }, // Default to Beijing to match mock data
+  initialCenter = { lat: 37.7749, lng: -122.4194 },
   initialZoom = 12,
   onMapReady,
-  children,
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<google.maps.Map | null>(null);
-  // Ref to hold the setMarkerData function exposed to parent
-  const setMarkerDataRef = useRef<((data: any[]) => void) | null>(null);
 
   const init = usePersistFn(async () => {
-    try {
-      await loadMapScript();
-      if (!mapContainer.current) {
-        console.error("Map container not found");
-        return;
-      }
-      if (window.google && window.google.maps) {
-        // Prevent re-initialization if map already exists
-        if (map.current) return;
-
-        map.current = new window.google.maps.Map(mapContainer.current, {
-          zoom: initialZoom,
-          center: initialCenter,
-          mapTypeControl: false,
-          fullscreenControl: false,
-          zoomControl: false,
-          streetViewControl: false,
-          scaleControl: false,
-          rotateControl: false,
-          panControl: false,
-          mapId: "DEMO_MAP_ID",
-          gestureHandling: "greedy", // Enable single-finger panning
-          clickableIcons: false, // Disable default POI clicks
-          styles: [
-            {
-              "featureType": "all",
-              "elementType": "labels.text.fill",
-              "stylers": [{"saturation": 36}, {"color": "#333333"}, {"lightness": 40}]
-            },
-            {
-              "featureType": "all",
-              "elementType": "labels.text.stroke",
-              "stylers": [{"visibility": "on"}, {"color": "#ffffff"}, {"lightness": 16}]
-            },
-            {
-              "featureType": "all",
-              "elementType": "labels.icon",
-              "stylers": [{"visibility": "off"}]
-            },
-            {
-              "featureType": "administrative",
-              "elementType": "geometry.fill",
-              "stylers": [{"color": "#fefefe"}, {"lightness": 20}]
-            },
-            {
-              "featureType": "administrative",
-              "elementType": "geometry.stroke",
-              "stylers": [{"color": "#fefefe"}, {"lightness": 17}, {"weight": 1.2}]
-            },
-            {
-              "featureType": "landscape",
-              "elementType": "geometry",
-              "stylers": [{"color": "#f5f5f5"}, {"lightness": 20}]
-            },
-            {
-              "featureType": "poi",
-              "elementType": "geometry",
-              "stylers": [{"color": "#f5f5f5"}, {"lightness": 21}]
-            },
-            {
-              "featureType": "poi.park",
-              "elementType": "geometry",
-              "stylers": [{"color": "#dedede"}, {"lightness": 21}]
-            },
-            {
-              "featureType": "road.highway",
-              "elementType": "geometry.fill",
-              "stylers": [{"color": "#ffffff"}, {"lightness": 17}]
-            },
-            {
-              "featureType": "road.highway",
-              "elementType": "geometry.stroke",
-              "stylers": [{"color": "#ffffff"}, {"lightness": 29}, {"weight": 0.2}]
-            },
-            {
-              "featureType": "road.arterial",
-              "elementType": "geometry",
-              "stylers": [{"color": "#ffffff"}, {"lightness": 18}]
-            },
-            {
-              "featureType": "road.local",
-              "elementType": "geometry",
-              "stylers": [{"color": "#ffffff"}, {"lightness": 16}]
-            },
-            {
-              "featureType": "transit",
-              "elementType": "geometry",
-              "stylers": [{"color": "#f2f2f2"}, {"lightness": 19}]
-            },
-            {
-              "featureType": "water",
-              "elementType": "geometry",
-              "stylers": [{"color": "#e9e9e9"}, {"lightness": 17}]
-            }
-          ]
-        });
-      }
-      if (onMapReady && map.current) {
-        // We pass a dummy setMarkerData function initially, 
-        // but the parent is expected to define its own logic inside onMapReady 
-        // using the map instance. 
-        // However, to support the specific pattern used in Home.tsx where 
-        // onMapReady(map, setMarkerData) is called, we need to provide a way.
-        // Since the overlay logic is defined IN the parent, we just pass a placeholder
-        // or let the parent handle it.
-        // Actually, looking at Home.tsx, it defines the overlay logic INSIDE onMapReady.
-        // So we just need to pass the map. The second argument in Home.tsx is `setMarkerData`.
-        // Wait, Home.tsx expects `onMapReady` to PROVIDE `setMarkerData`? 
-        // No, Home.tsx defines: `onMapReady={(map: any, setMarkerData: any) => { ... }}`
-        // This means Home.tsx expects MapView to CALL it with 2 arguments.
-        // So MapView needs to implement the marker logic to pass it back?
-        // OR, Home.tsx is using a pattern where it expects the child to provide a setter.
-        
-        // Let's look at how it was used before.
-        // It seems the previous code in Home.tsx was trying to receive a setter from MapView.
-        // But MapView doesn't have that logic built-in in this generic version.
-        
-        // To fix the TS error and make it work:
-        // We will simply pass a dummy function as the second argument, 
-        // AND we will update Home.tsx to NOT rely on a setter passed from MapView,
-        // but instead define the setter inside Home.tsx itself (which it already does!).
-        
-        // Wait, Home.tsx line 398: `onMapReady={(map: any, setMarkerData: any) => {`
-        // It receives `setMarkerData`.
-        // And then line 400: `setMarkerDataRef.current = setMarkerData;`
-        // And then line 506: `setMarkerDataRef.current = (data: any[]) => { ... }`
-        // It OVERWRITES the ref with its OWN function later!
-        
-        // So the `setMarkerData` argument passed FROM MapView is actually UNUSED or overwritten.
-        // The logic at line 506 defines the function `(data: any[]) => { ... }` which uses `CustomOverlay`.
-        // This function closes over `map` and `overlays`.
-        
-        // So, we can just pass `undefined` or a no-op as the second argument from MapView,
-        // and Home.tsx will work fine because it defines its own setter anyway?
-        // Let's check line 506 again.
-        // `setMarkerDataRef.current = (data: any[]) => { ... }`
-        // Yes, it assigns a NEW function to the ref.
-        
-        // So the fix is: Update MapView to pass a second argument (even if dummy) to satisfy the signature,
-        // OR update Home.tsx to not expect the second argument.
-        // Updating MapView is safer to avoid changing Home.tsx logic too much.
-        
-        onMapReady(map.current, (data: any[]) => {
-           console.log("Default setMarkerData called", data);
-        });
-      }
-    } catch (error) {
-      console.error("Map initialization failed:", error);
+    await loadMapScript();
+    if (!mapContainer.current) {
+      console.error("Map container not found");
+      return;
+    }
+    map.current = new window.google.maps.Map(mapContainer.current, {
+      zoom: initialZoom,
+      center: initialCenter,
+      mapTypeControl: true,
+      fullscreenControl: true,
+      zoomControl: true,
+      streetViewControl: true,
+      mapId: "DEMO_MAP_ID",
+    });
+    if (onMapReady) {
+      onMapReady(map.current);
     }
   });
 
@@ -311,8 +150,6 @@ export default function MapView({
   }, [init]);
 
   return (
-    <div ref={mapContainer} className={cn("w-full h-full min-h-screen absolute inset-0", className)}>
-      {children}
-    </div>
+    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
   );
 }
