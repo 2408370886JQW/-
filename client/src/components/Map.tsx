@@ -144,7 +144,7 @@ interface MapViewProps {
 
 export default function MapView({
   className,
-  initialCenter = { lat: 37.7749, lng: -122.4194 },
+  initialCenter = { lat: 39.9042, lng: 116.4074 }, // Default to Beijing to match mock data
   initialZoom = 12,
   onMapReady,
   children,
