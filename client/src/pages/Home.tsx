@@ -275,48 +275,48 @@ export default function Home() {
     { id: "meet", label: "相见", subtitle: "发现美好生活" },
   ];
 
-  // Custom Overlay Class
-  class CustomOverlay extends google.maps.OverlayView {
-    private div: HTMLDivElement;
-    private position: google.maps.LatLng;
-
-    constructor(position: google.maps.LatLng, content: HTMLElement) {
-      super();
-      this.position = position;
-      this.div = content as HTMLDivElement;
-      this.div.style.position = 'absolute';
-      this.div.style.cursor = 'pointer';
-    }
-
-    onAdd() {
-      const panes = this.getPanes();
-      if (panes) {
-        panes.overlayMouseTarget.appendChild(this.div);
-      }
-    }
-
-    draw() {
-      const overlayProjection = this.getProjection();
-      if (!overlayProjection) return;
-
-      const point = overlayProjection.fromLatLngToDivPixel(this.position);
-      if (point) {
-        this.div.style.left = point.x + 'px';
-        this.div.style.top = point.y + 'px';
-        this.div.style.transform = 'translate(-50%, -100%)'; // Center bottom anchor
-      }
-    }
-
-    onRemove() {
-      if (this.div.parentElement) {
-        this.div.parentElement.removeChild(this.div);
-      }
-    }
-  }
-
   // Update markers when tab changes
   useEffect(() => {
     if (!mapInstance) return;
+
+    // Custom Overlay Class - Defined inside useEffect to ensure google is available
+    class CustomOverlay extends google.maps.OverlayView {
+      private div: HTMLDivElement;
+      private position: google.maps.LatLng;
+
+      constructor(position: google.maps.LatLng, content: HTMLElement) {
+        super();
+        this.position = position;
+        this.div = content as HTMLDivElement;
+        this.div.style.position = 'absolute';
+        this.div.style.cursor = 'pointer';
+      }
+
+      onAdd() {
+        const panes = this.getPanes();
+        if (panes) {
+          panes.overlayMouseTarget.appendChild(this.div);
+        }
+      }
+
+      draw() {
+        const overlayProjection = this.getProjection();
+        if (!overlayProjection) return;
+
+        const point = overlayProjection.fromLatLngToDivPixel(this.position);
+        if (point) {
+          this.div.style.left = point.x + 'px';
+          this.div.style.top = point.y + 'px';
+          this.div.style.transform = 'translate(-50%, -100%)'; // Center bottom anchor
+        }
+      }
+
+      onRemove() {
+        if (this.div.parentElement) {
+          this.div.parentElement.removeChild(this.div);
+        }
+      }
+    }
 
     // Clear existing overlays
     overlays.forEach(overlay => overlay.setMap(null));
@@ -847,7 +847,7 @@ export default function Home() {
                 <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14 relative">
                   {/* Back Button */}
                   <button 
-                    onClick={() => setActiveTab("encounter" as TabType)}
+                    onClick={() => setActiveTab("encounter")}
                     className="absolute top-4 left-4 p-2 bg-white shadow-sm border border-slate-100 rounded-full text-slate-900 z-10 active:scale-95 transition-transform"
                   >
                     <ArrowLeft className="w-6 h-6" />
