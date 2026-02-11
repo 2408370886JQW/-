@@ -76,7 +76,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // Step 6: Success Page
   if (step === 6) {
     return (
-      <div className="fixed inset-0 bg-white z-50 flex flex-col">
+      <div className="fixed inset-0 bg-white z-[100] flex flex-col">
         {/* Header */}
         <div className="px-6 pt-12 pb-4 flex justify-between items-center">
           <button onClick={() => onNavigate('encounter')} className="p-2 -ml-2">
@@ -157,7 +157,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col overflow-hidden">
+    <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
       {/* Step 5: Payment Overlay */}
       <AnimatePresence>
         {step === 5 && (
@@ -165,7 +165,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
           >
             <motion.div 
               initial={{ y: '100%' }}
@@ -202,7 +202,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       </AnimatePresence>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col relative overflow-y-auto bg-slate-50">
+      <div className="flex-1 flex flex-col relative overflow-y-auto bg-slate-50 no-scrollbar">
         
         {/* Step 1: Scenario Selection */}
         {step === 1 && (
@@ -218,7 +218,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <p className="text-slate-400 text-sm">选择一个场景，开启你的社交之旅</p>
             </div>
 
-            <div className="flex-1 px-6 pb-48 bg-white">
+            <div className="flex-1 px-6 pb-64 bg-white">
               <div className="grid grid-cols-2 gap-4">
                 {SCENARIOS_STEP1.map((scenario) => (
                   <motion.button
@@ -242,8 +242,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               </div>
             </div>
 
-            {/* Bottom Scan Card */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent pt-12">
+            {/* Bottom Scan Card - Fixed Position */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent pt-12 pb-24">
               <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shadow-slate-200">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -265,7 +265,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
         {/* Step 2: Relation Selection */}
         {step === 2 && (
-          <>
+          <div className="fixed inset-0 z-[60] bg-white flex flex-col">
             {/* Header Image */}
             <div className="h-64 relative">
               <img 
@@ -312,12 +312,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 <button className="text-slate-400 text-sm">暂不进店</button>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {/* Step 3: Suggestion Page */}
         {step === 3 && (
-          <div className="bg-white min-h-full flex flex-col">
+          <div className="fixed inset-0 z-[60] bg-white flex flex-col">
             {/* Header */}
             <div className="px-6 pt-12 pb-4 flex items-center gap-4">
               <button onClick={handleBack} className="p-2 -ml-2">
@@ -395,7 +395,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
         {/* Step 4: Detail Page */}
         {step === 4 && (
-          <div className="bg-white min-h-full flex flex-col">
+          <div className="fixed inset-0 z-[60] bg-white flex flex-col">
             {/* Header Image */}
             <div className="h-72 relative">
               <img 
