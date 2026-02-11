@@ -267,8 +267,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
         {/* Step 2: Relation Selection */}
         {step === 2 && (
-          <div className="fixed inset-0 z-[2000] bg-white flex flex-col">
-            {/* Header Image */}
+          <div className="fixed inset-0 z-[2000] bg-white overflow-y-auto h-[100dvh]">
+            {/* Header Image - Scrolls with page */}
             <div className="h-64 relative">
               <img 
                 src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80" 
@@ -276,7 +276,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/30"></div>
-              <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-start">
+              <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-start z-20">
                 <button 
                   onClick={handleBack}
                   className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
@@ -284,14 +284,14 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               </div>
-              <div className="absolute bottom-6 left-6 text-white">
+              <div className="absolute bottom-6 left-6 text-white z-20">
                 <p className="text-xs opacity-80 mb-1">当前位置</p>
                 <h2 className="text-2xl font-bold">花田错·创意餐厅</h2>
               </div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 bg-white rounded-t-[2rem] -mt-6 relative z-10 px-6 pt-8 pb-12 overflow-y-auto">
+            {/* Content - Scrolls naturally */}
+            <div className="bg-white rounded-t-[2rem] -mt-6 relative z-10 px-6 pt-8 pb-12 min-h-[calc(100dvh-16rem)]">
               <h2 className="text-2xl font-bold text-center text-slate-900 mb-8">今天和谁相见</h2>
               
               <div className="grid grid-cols-2 gap-4">
@@ -310,7 +310,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 ))}
               </div>
               
-              <div className="text-center mt-8">
+              <div className="text-center mt-8 pb-8">
                 <button className="text-slate-400 text-sm">暂不进店</button>
               </div>
             </div>
@@ -396,55 +396,59 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
         {/* Step 4: Detail Page */}
         {step === 4 && (
-          <div className="fixed inset-0 z-[2000] bg-white flex flex-col overflow-hidden">   {/* Header Image */}
-            <div className="h-72 relative">
-              <img 
-                src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80" 
-                alt="Dining" 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center">
-                <button 
-                  onClick={handleBack}
-                  className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <span className="text-white font-bold">详情</span>
-                <div className="w-10"></div>
-              </div>
-              <div className="absolute bottom-6 left-6 text-white">
-                <h2 className="text-3xl font-bold mb-1">初见 双人轻食</h2>
-                <p className="text-2xl font-bold">198</p>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 px-6 py-8 overflow-y-auto">
-              <div className="mb-8">
-                <h3 className="text-lg font-bold text-slate-900 mb-4">包含</h3>
-                <div className="space-y-6">
-                  {['牛油果大虾沙拉', '黑松露奶油意面', '特调无酒精鸡尾酒', '提拉米苏'].map((item) => (
-                    <div key={item} className="text-slate-600 border-b border-slate-50 pb-4 last:border-0">
-                      {item}
-                    </div>
-                  ))}
+          <div className="fixed inset-0 z-[2000] bg-white flex flex-col h-[100dvh]">
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Header Image - Scrolls with content */}
+              <div className="h-72 relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80" 
+                  alt="Dining" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute top-0 left-0 right-0 p-6 pt-12 flex justify-between items-center z-20">
+                  <button 
+                    onClick={handleBack}
+                    className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <span className="text-white font-bold">详情</span>
+                  <div className="w-10"></div>
+                </div>
+                <div className="absolute bottom-6 left-6 text-white z-20">
+                  <h2 className="text-3xl font-bold mb-1">初见 双人轻食</h2>
+                  <p className="text-2xl font-bold">198</p>
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 mb-4">须知</h3>
-                <div className="space-y-4 text-slate-500">
-                  <p>随时退</p>
-                  <p>免预约</p>
-                  <p>仅限堂食</p>
+              {/* Content */}
+              <div className="px-6 py-8 pb-8">
+                <div className="mb-8">
+                  <h3 className="text-lg font-bold text-slate-900 mb-4">包含</h3>
+                  <div className="space-y-6">
+                    {['牛油果大虾沙拉', '黑松露奶油意面', '特调无酒精鸡尾酒', '提拉米苏'].map((item) => (
+                      <div key={item} className="text-slate-600 border-b border-slate-50 pb-4 last:border-0">
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-4">须知</h3>
+                  <div className="space-y-4 text-slate-500">
+                    <p>随时退</p>
+                    <p>免预约</p>
+                    <p>仅限堂食</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Bar */}
-            <div className="bg-white border-t border-slate-100 p-4 pb-8 flex items-center justify-between px-8 z-[2001] shrink-0">
+            {/* Bottom Bar - Fixed at bottom of flex container */}
+            <div className="bg-white border-t border-slate-100 p-4 pb-8 flex items-center justify-between px-8 z-[2001] shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
               <div>
                 <span className="text-xs text-slate-400 block">总计</span>
                 <span className="text-2xl font-bold text-slate-900">198</span>
