@@ -1,55 +1,36 @@
 # Restoration Tasks
 
-## Phase 1: Map Page & User Markers (Screenshots 1 & 2)
-- [ ] **User Markers**:
-    - [ ] Gender color coding: Blue for male, Pink for female (Check `Home.tsx` marker rendering)
-    - [ ] Status dots: Green (Online), Yellow (Recent), Gray (Offline) (Check `Home.tsx` marker rendering)
-    - [ ] Avatar border: 2px solid border matching gender color
-    - [ ] Pulse effect for online users? (Check if needed based on static screenshot, likely yes for "Online")
-- [ ] **Top Tab Bar**:
-    - [ ] Layout: "偶遇", "好友", "动态", "相见" evenly distributed
-    - [ ] Active state: Blue underline indicator, bold text
-    - [ ] Subtitle: Small text below main label (e.g., "身边的人", "我的好友")
-- [ ] **Bottom Navigation**:
-    - [ ] Icons: Map, Circle (Users), Add (Plus), Message, Profile
-    - [ ] Labels: "地图", "圈子", "发布动态", "消息", "我的"
-    - [ ] Center "Add" button styling: Dark circle with white plus
-- [ ] **Map Controls**:
-    - [ ] Filter button (Funnel icon) position: Top right
-    - [ ] Layer/Menu button (Chevron down) position: Below filter button
-    - [ ] Location/Recenter button: Bottom left
+## Phase 1: Implement Step 1: Scenario Selection (Screenshots 7 & 8)
+- [ ] Create `MeetPage.tsx` structure with state machine (step 1-4).
+- [ ] Implement Step 1 UI:
+    - [ ] Header: "选择相见场景", "选择一个场景，开启你的社交之旅", Back button.
+    - [ ] Grid: 7 scenarios (Date, Bestie, Bro, Birthday, Business, Hangout, LateNight).
+    - [ ] "Bro" card selected state (blue border).
+    - [ ] Bottom Card: "扫码进店", "开启扫码" button.
 
-## Phase 2: User Card & Filter Modal (Screenshots 3 & 4)
-- [ ] **User Card (`3.png`)**:
-    - [ ] Layout: Bottom sheet style
-    - [ ] Content: Avatar (left), Name & Status (right), Tags (Zodiac, Hobby, etc.)
-    - [ ] Buttons: "打招呼" (Dark), "查看主页" (Light)
-    - [ ] Close interaction: Drag down or click outside
-- [ ] **Filter Modal (`4.png`)**:
-    - [ ] **Gender**: "全部", "男生" (Blue icon), "女生" (Pink icon)
-    - [ ] **Age**: "18-22", "23-26", "27-35", "35+"
-    - [ ] **Zodiac**: 12 signs grid (Aries to Pisces)
-    - [ ] "Confirm" button: Full width, dark background
+## Phase 2: Implement Step 2: Venue & Relation Selection (Screenshot 11)
+- [ ] Implement Step 2 UI:
+    - [ ] Header: Venue image background, "花田错·创意餐厅".
+    - [ ] Title: "今天和谁相见".
+    - [ ] Grid: 6 relations (FirstMeet, Couple, Bestie, Bro, Alone, Family).
+    - [ ] Icons and colors matching screenshot 11.
 
-## Phase 3: Moments Page (`5.png`)
-- [ ] **Layout**:
-    - [ ] Waterfall/Masonry layout (2 columns)
-    - [ ] Card style: Rounded corners, white background, shadow
-- [ ] **Card Content**:
-    - [ ] Image: Cover aspect ratio
-    - [ ] User info: Avatar + Name (bottom left)
-    - [ ] Stats: Heart icon + Like count (bottom right)
-    - [ ] Overlay: Gradient at bottom for text readability? (Check screenshot)
+## Phase 3: Implement Step 3: Payment Verification (Screenshot 22)
+- [ ] Implement Step 3 UI:
+    - [ ] Modal/Overlay style.
+    - [ ] "订单金额 ¥198".
+    - [ ] Face ID animation (blue scanning lines).
+    - [ ] "正在验证面容 ID...".
 
-## Phase 4: Meet Page (`7.png`)
-- [ ] **Scenario Grid**:
-    - [ ] 2 columns grid
-    - [ ] Items: "约会", "闺蜜", "兄弟", "生日", "商务", "坐坐"
-    - [ ] Styling: Icon + Label + "点击进入" text
-    - [ ] Colors: Specific color coding for each scenario icon/bg
-- [ ] **Header**:
-    - [ ] Title: "选择相见场景"
-    - [ ] Subtitle: "选择一个场景，开启你的社交之旅"
+## Phase 4: Implement Step 4: Success Page (Screenshots 33 & 44)
+- [ ] Implement Step 4 UI:
+    - [ ] Full screen success state.
+    - [ ] Green checkmark icon "支付已完成".
+    - [ ] QR Code card (white bg, shadow).
+    - [ ] Verification code "8392 1029".
+    - [ ] Bottom buttons: "去偶遇" (Dark), "打发你的等待时间" (Light).
 
-## Phase 5: Final Check
-- [ ] Walkthrough all pages and compare with screenshots side-by-side
+## Phase 5: Final Integration & Verification
+- [ ] Integrate `MeetPage` into `Home.tsx`.
+- [ ] Verify flow: Step 1 -> Step 2 -> Step 3 -> Step 4.
+- [ ] Ensure all styles match screenshots pixel-perfectly.
