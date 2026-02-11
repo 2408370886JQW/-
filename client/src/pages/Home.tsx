@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Layout from "@/components/Layout";
-import StoreMode from "./StoreMode";
+import MeetPage from "@/components/MeetPage";
 import MomentDetail from "@/components/MomentDetail";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronUp, ChevronDown } from "lucide-react";
@@ -220,7 +220,7 @@ export default function Home() {
   const [overlays, setOverlays] = useState<google.maps.OverlayView[]>([]);
   
   // New state for Meet page
-  const [activeScenario, setActiveScenario] = useState("date");
+
   const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
   const [ageFilter, setAgeFilter] = useState<string | null>(null);
   const [zodiacFilter, setZodiacFilter] = useState<string | null>(null);
@@ -237,7 +237,7 @@ export default function Home() {
   // State for Nav Hiding
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [isMeetHeaderCollapsed, setIsMeetHeaderCollapsed] = useState(false);
-  const [showStoreMode, setShowStoreMode] = useState(false);
+
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLDivElement>(null);
   const shopCardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -846,56 +846,9 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={cn(
-                "absolute inset-0 bg-slate-50 flex flex-col",
-                showStoreMode ? "z-[100]" : "z-20"
-              )}
+              className="absolute inset-0 bg-slate-50 z-20 flex flex-col"
             >
-              {showStoreMode ? (
-                <StoreMode onExit={(targetTab) => {
-                  setShowStoreMode(false);
-                  if (targetTab) {
-                    setActiveTab(targetTab as TabType);
-                  }
-                }} />
-              ) : (
-                <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14 relative">
-                  {/* Back Button Removed to match Screenshot 7 */}
-
-                  <div className="mb-6 pt-12">
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2">相见</h2>
-                    <p className="text-slate-500 mb-6">发现美好生活，开启社交之旅</p>
-                    
-                    {/* Scenario Selection Grid - Restored to match Screenshot 7.png */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {SCENARIOS.map((scenario) => {
-                        const Icon = scenario.icon;
-                        return (
-                          <button
-                            key={scenario.id}
-                            onClick={() => {
-                              setActiveScenario(scenario.id);
-                              setShowStoreMode(true);
-                            }}
-                            className="relative p-6 rounded-3xl text-left transition-all active:scale-95 bg-white shadow-sm border border-slate-100 hover:shadow-md flex flex-col items-start h-40 justify-between"
-                          >
-                            <div className={cn(
-                              "w-12 h-12 rounded-2xl flex items-center justify-center",
-                              scenario.bg
-                            )}>
-                              <Icon className={cn("w-6 h-6", scenario.color)} />
-                            </div>
-                            <div>
-                              <div className="font-bold text-slate-900 text-xl mb-1">{scenario.label}</div>
-                              <div className="text-xs text-slate-400">点击进入</div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
+              <MeetPage onNavigate={(tab) => setActiveTab(tab as TabType)} />
             </motion.div>
           )}
         </AnimatePresence>
