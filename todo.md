@@ -1,26 +1,28 @@
-# Refactoring Tasks (Layout Hierarchy)
+# Critical Fix Tasks (Fullscreen & Flow)
 
-## Phase 1: Refactor Layout Hierarchy & Fix Occlusion
-- [ ] **Fix Tab Bar Visibility (Step 1)**:
-    - [ ] Modify `Home.tsx`: Ensure `MeetPage` container for Step 1 is rendered *inside* the main content area (z-index < Tab Bar).
-    - [ ] Currently `MeetPage` container has `z-20` and `absolute inset-0`. Check if Tab Bar in `Layout.tsx` has higher z-index.
-    - [ ] If `MeetPage` handles its own full-screen logic for Step 2+, `Home.tsx` should pass the `step` state or `MeetPage` should portal Step 2+ to body.
-    - [ ] **Simpler Approach**: Keep `MeetPage` inside `Home` layout. Only Step 2+ components use `fixed inset-0 z-[100]` to cover everything. Step 1 component uses `relative` or `absolute` but respects Tab Bar.
+## Phase 1: Fix Fullscreen Overlay & Restore Flow
+- [ ] **Force Fullscreen for Step 2+**:
+    - [ ] In `MeetPage.tsx`, modify the container for Step 2, 3, 4, 5, 6.
+    - [ ] Change `fixed inset-0 z-[60]` to `fixed inset-0 z-[100]` (or higher than Tab Bar's z-50).
+    - [ ] Ensure `bg-white` is applied to cover the underlying Step 1 and Tab Bar.
 
-- [ ] **Fix Scan Card Occlusion (Step 1)**:
-    - [ ] In `MeetPage.tsx` (Step 1):
-        - [ ] Increase `pb-64` to `pb-80` or more for the scroll container.
-        - [ ] Ensure the Scan Card container has `pointer-events-none` for the transparent gradient part, and `pointer-events-auto` for the card itself (if needed, but better to just position it).
-        - [ ] Verify `bottom-0` positioning relative to the viewport vs container.
+- [ ] **Restore "Order" Button Visibility (Step 4)**:
+    - [ ] In Step 4 (Detail Page), check the bottom "Order" bar.
+    - [ ] Ensure it is `fixed bottom-0 left-0 right-0 z-[101]`.
+    - [ ] Add `pb-24` to the scrollable content of Step 4 so the last item isn't hidden behind the fixed Order bar.
 
-- [ ] **Visual Tweaks**:
-    - [ ] Re-verify grid aspect ratios.
-    - [ ] Ensure "Scan Card" looks exactly like the video (floating above content, but below Tab Bar if Tab Bar is visible? No, video shows Scan Card is *above* content list, but Tab Bar is *below* Scan Card? Wait, in video Step 1 has Tab Bar. Scan Card is at bottom of page content. Tab Bar is at bottom of screen. So Scan Card should be `bottom-[tab_bar_height + spacing]`).
-    - [ ] **Correction**: The Scan Card is likely *part of the scrollable content* or fixed *above* the Tab Bar. In the screenshot `IMG_2073.PNG`, the Scan Card is at the bottom, and there is a "+" button and Tab Bar below it. So Scan Card should be fixed at `bottom-24` (approx) or just above Tab Bar.
+- [ ] **Verify Payment & Success Flow**:
+    - [ ] Check `handleOrder` function.
+    - [ ] Ensure it sets `step` to 5 (Payment).
+    - [ ] Ensure Step 5 auto-transitions to Step 6 (Success) after timeout.
+    - [ ] Ensure Step 6 is also `z-[100]` fullscreen.
+
+- [ ] **Step 1 Layout Tweak**:
+    - [ ] Re-verify Scan Card position in Step 1. It should be `bottom-24` (above Tab Bar).
+    - [ ] Ensure Step 1 container is NOT `z-[100]`, allowing Tab Bar to show.
 
 - [ ] **Action Plan**:
-    1.  Read `Layout.tsx` to check Tab Bar z-index and height.
-    2.  Modify `MeetPage.tsx`:
-        -   Step 1: Remove `fixed/absolute` overlay if it blocks Tab Bar.
-        -   Step 1 Scan Card: Position it `fixed bottom-24` (adjust for Tab Bar) or `sticky bottom-0`.
-        -   Step 2+: Keep `fixed inset-0 z-[100]` to cover everything.
+    1.  Edit `MeetPage.tsx`:
+        -   Update Step 2+ container class: `fixed inset-0 z-[100] bg-white flex flex-col`.
+        -   Update Step 4 bottom bar: `absolute bottom-0 ... z-[101]`.
+        -   Verify `handleOrder` logic.

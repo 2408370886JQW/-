@@ -165,7 +165,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
+            className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-end justify-center"
           >
             <motion.div 
               initial={{ y: '100%' }}
@@ -267,7 +267,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
         {/* Step 2: Relation Selection */}
         {step === 2 && (
-          <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+          <div className="fixed inset-0 z-[100] bg-white flex flex-col">
             {/* Header Image */}
             <div className="h-64 relative">
               <img 
@@ -319,8 +319,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
         {/* Step 3: Suggestion Page */}
         {step === 3 && (
-          <div className="fixed inset-0 z-[60] bg-white flex flex-col">
-            {/* Header */}
+          <div className="fixed inset-0 z-[100] bg-slate-50 flex flex-col overflow-y-auto no-scrollbar">
             <div className="px-6 pt-12 pb-4 flex items-center gap-4">
               <button onClick={handleBack} className="p-2 -ml-2">
                 <ArrowLeft className="w-6 h-6 text-slate-900" />
@@ -397,8 +396,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
         {/* Step 4: Detail Page */}
         {step === 4 && (
-          <div className="fixed inset-0 z-[60] bg-white flex flex-col">
-            {/* Header Image */}
+          <div className="fixed inset-0 z-[100] bg-white flex flex-col overflow-hidden">   {/* Header Image */}
             <div className="h-72 relative">
               <img 
                 src="https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80" 
@@ -446,7 +444,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
 
             {/* Bottom Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 pb-8 flex items-center justify-between px-8">
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 pb-8 flex items-center justify-between px-8 z-[101]">
               <div>
                 <span className="text-xs text-slate-400 block">总计</span>
                 <span className="text-2xl font-bold text-slate-900">198</span>
