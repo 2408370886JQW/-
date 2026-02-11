@@ -421,7 +421,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
 
             {/* Content */}
-            <div className="flex-1 px-6 py-8 pb-32 overflow-y-auto">
+            <div className="flex-1 px-6 py-8 overflow-y-auto">
               <div className="mb-8">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">包含</h3>
                 <div className="space-y-6">
@@ -444,7 +444,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
 
             {/* Bottom Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 p-4 pb-8 flex items-center justify-between px-8 z-[2001]">
+            <div className="bg-white border-t border-slate-100 p-4 pb-8 flex items-center justify-between px-8 z-[2001] shrink-0">
               <div>
                 <span className="text-xs text-slate-400 block">总计</span>
                 <span className="text-2xl font-bold text-slate-900">198</span>
