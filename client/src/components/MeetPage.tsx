@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, 
   Camera, 
@@ -53,7 +54,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // Steps: 
   // 1: Scan Entry (Overlay on Map)
   // 2: Relation Selection (Full Screen)
-  // 3: Suggestion Page (Full Screen)
+  // 3: Venue & Package List (Full Screen) - NEW STEP
   // 4: Detail Page (Full Screen)
   // 5: Payment Verification (Overlay)
   // 6: Success Page (Full Screen)
@@ -66,6 +67,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       const timer = setTimeout(() => {
         setStep(6);
         setIsPaying(false);
+        // Trigger confetti on success
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#FF69B4', '#FFD700', '#00BFFF', '#32CD32']
+        });
       }, 2500);
       return () => clearTimeout(timer);
     }
@@ -109,23 +117,27 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <div className="flex-1 px-6 overflow-y-auto pb-24">
                 <div className="grid grid-cols-2 gap-4">
                   {RELATIONS_STEP2.map((item) => (
-                    <button
+                    <motion.button
                       key={item.id}
+                      whileTap={{ scale: 0.9 }}
                       onClick={() => setStep(3)}
-                      className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-all active:scale-95"
+                      className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-all"
                     >
-                      <div className={`w-16 h-16 ${item.bg} rounded-full flex items-center justify-center`}>
+                      <motion.div 
+                        whileTap={{ scale: 1.2, rotate: 10 }}
+                        className={`w-16 h-16 ${item.bg} rounded-full flex items-center justify-center`}
+                      >
                         <item.icon className={`w-8 h-8 ${item.color}`} />
-                      </div>
+                      </motion.div>
                       <span className="font-bold text-slate-900">{item.label}</span>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Step 3: Suggestion Page */}
+          {/* Step 3: Venue & Package List (Optimized Flow) */}
           {step === 3 && (
             <div className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24">
               {/* Header Image */}
@@ -143,66 +155,78 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <ArrowLeft className="w-6 h-6" />
                 </button>
                 <div className="absolute bottom-6 left-6 text-white">
-                  <h1 className="text-3xl font-bold mb-2">第一次见面·建议</h1>
+                  <h1 className="text-3xl font-bold mb-2">花田错·西餐厅</h1>
                   <div className="flex items-center gap-2 text-sm opacity-90">
-                    <span className="bg-white/20 px-2 py-1 rounded-lg backdrop-blur-md">轻松不尴尬</span>
-                    <span className="bg-white/20 px-2 py-1 rounded-lg backdrop-blur-md">环境安静</span>
+                    <MapPin className="w-4 h-4" />
+                    <span>三里屯太古里北区 N4-30</span>
                   </div>
                 </div>
               </div>
 
-              {/* Timeline Content */}
-              <div className="px-6 py-8 space-y-8">
-                {/* Item 1 */}
-                <div className="relative pl-8 border-l-2 border-slate-200">
-                  <div className="absolute -left-[9px] top-0 w-4 h-4 bg-slate-900 rounded-full border-4 border-slate-50"></div>
-                  <div className="mb-4">
-                    <span className="text-slate-400 text-sm font-mono">14:00</span>
-                    <h3 className="text-xl font-bold text-slate-900">见面破冰</h3>
-                  </div>
-                  <div 
-                    onClick={() => setStep(4)}
-                    className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 active:scale-95 transition-transform cursor-pointer"
-                  >
-                    <div className="flex gap-4">
-                      <img 
-                        src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80" 
-                        alt="Cafe" 
-                        className="w-20 h-20 rounded-xl object-cover"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-bold text-slate-900 mb-1">初见 双人轻食</h4>
-                        <p className="text-slate-400 text-xs mb-2">适合初次见面的开放式环境</p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-orange-500 font-bold">¥198</span>
-                          <div className="bg-slate-900 text-white px-3 py-1 rounded-full text-xs font-bold">
-                            去这里
-                          </div>
+              {/* Package List */}
+              <div className="px-6 py-8 space-y-6">
+                <h3 className="font-bold text-lg text-slate-900">精选套餐</h3>
+                
+                {/* Package 1 */}
+                <motion.div 
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setStep(4)}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
+                >
+                  <div className="flex gap-4">
+                    <img 
+                      src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80" 
+                      alt="Food" 
+                      className="w-24 h-24 rounded-xl object-cover"
+                    />
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-lg mb-1">初见·双人轻食套餐</h4>
+                        <p className="text-slate-400 text-xs line-clamp-2">牛油果鲜虾沙拉 + 黑松露奶油意面 + 特调气泡水x2</p>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-orange-500 font-bold text-sm">¥</span>
+                          <span className="text-orange-500 font-bold text-xl">198</span>
+                          <span className="text-slate-300 text-xs line-through ml-1">¥298</span>
+                        </div>
+                        <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold">
+                          抢购
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
-                {/* Item 2 */}
-                <div className="relative pl-8 border-l-2 border-slate-200">
-                  <div className="absolute -left-[9px] top-0 w-4 h-4 bg-slate-300 rounded-full border-4 border-slate-50"></div>
-                  <div className="mb-4">
-                    <span className="text-slate-400 text-sm font-mono">16:00</span>
-                    <h3 className="text-xl font-bold text-slate-900">一起看展</h3>
-                  </div>
-                  <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 opacity-60">
-                    <div className="flex gap-4">
-                      <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center">
-                        <Camera className="w-8 h-8 text-slate-300" />
+                {/* Package 2 */}
+                <motion.div 
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 opacity-60"
+                >
+                  <div className="flex gap-4">
+                    <img 
+                      src="https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80" 
+                      alt="Food" 
+                      className="w-24 h-24 rounded-xl object-cover"
+                    />
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-lg mb-1">豪华·澳洲M5牛排餐</h4>
+                        <p className="text-slate-400 text-xs line-clamp-2">澳洲M5和牛 + 鹅肝 + 红酒x2</p>
                       </div>
-                      <div className="flex-1 py-2">
-                        <h4 className="font-bold text-slate-900 mb-1">UCCA 年度大展</h4>
-                        <p className="text-slate-400 text-xs">有话题不冷场</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-orange-500 font-bold text-sm">¥</span>
+                          <span className="text-orange-500 font-bold text-xl">520</span>
+                          <span className="text-slate-300 text-xs line-through ml-1">¥888</span>
+                        </div>
+                        <div className="bg-slate-100 text-slate-400 px-4 py-1.5 rounded-full text-xs font-bold">
+                          售罄
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </div>
             </div>
           )}
@@ -298,12 +322,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       <span className="text-2xl text-orange-500 font-bold">198</span>
                     </div>
                   </div>
-                  <button 
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setStep(5)}
-                    className="flex-[2] bg-slate-900 text-white h-14 rounded-full font-bold text-lg shadow-lg shadow-slate-200 active:scale-95 transition-transform flex items-center justify-center"
+                    className="flex-[2] bg-slate-900 text-white h-14 rounded-full font-bold text-lg shadow-lg shadow-slate-200 flex items-center justify-center"
                   >
                     立即下单
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -343,12 +368,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                           <div className="w-3 h-3 bg-slate-900 rounded-full"></div>
                         </div>
                       </div>
-                      <button 
+                      <motion.button 
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setIsPaying(true)}
-                        className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200 active:scale-95 transition-transform"
+                        className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
                       >
                         确认支付 ¥198
-                      </button>
+                      </motion.button>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-8">
@@ -391,18 +417,28 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
               <div className="flex-1 px-6 flex flex-col">
                 {/* Success Icon */}
-                <div className="mb-6">
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                  className="mb-6"
+                >
                   <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-200">
                     <Check className="w-8 h-8 text-white stroke-[3]" />
                   </div>
                   <h1 className="text-3xl font-bold text-slate-900 mb-1">支付</h1>
                   <h1 className="text-3xl font-bold text-slate-900">已完成</h1>
-                </div>
+                </motion.div>
 
-                <p className="text-slate-400 text-sm mb-6">请向店员出示核销码</p>
+                <p className="text-slate-400 text-sm mb-6">祝你们玩得开心！请向店员出示核销码</p>
 
                 {/* QR Code Card */}
-                <div className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] mb-8 flex flex-col items-center">
+                <motion.div 
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] mb-8 flex flex-col items-center"
+                >
                   <div className="w-48 h-48 bg-slate-900 rounded-3xl p-4 mb-6 relative overflow-hidden">
                     {/* Mock QR Code */}
                     <div className="absolute inset-0 border-[16px] border-white rounded-3xl"></div>
@@ -419,31 +455,41 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <div className="text-2xl font-mono font-bold text-slate-900 tracking-widest">
                     8392 1029
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Status List */}
                 <div className="space-y-4 mb-8">
-                  {['此刻', '附近', '有趣的灵魂', '正在游荡'].map((item) => (
-                    <div key={item} className="text-slate-600 font-medium">
+                  {['此刻', '附近', '有趣的灵魂', '正在游荡'].map((item, index) => (
+                    <motion.div 
+                      key={item} 
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.4 + index * 0.1 }}
+                      className="text-slate-600 font-medium"
+                    >
                       {item}
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
 
                 {/* Buttons */}
                 <div className="mt-auto pb-8 space-y-4">
-                  <button 
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => { setStep(1); onNavigate('encounter'); }}
                     className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200 flex items-center justify-between px-8"
                   >
                     <span>去偶遇</span>
                     <ArrowLeft className="w-5 h-5 rotate-180" />
-                  </button>
+                  </motion.button>
                   
-                  <button className="w-full bg-white text-slate-900 border border-slate-100 py-4 rounded-full font-bold text-lg shadow-sm flex items-center justify-between px-8">
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
+                    className="w-full bg-white text-slate-900 border border-slate-100 py-4 rounded-full font-bold text-lg shadow-sm flex items-center justify-between px-8"
+                  >
                     <span>打发你的等待时间</span>
                     <Share2 className="w-5 h-5 text-slate-400" />
-                  </button>
+                  </motion.button>
 
                   <div className="text-center pt-2">
                     <button onClick={() => setStep(1)} className="text-slate-400 text-sm">
@@ -469,7 +515,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
         <>
           {/* Bottom Scan Card - Replicating Frame 060 Style */}
           <div className="fixed bottom-24 left-4 right-4 z-[100]">
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden">
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden"
+            >
               {/* Decorative Circles */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-10 -mb-10 blur-xl"></div>
@@ -485,15 +535,16 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   </div>
                 </div>
                 
-                <button 
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setStep(2)}
-                  className="w-full bg-white text-indigo-600 py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform"
+                  className="w-full bg-white text-indigo-600 py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg"
                 >
                   <Camera className="w-5 h-5" />
                   模拟扫码进店
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           </div>
         </>
       )}
