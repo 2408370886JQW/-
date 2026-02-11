@@ -54,16 +54,18 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // 6: Success Page
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const [isScanning, setIsScanning] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
 
   // Simulate Face ID scan
   useEffect(() => {
-    if (step === 5) {
+    if (isPaying) {
       const timer = setTimeout(() => {
         setStep(6);
+        setIsPaying(false);
       }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [step]);
+  }, [isPaying]);
 
   const handleBack = () => {
     if (step > 1) {
@@ -179,23 +181,45 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 <span className="text-3xl font-bold text-slate-900">¥198</span>
               </div>
 
-              <div className="flex flex-col items-center justify-center py-8">
-                <div className="relative w-24 h-24 mb-6">
-                  <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 border-4 border-blue-100 border-t-blue-500 rounded-full"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <ScanLine className="w-10 h-10 text-blue-500" />
+              {!isPaying ? (
+                <div className="space-y-4">
+                  <div className="bg-slate-50 p-4 rounded-2xl flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <Check className="w-6 h-6 text-white" />
+                      </div>
+                      <span className="font-bold text-slate-900">微信支付</span>
+                    </div>
+                    <div className="w-6 h-6 rounded-full border-2 border-slate-900 flex items-center justify-center">
+                      <div className="w-3 h-3 bg-slate-900 rounded-full"></div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsPaying(true)}
+                    className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200 active:scale-95 transition-transform"
+                  >
+                    确认支付 ¥198
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <div className="relative w-24 h-24 mb-6">
+                    <motion.div 
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-0 border-4 border-blue-100 border-t-blue-500 rounded-full"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ScanLine className="w-10 h-10 text-blue-500" />
+                    </div>
+                  </div>
+                  <p className="text-slate-900 font-medium mb-2">正在验证面容 ID...</p>
+                  <div className="flex items-center gap-2 text-slate-400 text-sm">
+                    <div className="w-4 h-4 border border-slate-300 rounded-full flex items-center justify-center text-[10px]">ID</div>
+                    安全支付保障中
                   </div>
                 </div>
-                <p className="text-slate-900 font-medium mb-2">正在验证面容 ID...</p>
-                <div className="flex items-center gap-2 text-slate-400 text-sm">
-                  <div className="w-4 h-4 border border-slate-300 rounded-full flex items-center justify-center text-[10px]">ID</div>
-                  安全支付保障中
-                </div>
-              </div>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -245,7 +269,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
             {/* Bottom Scan Card - Fixed Position ABOVE Tab Bar */}
             {/* Tab Bar is approx 80px high. We position this card at bottom-24 (96px) to sit above it. */}
-            <div className="fixed bottom-24 left-0 right-0 px-4 pointer-events-none">
+            <div className="fixed bottom-24 left-0 right-0 px-4 pointer-events-none z-[100]">
               <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shadow-slate-200 pointer-events-auto">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -256,7 +280,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     <Camera className="w-5 h-5 text-white" />
                   </div>
                 </div>
-                <button className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors">
+                <button 
+                  onClick={() => setStep(2)}
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors active:scale-95"
+                >
                   <Camera className="w-5 h-5" />
                   开启扫码
                 </button>
