@@ -933,28 +933,7 @@ export default function Home() {
                     <h2 className="text-2xl font-bold text-slate-900 mb-2">相见</h2>
                     <p className="text-slate-500 mb-6">发现美好生活，开启社交之旅</p>
                     
-                    {/* Scan Code Button - Moved to Top */}
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 text-white shadow-xl mb-8">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-bold text-lg">扫码进店</h3>
-                          <p className="text-slate-400 text-sm">已在店内？直接扫码</p>
-                        </div>
-                        <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                          <Camera className="w-6 h-6 text-white" />
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => setShowStoreMode(true)}
-                        className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Camera className="w-5 h-5" />
-                        模拟扫码
-                      </button>
-                    </div>
-
-                    {/* Hidden Scenario Selection - Now inside StoreMode */}
-                    {/* 
+                    {/* Scenario Selection Grid - Restored to match Screenshot 7.png */}
                     <div className="grid grid-cols-2 gap-4">
                       {SCENARIOS.map((scenario) => {
                         const Icon = scenario.icon;
@@ -965,26 +944,22 @@ export default function Home() {
                               setActiveScenario(scenario.id);
                               setShowStoreMode(true);
                             }}
-                            className={cn(
-                              "relative p-4 rounded-2xl text-left transition-all active:scale-95 border-2",
-                              activeScenario === scenario.id 
-                                ? "bg-white border-blue-500 shadow-lg shadow-blue-100" 
-                                : "bg-white border-transparent shadow-sm hover:shadow-md"
-                            )}
+                            className="relative p-6 rounded-3xl text-left transition-all active:scale-95 bg-white shadow-sm border border-slate-100 hover:shadow-md flex flex-col items-start h-40 justify-between"
                           >
                             <div className={cn(
-                              "w-12 h-12 rounded-xl flex items-center justify-center mb-3",
+                              "w-12 h-12 rounded-2xl flex items-center justify-center",
                               scenario.bg
                             )}>
                               <Icon className={cn("w-6 h-6", scenario.color)} />
                             </div>
-                            <div className="font-bold text-slate-900 text-lg mb-1">{scenario.label}</div>
-                            <div className="text-xs text-slate-400">点击进入</div>
+                            <div>
+                              <div className="font-bold text-slate-900 text-xl mb-1">{scenario.label}</div>
+                              <div className="text-xs text-slate-400">点击进入</div>
+                            </div>
                           </button>
                         );
                       })}
                     </div>
-                    */}
                   </div>
                 </div>
               )}
