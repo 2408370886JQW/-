@@ -218,7 +218,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <p className="text-slate-400 text-sm">选择一个场景，开启你的社交之旅</p>
             </div>
 
-            <div className="flex-1 px-6 pb-64 bg-white">
+            {/* Scrollable Content with HUGE padding bottom to clear Scan Card + Tab Bar */}
+            <div className="flex-1 px-6 pb-96 bg-white">
               <div className="grid grid-cols-2 gap-4">
                 {SCENARIOS_STEP1.map((scenario) => (
                   <motion.button
@@ -242,9 +243,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               </div>
             </div>
 
-            {/* Bottom Scan Card - Fixed Position */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent pt-12 pb-24">
-              <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shadow-slate-200">
+            {/* Bottom Scan Card - Fixed Position ABOVE Tab Bar */}
+            {/* Tab Bar is approx 80px high. We position this card at bottom-24 (96px) to sit above it. */}
+            <div className="fixed bottom-24 left-0 right-0 px-4 pointer-events-none">
+              <div className="bg-slate-900 rounded-[2rem] p-6 text-white shadow-xl shadow-slate-200 pointer-events-auto">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-bold text-lg mb-1">扫码进店</h3>

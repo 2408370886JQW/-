@@ -846,7 +846,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="absolute inset-0 bg-slate-50 z-20 flex flex-col"
+              className="absolute inset-0 bg-slate-50 z-0 flex flex-col"
             >
               <MeetPage onNavigate={(tab) => setActiveTab(tab as TabType)} />
             </motion.div>
