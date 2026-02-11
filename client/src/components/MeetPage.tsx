@@ -163,8 +163,45 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 </div>
               </div>
 
+              {/* Suggestion Card - NEW ADDITION */}
+              <div className="px-6 pt-6 pb-2">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-5 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-white/40 rounded-full -mr-8 -mt-8 blur-xl"></div>
+                  
+                  <div className="flex items-start gap-4 relative z-10">
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-indigo-500 shrink-0">
+                      <Star className="w-5 h-5 fill-current" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-indigo-900 mb-1">今日约会建议</h3>
+                      <div className="flex items-center gap-2 text-sm text-indigo-700/80 mb-3">
+                        <span className="bg-white/60 px-2 py-0.5 rounded text-xs font-medium">轻松不尴尬</span>
+                        <span className="bg-white/60 px-2 py-0.5 rounded text-xs font-medium">环境安静</span>
+                      </div>
+                      
+                      {/* Timeline */}
+                      <div className="flex items-center gap-2 text-xs text-indigo-800">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>14:00 见面破冰</span>
+                        </div>
+                        <div className="w-4 h-[1px] bg-indigo-300"></div>
+                        <div className="flex items-center gap-1 opacity-60">
+                          <Camera className="w-3 h-3" />
+                          <span>16:00 一起看展</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
               {/* Package List */}
-              <div className="px-6 py-8 space-y-6">
+              <div className="px-6 py-6 space-y-6">
                 <h3 className="font-bold text-lg text-slate-900">精选套餐</h3>
                 
                 {/* Package 1 */}
