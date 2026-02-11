@@ -46,7 +46,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     if (step > 1) {
       setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4);
     } else {
-      // If at step 1, maybe go back to home or do nothing (since it's a tab)
+      // If at step 1, go back to 'encounter' tab
+      onNavigate('encounter');
     }
   };
 
@@ -122,14 +123,17 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       {step === 1 && (
         <>
           <div className="px-6 pt-12 pb-4">
-            <button className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center shadow-sm mb-6">
+            <button 
+              onClick={handleBack}
+              className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center shadow-sm mb-6 active:scale-95 transition-transform"
+            >
                 <ArrowLeft className="w-5 h-5 text-slate-700" />
             </button>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">选择相见场景</h1>
             <p className="text-slate-400 text-sm">选择一个场景，开启你的社交之旅</p>
           </div>
 
-          <div className="flex-1 px-6 overflow-y-auto pb-40">
+          <div className="flex-1 px-6 overflow-y-auto pb-48">
             <div className="grid grid-cols-2 gap-4">
               {SCENARIOS_STEP1.map((scenario) => (
                 <motion.button
@@ -137,15 +141,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   whileTap={{ scale: 0.98 }}
                   onClick={handleScenarioClick}
                   className={`
-                    ${scenario.bg} p-6 rounded-[2rem] flex flex-col items-start justify-between aspect-[4/3] relative
+                    ${scenario.bg} p-5 rounded-[2rem] flex flex-col items-start justify-between aspect-[1.1] relative
                     ${scenario.selected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
                   `}
                 >
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
                     <scenario.icon className={`w-5 h-5 ${scenario.color}`} />
                   </div>
                   <div className="text-left">
-                    <h3 className="text-lg font-bold text-slate-900 mb-1">{scenario.label}</h3>
+                    <h3 className="text-lg font-bold text-slate-900 mb-0.5">{scenario.label}</h3>
                     <p className="text-xs text-slate-400">点击进入</p>
                   </div>
                 </motion.button>
