@@ -830,55 +830,56 @@ export default function Home() {
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
               <div className="px-6 pb-8">
-                <div className="flex items-start gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-6">
+                  {/* Avatar with Gender Border */}
                   <div className={cn(
-                    "w-20 h-20 rounded-full border-4 overflow-hidden shadow-lg",
+                    "w-20 h-20 rounded-full border-[3px] p-0.5 overflow-hidden shadow-sm shrink-0",
                     (selectedFriend.gender === "female" || selectedFriend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
                   )}>
-                    <img src={selectedFriend.avatar} className="w-full h-full object-cover" />
+                    <img src={selectedFriend.avatar} className="w-full h-full object-cover rounded-full" />
                   </div>
-                  <div className="flex-1 pt-1">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-2xl font-bold text-slate-900">用户 {selectedFriend.id}</h2>
-                      <div className={cn(
-                        "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5",
-                        selectedFriend.status === "online" ? "bg-green-100 text-green-700" : 
-                        selectedFriend.status === "recent" ? "bg-yellow-100 text-yellow-700" : "bg-slate-100 text-slate-600"
-                      )}>
+                  
+                  {/* User Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="text-2xl font-bold text-slate-900 truncate">用户 {selectedFriend.id}</h2>
+                      
+                      {/* Status Badge */}
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-full">
                         <div className={cn("w-2 h-2 rounded-full", 
                           selectedFriend.status === "online" ? "bg-green-500" : 
                           selectedFriend.status === "recent" ? "bg-yellow-500" : "bg-slate-400"
                         )} />
-                        {selectedFriend.status === "online" ? "在线" : selectedFriend.status === "recent" ? "15分钟前" : "离线"}
+                        <span className="text-xs font-medium text-slate-600">
+                          {selectedFriend.status === "online" ? "在线" : selectedFriend.status === "recent" ? "15分钟前" : "离线"}
+                        </span>
                       </div>
                     </div>
-                    <p className="text-slate-500 mt-1">
-                      {selectedFriend.status === "online" ? "距离 0.5km" : "离线"}
-                    </p>
-                    <div className="flex gap-2 mt-3">
-                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">双子座</span>
-                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">摄影</span>
-                      <span className="px-2 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">咖啡</span>
+                    
+                    {/* Tags Row */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">双子座</span>
+                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">摄影</span>
+                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">咖啡</span>
                     </div>
                   </div>
                 </div>
                 
+                {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-3">
                   <button 
-                    className="py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg active:scale-95 transition-transform"
+                    className="py-3.5 rounded-full bg-slate-900 text-white font-bold text-base shadow-lg active:scale-95 transition-transform"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Add interaction logic here
                       console.log("Say Hi clicked");
                     }}
                   >
                     打招呼
                   </button>
                   <button 
-                    className="py-3 rounded-xl bg-slate-100 text-slate-900 font-bold active:scale-95 transition-transform"
+                    className="py-3.5 rounded-full bg-slate-100 text-slate-900 font-bold text-base active:scale-95 transition-transform hover:bg-slate-200"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Add navigation logic here
                       console.log("View Profile clicked");
                     }}
                   >
@@ -921,13 +922,7 @@ export default function Home() {
                 }} />
               ) : (
                 <div className="flex-1 overflow-y-auto p-4 pb-32 pt-14 relative">
-                  {/* Back Button */}
-                  <button 
-                    onClick={() => setActiveTab("encounter")}
-                    className="absolute top-4 left-4 p-2 bg-white shadow-sm border border-slate-100 rounded-full text-slate-900 z-10 active:scale-95 transition-transform"
-                  >
-                    <ArrowLeft className="w-6 h-6" />
-                  </button>
+                  {/* Back Button Removed to match Screenshot 7 */}
 
                   <div className="mb-6 pt-12">
                     <h2 className="text-2xl font-bold text-slate-900 mb-2">相见</h2>
