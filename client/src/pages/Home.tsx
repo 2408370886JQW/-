@@ -353,7 +353,13 @@ export default function Home() {
 
   // Update markers when tab changes
   useEffect(() => {
-    if (!mapInstance) return;
+    if (!mapInstance) {
+      console.log("Map instance not ready yet");
+      return;
+    }
+    console.log("Map instance ready, rendering markers for tab:", activeTab);
+
+
 
     // Custom Overlay Class - Defined inside useEffect to ensure google is available
     class CustomOverlay extends google.maps.OverlayView {
@@ -752,6 +758,8 @@ export default function Home() {
         {/* Map View */}
         <MapView 
           className="w-full h-full"
+          initialCenter={{ lat: 39.9042, lng: 116.4074 }} // Beijing
+          initialZoom={14}
           onMapReady={(map) => {
             setMapInstance(map);
           }}
