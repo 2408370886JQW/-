@@ -420,37 +420,65 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   onClick={() => setIsPaying(true)}
                   className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
                 >
-                  支付 ¥198
+                  支付
                 </motion.button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 5: Payment Verification Overlay */}
+          {/* Step 5: Payment Verification Overlay (WeChat Style) */}
           {isPaying && (
-            <div className="fixed inset-0 z-[2002] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+            <div className="fixed inset-0 z-[2002] bg-black/60 backdrop-blur-sm flex items-end justify-center sm:items-center">
               <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="bg-white rounded-3xl p-8 w-full max-w-sm text-center"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden"
               >
-                <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 relative overflow-hidden">
-                  <motion.div 
-                    animate={{ y: [0, 80, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-0 left-0 right-0 h-1 bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.5)]"
-                  ></motion.div>
-                  <ScanLine className="w-10 h-10 text-slate-400" />
+                {/* Header */}
+                <div className="relative border-b border-slate-100 p-4 text-center">
+                  <button 
+                    onClick={() => setIsPaying(false)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-1"
+                  >
+                    <X className="w-5 h-5 text-slate-900" />
+                  </button>
+                  <h3 className="font-bold text-slate-900 text-lg">请输入支付密码</h3>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Face ID 支付</h3>
-                <p className="text-slate-500 mb-8">请注视屏幕以确认支付</p>
-                <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: 2 }}
-                    className="h-full bg-slate-900"
-                  ></motion.div>
+
+                {/* Content */}
+                <div className="p-8 flex flex-col items-center">
+                  <div className="text-sm text-slate-500 mb-2">FIND ME 发现我</div>
+                  <div className="text-3xl font-bold text-slate-900 mb-8">¥198.00</div>
+
+                  {/* Password Dots */}
+                  <div className="flex gap-2 mb-8">
+                    {[1, 2, 3, 4, 5, 6].map((_, i) => (
+                      <div key={i} className="w-12 h-12 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50">
+                        <motion.div 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: i * 0.3 }}
+                          className="w-3 h-3 bg-slate-900 rounded-full"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Keyboard (Visual Only) */}
+                <div className="grid grid-cols-3 bg-slate-100 gap-[1px] pt-[1px]">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                    <button key={num} className="bg-white py-5 text-xl font-medium active:bg-slate-50">
+                      {num}
+                    </button>
+                  ))}
+                  <div className="bg-slate-100"></div>
+                  <button className="bg-white py-5 text-xl font-medium active:bg-slate-50">0</button>
+                  <button className="bg-slate-100 flex items-center justify-center active:bg-slate-200">
+                    <X className="w-6 h-6 text-slate-900" />
+                  </button>
                 </div>
               </motion.div>
             </div>
@@ -487,35 +515,64 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
                     onClick={() => { 
-                      // Add transition effect here if needed
                       setStep(1); 
                       onNavigate('encounter'); 
                     }}
-                    className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all group"
+                    className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
                   >
-                    <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                    {/* Radar Effect */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+                      <motion.div 
+                        animate={{ scale: [1, 2], opacity: [1, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="w-full h-full bg-blue-500 rounded-full"
+                      />
+                    </div>
+                    
+                    <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform relative z-10">
                       <MapPin className="w-6 h-6 text-blue-500" />
                     </div>
-                    <span className="font-bold text-slate-900 text-sm">去偶遇</span>
+                    <div className="text-center relative z-10">
+                      <div className="font-bold text-slate-900">开启偶遇雷达</div>
+                      <div className="text-[10px] text-blue-500 font-medium mt-0.5">附近有28人正在等你</div>
+                    </div>
                   </motion.button>
-                  
+
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
                     onClick={() => { 
-                      // Add transition effect here if needed
                       setStep(1); 
                       onNavigate('moments'); 
                     }}
-                    className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all group relative"
+                    className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md transition-all group relative"
                   >
                     {/* Notification Bubble */}
-                    <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm animate-bounce">
-                      +3条新动态
-                    </div>
-                    <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ 
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 15,
+                        delay: 0.5 
+                      }}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-20 flex items-center gap-1 border-2 border-white"
+                    >
+                      <motion.span
+                        animate={{ y: [0, -2, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        +12个新朋友
+                      </motion.span>
+                    </motion.div>
+
+                    <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform relative z-10">
                       <Camera className="w-6 h-6 text-purple-500" />
                     </div>
-                    <span className="font-bold text-slate-900 text-sm">看看附近动态</span>
+                    <div className="text-center relative z-10">
+                      <div className="font-bold text-slate-900">探索周边新鲜事</div>
+                      <div className="text-[10px] text-purple-500 font-medium mt-0.5">发现有趣灵魂</div>
+                    </div>
                   </motion.button>
                 </div>
               </div>

@@ -432,19 +432,22 @@ export default function Home() {
     <Layout showNav={true}>
       <div className="relative w-full h-screen overflow-hidden bg-slate-50">
         
-        {/* Top Navigation Bar - Auto Hide - Crystal Clear Glass Effect */}
+        {/* Top Navigation Bar - Auto Hide - Liquid Glass Effect */}
         <motion.div 
-          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-[2px] border-b border-white/10 shadow-sm pointer-events-none"
+          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 pointer-events-none"
           animate={{ 
             y: !isMeetHeaderCollapsed && activeTab !== 'meet' ? 0 : -100,
             opacity: !isMeetHeaderCollapsed && activeTab !== 'meet' ? 1 : 0
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <div className="pointer-events-auto">
+          {/* Liquid Glass Background */}
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]" />
+          
+          <div className="relative pointer-events-auto">
             {/* Search Bar */}
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex-1 h-10 bg-white/20 backdrop-blur-[1px] border border-white/20 rounded-full flex items-center px-4 shadow-sm">
+              <div className="flex-1 h-10 bg-white/40 backdrop-blur-md border border-white/30 rounded-full flex items-center px-4 shadow-inner text-slate-700">
                 <Search className="w-4 h-4 text-slate-400 mr-2" />
                 <input 
                   type="text"
@@ -520,7 +523,7 @@ export default function Home() {
                     <X className="w-5 h-5 text-slate-500" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain h-full touch-pan-y">
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain h-full touch-pan-y pb-32">
                   {INITIAL_MARKERS.friends.map(friend => (
                     <div key={friend.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer" onClick={() => {
                       setShowFriendList(false);
