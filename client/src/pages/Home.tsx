@@ -432,9 +432,9 @@ export default function Home() {
     <Layout showNav={isNavVisible}>
       <div className="relative w-full h-screen overflow-hidden bg-slate-50">
         
-        {/* Top Navigation Bar - Auto Hide - Liquid Glass Effect */}
+        {/* Top Navigation Bar - Auto Hide - Crystal Clear Glass Effect */}
         <motion.div 
-          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-sm pointer-events-none"
+          className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-[2px] border-b border-white/10 shadow-sm pointer-events-none"
           animate={{ 
             y: isNavVisible && activeTab !== 'meet' ? 0 : -100,
             opacity: isNavVisible && activeTab !== 'meet' ? 1 : 0
@@ -444,7 +444,7 @@ export default function Home() {
           <div className="pointer-events-auto">
             {/* Search Bar */}
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex-1 h-10 bg-white/40 backdrop-blur-md border border-white/30 rounded-full flex items-center px-4 shadow-inner">
+              <div className="flex-1 h-10 bg-white/20 backdrop-blur-[1px] border border-white/20 rounded-full flex items-center px-4 shadow-sm">
                 <Search className="w-4 h-4 text-slate-400 mr-2" />
                 <input 
                   type="text"
