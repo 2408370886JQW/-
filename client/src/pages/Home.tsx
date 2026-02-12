@@ -441,8 +441,11 @@ export default function Home() {
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          {/* Liquid Glass Background */}
-          <div className="absolute inset-0 bg-white/10 backdrop-blur-xl border-b border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]" />
+          {/* Liquid Glass Background - Optimized for Transparency & Flow */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-white/5 backdrop-blur-md border-b border-white/30 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] rounded-b-3xl" />
+          
+          {/* Glossy Reflection Highlight */}
+          <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/60 to-transparent opacity-70" />
           
           <div className="relative pointer-events-auto">
             {/* Search Bar */}
