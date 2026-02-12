@@ -53,20 +53,19 @@ interface MeetPageProps {
 
 export default function MeetPage({ onNavigate }: MeetPageProps) {
   // Steps: 
-  // 1: Scan Entry (Overlay on Map)
-  // 2: Relation Selection (Full Screen)
-  // 3: Venue & Package List (Full Screen) - NEW STEP
-  // 4: Detail Page (Full Screen)
-  // 5: Payment Verification (Overlay)
-  // 6: Success Page (Full Screen)
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  // 1: Relation Selection (Main View) + Scan Entry (Bottom Card)
+  // 2: Venue & Package List (Full Screen)
+  // 3: Detail Page (Full Screen)
+  // 4: Payment Verification (Overlay)
+  // 5: Success Page (Full Screen)
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [isPaying, setIsPaying] = useState(false);
 
   // Simulate Face ID scan
   useEffect(() => {
     if (isPaying) {
       const timer = setTimeout(() => {
-        setStep(6);
+        setStep(5);
         setIsPaying(false);
         // Trigger confetti on success
         confetti({
@@ -82,7 +81,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
   const handleBack = () => {
     if (step > 1) {
-      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5 | 6);
+      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5);
     } else {
       onNavigate('encounter');
     }
@@ -101,47 +100,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col overflow-hidden"
         >
-          {/* Step 2: Relation Selection */}
+          {/* Step 2: Venue & Package List (Optimized Flow) */}
           {step === 2 && (
-            <div className="flex-1 flex flex-col bg-white relative">
-              {/* Back to Home Button - FIXED VISIBILITY */}
-              <button 
-                onClick={() => onNavigate('encounter')}
-                className="fixed top-12 left-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]"
-              >
-                <ArrowLeft className="w-5 h-5 text-slate-600" />
-              </button>
-
-              <div className="px-6 pt-24 pb-4">
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">今天和谁相见</h1>
-                <p className="text-slate-400 text-sm">选择一个场景，开启你的社交之旅</p>
-              </div>
-
-              <div className="flex-1 px-6 overflow-y-auto pb-24">
-                <div className="grid grid-cols-2 gap-4">
-                  {RELATIONS_STEP2.map((item) => (
-                    <motion.button
-                      key={item.id}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setStep(3)}
-                      className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-all"
-                    >
-                      <motion.div 
-                        whileTap={{ scale: 1.2, rotate: 10 }}
-                        className={`w-16 h-16 ${item.bg} rounded-full flex items-center justify-center`}
-                      >
-                        <item.icon className={`w-8 h-8 ${item.color}`} />
-                      </motion.div>
-                      <span className="font-bold text-slate-900">{item.label}</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Venue & Package List (Optimized Flow) */}
-          {step === 3 && (
             <div className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24">
               {/* Header Image */}
               <div className="relative h-64 bg-slate-200">
@@ -152,7 +112,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
                 <button 
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(1)}
                   className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
                 >
                   <ArrowLeft className="w-6 h-6" />
@@ -210,7 +170,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 {/* Package 1 */}
                 <motion.div 
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setStep(4)}
+                  onClick={() => setStep(3)}
                   className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
                 >
                   <div className="flex gap-4">
@@ -241,18 +201,19 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 {/* Package 2 */}
                 <motion.div 
                   whileTap={{ scale: 0.98 }}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 opacity-60"
+                  onClick={() => setStep(3)}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
                 >
                   <div className="flex gap-4">
                     <img 
-                      src="https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80" 
+                      src="https://images.unsplash.com/photo-1544025162-d76690b6d0ce?w=400&q=80" 
                       alt="Food" 
                       className="w-24 h-24 rounded-xl object-cover"
                     />
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
-                        <h4 className="font-bold text-slate-900 text-lg mb-1">豪华·澳洲M5牛排餐</h4>
-                        <p className="text-slate-400 text-xs line-clamp-2">澳洲M5和牛 + 鹅肝 + 红酒x2</p>
+                        <h4 className="font-bold text-slate-900 text-lg mb-1">心动·法式浪漫晚餐</h4>
+                        <p className="text-slate-400 text-xs line-clamp-2">澳洲M5和牛眼肉 + 鹅肝慕斯 + 甜点拼盘</p>
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-baseline gap-1">
@@ -260,8 +221,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                           <span className="text-orange-500 font-bold text-xl">520</span>
                           <span className="text-slate-300 text-xs line-through ml-1">¥888</span>
                         </div>
-                        <div className="bg-slate-100 text-slate-400 px-4 py-1.5 rounded-full text-xs font-bold">
-                          售罄
+                        <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold">
+                          抢购
                         </div>
                       </div>
                     </div>
@@ -271,272 +232,141 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
           )}
 
-          {/* Step 4: Detail Page */}
-          {step === 4 && (
-            <div className="flex-1 flex flex-col bg-white h-full relative">
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto pb-32">
-                {/* Header Image */}
-                <div className="relative h-72">
-                  <img 
-                    src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80" 
-                    alt="Detail" 
-                    className="w-full h-full object-cover"
-                  />
-                  <button 
-                    onClick={() => setStep(3)}
-                    className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform z-10"
-                  >
-                    <ArrowLeft className="w-6 h-6" />
-                  </button>
-                </div>
-
-                {/* Content Body */}
-                <div className="px-6 py-8 -mt-6 bg-white rounded-t-[2rem] relative z-0">
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <h1 className="text-2xl font-bold text-slate-900 mb-2">初见 双人轻食套餐</h1>
-                      <div className="flex items-center gap-2 text-slate-500 text-sm">
-                        <MapPin className="w-4 h-4" />
-                        <span>三里屯·花田错餐厅</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end">
-                      <span className="text-2xl font-bold text-orange-500">¥198</span>
-                      <span className="text-slate-400 text-sm line-through">¥298</span>
-                    </div>
-                  </div>
-
-                  {/* Menu Items */}
-                  <div className="space-y-6 mb-8">
-                    <h3 className="font-bold text-lg text-slate-900">套餐内容</h3>
-                    
-                    <div className="flex justify-between items-center py-3 border-b border-slate-50">
-                      <div>
-                        <div className="font-medium text-slate-900">牛油果鲜虾沙拉</div>
-                        <div className="text-slate-400 text-xs mt-1">清新开胃，分量足</div>
-                      </div>
-                      <span className="font-mono text-slate-500">x1</span>
-                    </div>
-
-                    <div className="flex justify-between items-center py-3 border-b border-slate-50">
-                      <div>
-                        <div className="font-medium text-slate-900">黑松露奶油意面</div>
-                        <div className="text-slate-400 text-xs mt-1">招牌主食，奶香浓郁</div>
-                      </div>
-                      <span className="font-mono text-slate-500">x1</span>
-                    </div>
-
-                    <div className="flex justify-between items-center py-3 border-b border-slate-50">
-                      <div>
-                        <div className="font-medium text-slate-900">特调气泡水 (2选2)</div>
-                        <div className="text-slate-400 text-xs mt-1">白桃乌龙 / 阳光青提</div>
-                      </div>
-                      <span className="font-mono text-slate-500">x2</span>
-                    </div>
-                  </div>
-
-                  {/* Info Cards */}
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                    <div className="bg-slate-50 p-4 rounded-2xl">
-                      <Clock className="w-6 h-6 text-slate-400 mb-2" />
-                      <div className="font-bold text-slate-900 text-sm">免预约</div>
-                      <div className="text-slate-400 text-xs">随时可用</div>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-2xl">
-                      <Check className="w-6 h-6 text-slate-400 mb-2" />
-                      <div className="font-bold text-slate-900 text-sm">随时退</div>
-                      <div className="text-slate-400 text-xs">过期自动退</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Action Bar - FIXED IN PORTAL */}
-              <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-4 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-[10000]">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <div className="text-xs text-slate-400">总计</div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-sm text-orange-500 font-bold">¥</span>
-                      <span className="text-2xl text-orange-500 font-bold">198</span>
-                    </div>
-                  </div>
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setStep(5)}
-                    className="flex-[2] bg-slate-900 text-white h-14 rounded-full font-bold text-lg shadow-lg shadow-slate-200 flex items-center justify-center"
-                  >
-                    立即下单
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Payment Overlay */}
-          <AnimatePresence>
-            {step === 5 && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[10001] bg-black/60 backdrop-blur-sm flex items-end justify-center"
-              >
-                <motion.div 
-                  initial={{ y: '100%' }}
-                  animate={{ y: 0 }}
-                  className="bg-white w-full sm:w-[90%] max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-8 pb-12"
+          {/* Step 3: Detail Page */}
+          {step === 3 && (
+            <div className="flex-1 flex flex-col bg-white overflow-y-auto pb-24">
+              {/* Header Image */}
+              <div className="relative h-72 bg-slate-200 shrink-0">
+                <img 
+                  src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80" 
+                  alt="Detail" 
+                  className="w-full h-full object-cover"
+                />
+                <button 
+                  onClick={() => setStep(2)}
+                  className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
                 >
-                  <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-8"></div>
-                  
-                  <div className="flex justify-between items-center mb-12">
-                    <span className="text-slate-500">订单金额</span>
-                    <span className="text-3xl font-bold text-slate-900">¥198</span>
-                  </div>
-
-                  {!isPaying ? (
-                    <div className="space-y-4">
-                      <div className="bg-slate-50 p-4 rounded-2xl flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                            <Check className="w-6 h-6 text-white" />
-                          </div>
-                          <span className="font-bold text-slate-900">微信支付</span>
-                        </div>
-                        <div className="w-6 h-6 rounded-full border-2 border-slate-900 flex items-center justify-center">
-                          <div className="w-3 h-3 bg-slate-900 rounded-full"></div>
-                        </div>
-                      </div>
-                      <motion.button 
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setIsPaying(true)}
-                        className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
-                      >
-                        确认支付 ¥198
-                      </motion.button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-8">
-                      <div className="relative w-24 h-24 mb-6">
-                        <motion.div 
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                          className="absolute inset-0 border-4 border-blue-100 border-t-blue-500 rounded-full"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <ScanLine className="w-10 h-10 text-blue-500" />
-                        </div>
-                      </div>
-                      <p className="text-slate-900 font-medium mb-2">正在验证面容 ID...</p>
-                      <div className="flex items-center gap-2 text-slate-400 text-sm">
-                        <div className="w-4 h-4 border border-slate-300 rounded-full flex items-center justify-center text-[10px]">ID</div>
-                        安全支付保障中
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Step 6: Success Page */}
-          {step === 6 && (
-            <div className="fixed inset-0 z-[10002] bg-white flex flex-col">
-              {/* Header */}
-              <div className="px-6 pt-12 pb-4 flex justify-between items-center">
-                <button onClick={() => { setStep(1); onNavigate('encounter'); }} className="p-2 -ml-2">
-                  <ArrowLeft className="w-6 h-6 text-slate-900" />
+                  <ArrowLeft className="w-6 h-6" />
                 </button>
-                <div className="flex gap-1">
-                  <div className="w-1 h-1 rounded-full bg-slate-300"></div>
-                  <div className="w-1 h-1 rounded-full bg-slate-300"></div>
-                  <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 px-6 py-6">
+                <h1 className="text-2xl font-bold text-slate-900 mb-2">初见·双人轻食套餐</h1>
+                <div className="flex items-baseline gap-2 mb-6">
+                  <span className="text-orange-500 font-bold text-2xl">¥198</span>
+                  <span className="text-slate-400 text-sm line-through">¥298</span>
+                  <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded ml-2">6.6折</span>
+                </div>
+
+                <div className="space-y-6">
+                  <section>
+                    <h3 className="font-bold text-slate-900 mb-3">套餐内容</h3>
+                    <div className="space-y-3 text-sm text-slate-600">
+                      <div className="flex justify-between">
+                        <span>牛油果鲜虾沙拉</span>
+                        <span>x1</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>黑松露奶油意面</span>
+                        <span>x1</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>特调气泡水</span>
+                        <span>x2</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>餐前面包</span>
+                        <span>x1</span>
+                      </div>
+                    </div>
+                  </section>
+
+                  <div className="h-[1px] bg-slate-100"></div>
+
+                  <section>
+                    <h3 className="font-bold text-slate-900 mb-3">购买须知</h3>
+                    <ul className="space-y-2 text-sm text-slate-500 list-disc pl-4">
+                      <li>有效期：购买后30天内有效</li>
+                      <li>使用时间：11:00 - 21:00</li>
+                      <li>需提前2小时预约</li>
+                      <li>不可与其他优惠同享</li>
+                    </ul>
+                  </section>
                 </div>
               </div>
 
-              <div className="flex-1 px-6 flex flex-col">
-                {/* Success Icon */}
-                <motion.div 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                  className="mb-6"
+              {/* Bottom Bar - Fixed at bottom of flex container */}
+              <div className="p-4 border-t border-slate-100 bg-white shrink-0 z-[2001]">
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsPaying(true)}
+                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
                 >
-                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-200">
-                    <Check className="w-8 h-8 text-white stroke-[3]" />
-                  </div>
-                  <h1 className="text-3xl font-bold text-slate-900 mb-1">支付</h1>
-                  <h1 className="text-3xl font-bold text-slate-900">已完成</h1>
-                </motion.div>
+                  立即抢购 ¥198
+                </motion.button>
+              </div>
+            </div>
+          )}
 
-                <p className="text-slate-400 text-sm mb-6">祝你们玩得开心！请向店员出示核销码</p>
+          {/* Step 4: Payment Verification Overlay */}
+          {isPaying && (
+            <div className="fixed inset-0 z-[2002] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="bg-white rounded-3xl p-8 w-full max-w-sm text-center"
+              >
+                <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 relative overflow-hidden">
+                  <motion.div 
+                    animate={{ y: [0, 80, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-0 left-0 right-0 h-1 bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.5)]"
+                  ></motion.div>
+                  <ScanLine className="w-10 h-10 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Face ID 支付</h3>
+                <p className="text-slate-500 mb-8">请注视屏幕以确认支付</p>
+                <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: 2 }}
+                    className="h-full bg-slate-900"
+                  ></motion.div>
+                </div>
+              </motion.div>
+            </div>
+          )}
 
-                {/* QR Code Card */}
-                <motion.div 
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] mb-8 flex flex-col items-center"
+          {/* Step 5: Success Page */}
+          {step === 5 && (
+            <div className="flex-1 flex flex-col items-center justify-center bg-white p-6 text-center">
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring" }}
+                className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6"
+              >
+                <Check className="w-12 h-12 text-green-600" />
+              </motion.div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">支付成功</h2>
+              <p className="text-slate-500 mb-12">订单已确认，请前往门店使用</p>
+              
+              <div className="w-full space-y-4">
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { setStep(1); onNavigate('encounter'); }}
+                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg"
                 >
-                  <div className="w-48 h-48 bg-slate-900 rounded-3xl p-4 mb-6 relative overflow-hidden">
-                    {/* Mock QR Code */}
-                    <div className="absolute inset-0 border-[16px] border-white rounded-3xl"></div>
-                    <div className="absolute top-4 left-4 w-12 h-12 border-4 border-white rounded-lg"></div>
-                    <div className="absolute top-4 right-4 w-12 h-12 border-4 border-white rounded-lg"></div>
-                    <div className="absolute bottom-4 left-4 w-12 h-12 border-4 border-white rounded-lg"></div>
-                    <div className="w-full h-full flex flex-wrap content-center justify-center gap-2 p-4">
-                       <div className="w-2 h-2 bg-white rounded-full"></div>
-                       <div className="w-2 h-2 bg-white rounded-full"></div>
-                       <div className="w-2 h-2 bg-white rounded-full"></div>
-                       <div className="w-2 h-2 bg-white rounded-full"></div>
-                    </div>
-                  </div>
-                  <div className="text-2xl font-mono font-bold text-slate-900 tracking-widest">
-                    8392 1029
-                  </div>
-                </motion.div>
-
-                {/* Status List */}
-                <div className="space-y-4 mb-8">
-                  {['此刻', '附近', '有趣的灵魂', '正在游荡'].map((item, index) => (
-                    <motion.div 
-                      key={item} 
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.4 + index * 0.1 }}
-                      className="text-slate-600 font-medium"
-                    >
-                      {item}
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Buttons */}
-                <div className="mt-auto pb-8 space-y-4">
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => { setStep(1); onNavigate('encounter'); }}
-                    className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200 flex items-center justify-between px-8"
-                  >
-                    <span>去偶遇</span>
-                    <ArrowLeft className="w-5 h-5 rotate-180" />
-                  </motion.button>
-                  
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    className="w-full bg-white text-slate-900 border border-slate-100 py-4 rounded-full font-bold text-lg shadow-sm flex items-center justify-between px-8"
-                  >
-                    <span>打发你的等待时间</span>
-                    <Share2 className="w-5 h-5 text-slate-400" />
-                  </motion.button>
-
-                  <div className="text-center pt-2">
-                    <button onClick={() => setStep(1)} className="text-slate-400 text-sm">
-                      返回相见
-                    </button>
-                  </div>
-                </div>
+                  查看订单
+                </motion.button>
+                <button 
+                  onClick={() => { setStep(1); onNavigate('encounter'); }}
+                  className="text-slate-400 text-sm"
+                >
+                  返回首页
+                </button>
               </div>
             </div>
           )}
@@ -550,50 +380,77 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       {/* Render Full Screen Steps via Portal */}
       {createPortal(fullScreenContent, document.body)}
 
-      {/* Step 1: Scan Entry (Main View) */}
+      {/* Step 1: Relation Selection (Main View) */}
       {step === 1 && (
-        <>
-          {/* Bottom Scan Card - Replicating Frame 060 Style */}
-          <div className="fixed bottom-24 left-4 right-4 z-[100]">
+        <div className="flex-1 flex flex-col bg-white relative h-full">
+          {/* Global Back Button - Fixed at Top Left */}
+          <button 
+            onClick={() => onNavigate('encounter')}
+            className="fixed top-12 left-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]"
+          >
+            <ArrowLeft className="w-5 h-5 text-slate-600" />
+          </button>
+
+          <div className="px-6 pt-24 pb-4">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">今天和谁相见</h1>
+            <p className="text-slate-400 text-sm">选择一个场景，开启你的社交之旅</p>
+          </div>
+
+          <div className="flex-1 px-6 overflow-y-auto pb-48">
+            <div className="grid grid-cols-2 gap-4">
+              {RELATIONS_STEP2.map((item) => (
+                <motion.button
+                  key={item.id}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setStep(2)}
+                  className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-all"
+                >
+                  <motion.div 
+                    whileTap={{ scale: 1.2, rotate: 10 }}
+                    className={`w-16 h-16 ${item.bg} rounded-full flex items-center justify-center`}
+                  >
+                    <item.icon className={`w-8 h-8 ${item.color}`} />
+                  </motion.div>
+                  <span className="font-bold text-slate-900">{item.label}</span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom Scan Card - Fixed at Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent pt-12 z-[100]">
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[2rem] p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden"
             >
-              {/* Close Button for Step 1 */}
-              <button 
-                onClick={() => onNavigate('encounter')}
-                className="absolute top-4 left-4 w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors z-20"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
               {/* Decorative Circles */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-10 -mb-10 blur-xl"></div>
 
               <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-bold text-2xl mb-1">到店相见</h3>
-                    <p className="text-indigo-100 text-sm opacity-90">扫码解锁专属优惠与社交玩法</p>
+                    <h3 className="font-bold text-xl mb-1">到店相见</h3>
+                    <p className="text-indigo-100 text-xs opacity-90">扫码解锁专属优惠与社交玩法</p>
                   </div>
-                  <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
-                    <ScanLine className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+                    <ScanLine className="w-5 h-5 text-white" />
                   </div>
                 </div>
                 
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setStep(2)}
-                  className="w-full bg-white text-indigo-600 py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full bg-white text-indigo-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg text-sm"
                 >
-                  <Camera className="w-5 h-5" />
+                  <Camera className="w-4 h-4" />
                   模拟扫码进店
                 </motion.button>
               </div>
             </motion.div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
