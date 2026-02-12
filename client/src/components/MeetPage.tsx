@@ -361,12 +361,23 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 >
                   查看订单
                 </motion.button>
-                <button 
-                  onClick={() => { setStep(1); onNavigate('encounter'); }}
-                  className="text-slate-400 text-sm"
-                >
-                  返回首页
-                </button>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { setStep(1); onNavigate('encounter'); }}
+                    className="w-full bg-white border border-slate-200 text-slate-900 py-3 rounded-full font-bold text-sm shadow-sm hover:bg-slate-50"
+                  >
+                    去偶遇
+                  </motion.button>
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => { setStep(1); onNavigate('moments'); }}
+                    className="w-full bg-white border border-slate-200 text-slate-900 py-3 rounded-full font-bold text-sm shadow-sm hover:bg-slate-50"
+                  >
+                    看看附近动态
+                  </motion.button>
+                </div>
               </div>
             </div>
           )}
@@ -402,7 +413,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 <motion.button
                   key={item.id}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(2)} // This actually goes to the package list now, logic needs to be updated
                   className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-all"
                 >
                   <motion.div 
@@ -418,7 +429,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           </div>
 
           {/* Bottom Scan Card - Fixed at Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-white via-white to-transparent pt-12 z-[100]">
+          <div className="absolute bottom-0 left-0 right-0 p-4 pb-24 bg-gradient-to-t from-white via-white to-transparent pt-12 z-[100]">
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

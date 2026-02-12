@@ -429,15 +429,15 @@ export default function Home() {
   }, [mapInstance, activeTab, markerData, genderFilter]);
 
   return (
-    <Layout showNav={isNavVisible}>
+    <Layout showNav={true}>
       <div className="relative w-full h-screen overflow-hidden bg-slate-50">
         
         {/* Top Navigation Bar - Auto Hide - Crystal Clear Glass Effect */}
         <motion.div 
           className="absolute top-0 left-0 right-0 z-30 pt-safe px-4 pb-4 bg-gradient-to-b from-white/20 to-white/5 backdrop-blur-[2px] border-b border-white/10 shadow-sm pointer-events-none"
           animate={{ 
-            y: isNavVisible && activeTab !== 'meet' ? 0 : -100,
-            opacity: isNavVisible && activeTab !== 'meet' ? 1 : 0
+            y: !isMeetHeaderCollapsed && activeTab !== 'meet' ? 0 : -100,
+            opacity: !isMeetHeaderCollapsed && activeTab !== 'meet' ? 1 : 0
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
@@ -719,7 +719,8 @@ export default function Home() {
                 // Update timestamp lock
                 lastToggleTimeRef.current = Date.now();
 
-                setIsNavVisible(prev => !prev);
+                // Only toggle the header visibility, not the bottom nav
+                setIsMeetHeaderCollapsed(prev => !prev);
               }}
               onMouseDown={(e) => {
                 // Aggressive blocking on mouse down
@@ -741,7 +742,7 @@ export default function Home() {
                 lastToggleTimeRef.current = Date.now();
               }}
             >
-              {isNavVisible ? (
+              {!isMeetHeaderCollapsed ? (
                 <ChevronUp className="w-5 h-5" />
               ) : (
                 <ChevronDown className="w-5 h-5" />
