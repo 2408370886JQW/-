@@ -104,12 +104,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {/* Step 2: Relation Selection */}
           {step === 2 && (
             <div className="flex-1 flex flex-col bg-white relative">
-              {/* Back to Home Button */}
+              {/* Back to Home Button - FIXED VISIBILITY */}
               <button 
                 onClick={() => onNavigate('encounter')}
-                className="absolute top-12 right-6 w-10 h-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform z-10"
+                className="fixed top-12 right-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]"
               >
-                <X className="w-5 h-5 text-slate-400" />
+                <X className="w-5 h-5 text-slate-600" />
               </button>
 
               <div className="px-6 pt-12 pb-4">
