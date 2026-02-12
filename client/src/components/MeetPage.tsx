@@ -20,7 +20,8 @@ import {
   MapPin,
   Clock,
   Star,
-  Navigation
+  Navigation,
+  X
 } from 'lucide-react';
 
 // --- Data & Constants ---
@@ -102,7 +103,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
         >
           {/* Step 2: Relation Selection */}
           {step === 2 && (
-            <div className="flex-1 flex flex-col bg-white">
+            <div className="flex-1 flex flex-col bg-white relative">
+              {/* Back to Home Button */}
+              <button 
+                onClick={() => onNavigate('encounter')}
+                className="absolute top-12 right-6 w-10 h-10 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center shadow-sm active:scale-95 transition-transform z-10"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+
               <div className="px-6 pt-12 pb-4">
                 <button 
                   onClick={() => setStep(1)}
