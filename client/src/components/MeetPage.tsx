@@ -107,18 +107,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               {/* Back to Home Button - FIXED VISIBILITY */}
               <button 
                 onClick={() => onNavigate('encounter')}
-                className="fixed top-12 right-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]"
+                className="fixed top-12 left-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]"
               >
-                <X className="w-5 h-5 text-slate-600" />
+                <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
 
-              <div className="px-6 pt-12 pb-4">
-                <button 
-                  onClick={() => setStep(1)}
-                  className="w-10 h-10 bg-white border border-slate-100 rounded-full flex items-center justify-center shadow-sm mb-6 active:scale-95 transition-transform"
-                >
-                    <ArrowLeft className="w-5 h-5 text-slate-700" />
-                </button>
+              <div className="px-6 pt-24 pb-4">
                 <h1 className="text-3xl font-bold text-slate-900 mb-2">今天和谁相见</h1>
                 <p className="text-slate-400 text-sm">选择一个场景，开启你的社交之旅</p>
               </div>
