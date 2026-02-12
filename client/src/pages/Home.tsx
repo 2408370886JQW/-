@@ -497,14 +497,14 @@ export default function Home() {
                   className="flex flex-col items-center gap-0.5 group"
                 >
                   <span className={cn(
-                    "text-base font-bold transition-colors",
-                    activeTab === tab.id ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"
+                    "text-base font-bold transition-colors drop-shadow-sm",
+                    activeTab === tab.id ? "text-slate-900" : "text-slate-600/90 group-hover:text-slate-800"
                   )}>
                     {tab.label}
                   </span>
                   <span className={cn(
-                    "text-[10px] font-medium transition-colors",
-                    activeTab === tab.id ? "text-blue-500" : "text-slate-300"
+                    "text-[10px] font-medium transition-colors drop-shadow-sm",
+                    activeTab === tab.id ? "text-blue-600" : "text-slate-500/80"
                   )}>
                     {tab.subtitle}
                   </span>
