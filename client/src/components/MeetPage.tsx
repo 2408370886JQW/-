@@ -362,20 +362,27 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   查看订单
                 </motion.button>
                 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
                     onClick={() => { setStep(1); onNavigate('encounter'); }}
-                    className="w-full bg-white border border-slate-200 text-slate-900 py-3 rounded-full font-bold text-sm shadow-sm hover:bg-slate-50"
+                    className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all group"
                   >
-                    去偶遇
+                    <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                      <MapPin className="w-6 h-6 text-blue-500" />
+                    </div>
+                    <span className="font-bold text-slate-900 text-sm">去偶遇</span>
                   </motion.button>
+                  
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
                     onClick={() => { setStep(1); onNavigate('moments'); }}
-                    className="w-full bg-white border border-slate-200 text-slate-900 py-3 rounded-full font-bold text-sm shadow-sm hover:bg-slate-50"
+                    className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all group"
                   >
-                    看看附近动态
+                    <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                      <Camera className="w-6 h-6 text-purple-500" />
+                    </div>
+                    <span className="font-bold text-slate-900 text-sm">看看附近动态</span>
                   </motion.button>
                 </div>
               </div>
