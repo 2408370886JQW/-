@@ -21,24 +21,15 @@ import {
   Clock,
   Star,
   Navigation,
-  X
+  X,
+  Utensils,
+  Receipt
 } from 'lucide-react';
 
 // --- Data & Constants ---
 
-// Step 1: Scenarios
-const SCENARIOS_STEP1 = [
-  { id: 'date', icon: Heart, label: '约会', bg: 'bg-pink-50', color: 'text-pink-500' },
-  { id: 'bestie', icon: Camera, label: '闺蜜', bg: 'bg-purple-50', color: 'text-purple-500' },
-  { id: 'bro', icon: Beer, label: '兄弟', bg: 'bg-blue-50', color: 'text-blue-500', selected: true },
-  { id: 'birthday', icon: Gift, label: '生日', bg: 'bg-red-50', color: 'text-red-500' },
-  { id: 'business', icon: Briefcase, label: '商务', bg: 'bg-slate-50', color: 'text-slate-500' },
-  { id: 'hangout', icon: Coffee, label: '坐坐', bg: 'bg-yellow-50', color: 'text-yellow-500' },
-  { id: 'latenight', icon: Moon, label: '深夜', bg: 'bg-indigo-50', color: 'text-indigo-500' },
-];
-
-// Step 2: Relations
-const RELATIONS_STEP2 = [
+// Step 1: Relations
+const RELATIONS_STEP1 = [
   { id: 'first_meet', icon: Heart, label: '第一次见面', bg: 'bg-pink-50', color: 'text-pink-500' },
   { id: 'couple', icon: Heart, label: '情侣/暧昧', bg: 'bg-red-50', color: 'text-red-500' },
   { id: 'bestie', icon: Camera, label: '闺蜜', bg: 'bg-purple-50', color: 'text-purple-500' },
@@ -47,25 +38,77 @@ const RELATIONS_STEP2 = [
   { id: 'family', icon: Users, label: '阖家团圆', bg: 'bg-orange-50', color: 'text-orange-500' },
 ];
 
+// Step 2: Restaurants
+const RESTAURANTS_STEP2 = [
+  {
+    id: 1,
+    name: '花田错·西餐厅',
+    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
+    location: '三里屯太古里北区 N4-30',
+    tags: ['轻松不尴尬', '环境安静'],
+    rating: 4.8,
+    price: '¥198/人'
+  },
+  {
+    id: 2,
+    name: 'Blue Note Jazz Club',
+    image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80',
+    location: '前门东大街23号',
+    tags: ['爵士乐', '氛围感'],
+    rating: 4.9,
+    price: '¥320/人'
+  },
+  {
+    id: 3,
+    name: 'TRB Hutong',
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+    location: '沙滩北街23号',
+    tags: ['胡同景观', '法餐'],
+    rating: 4.7,
+    price: '¥580/人'
+  },
+  {
+    id: 4,
+    name: 'The Georg',
+    image: 'https://images.unsplash.com/photo-1550966871-3ed3c622171d?w=800&q=80',
+    location: '东不压桥胡同45号',
+    tags: ['北欧风', '艺术感'],
+    rating: 4.6,
+    price: '¥450/人'
+  },
+  {
+    id: 5,
+    name: 'Opera BOMBANA',
+    image: 'https://images.unsplash.com/photo-1551632436-cbf8dd354ca8?w=800&q=80',
+    location: '东大桥路9号侨福芳草地',
+    tags: ['米其林', '意式'],
+    rating: 4.9,
+    price: '¥880/人'
+  }
+];
+
 interface MeetPageProps {
   onNavigate: (tab: string) => void;
 }
 
 export default function MeetPage({ onNavigate }: MeetPageProps) {
   // Steps: 
-  // 1: Relation Selection (Main View) + Scan Entry (Bottom Card)
-  // 2: Venue & Package List (Full Screen)
-  // 3: Detail Page (Full Screen)
-  // 4: Payment Verification (Overlay)
-  // 5: Success Page (Full Screen)
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  // 1: Relation Selection (Main View)
+  // 2: Restaurant List (Full Screen)
+  // 3: Package List (Full Screen)
+  // 4: Package Detail (Full Screen)
+  // 5: Payment Verification (Overlay)
+  // 6: Success Page (Full Screen)
+  // 7: Order Detail (Full Screen)
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
   const [isPaying, setIsPaying] = useState(false);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<typeof RESTAURANTS_STEP2[0] | null>(null);
 
   // Simulate Face ID scan
   useEffect(() => {
     if (isPaying) {
       const timer = setTimeout(() => {
-        setStep(5);
+        setStep(6);
         setIsPaying(false);
         // Trigger confetti on success
         confetti({
@@ -81,7 +124,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
   const handleBack = () => {
     if (step > 1) {
-      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5);
+      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7);
     } else {
       onNavigate('encounter');
     }
@@ -100,33 +143,101 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col overflow-hidden"
         >
-          {/* Step 2: Venue & Package List (Optimized Flow) */}
+          {/* Step 2: Restaurant List */}
           {step === 2 && (
-            <div className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
+            >
+              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+                <button 
+                  onClick={() => setStep(1)}
+                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <h1 className="text-xl font-bold text-slate-900">推荐餐厅</h1>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {RESTAURANTS_STEP2.map((restaurant) => (
+                  <motion.div
+                    key={restaurant.id}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setSelectedRestaurant(restaurant);
+                      setStep(3);
+                    }}
+                    className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100"
+                  >
+                    <div className="h-40 relative">
+                      <img 
+                        src={restaurant.image} 
+                        alt={restaurant.name} 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500">
+                        <Star className="w-3 h-3 fill-current" />
+                        {restaurant.rating}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg text-slate-900">{restaurant.name}</h3>
+                        <span className="text-slate-900 font-bold text-sm">{restaurant.price}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
+                        <MapPin className="w-3 h-3" />
+                        {restaurant.location}
+                      </div>
+                      <div className="flex gap-2">
+                        {restaurant.tags.map(tag => (
+                          <span key={tag} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3: Package List (Restaurant Detail) */}
+          {step === 3 && selectedRestaurant && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
+            >
               {/* Header Image */}
               <div className="relative h-64 bg-slate-200">
                 <img 
-                  src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80" 
-                  alt="Restaurant" 
+                  src={selectedRestaurant.image} 
+                  alt={selectedRestaurant.name} 
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
                 <button 
-                  onClick={() => setStep(1)}
+                  onClick={() => setStep(2)}
                   className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </button>
                 <div className="absolute bottom-6 left-6 text-white">
-                  <h1 className="text-3xl font-bold mb-2">花田错·西餐厅</h1>
+                  <h1 className="text-3xl font-bold mb-2">{selectedRestaurant.name}</h1>
                   <div className="flex items-center gap-2 text-sm opacity-90">
                     <MapPin className="w-4 h-4" />
-                    <span>三里屯太古里北区 N4-30</span>
+                    <span>{selectedRestaurant.location}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Suggestion Card - NEW ADDITION */}
+              {/* Suggestion Card */}
               <div className="px-6 pt-6 pb-2">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
@@ -170,7 +281,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 {/* Package 1 */}
                 <motion.div 
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(4)}
                   className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
                 >
                   <div className="flex gap-4">
@@ -191,7 +302,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                           <span className="text-slate-300 text-xs line-through ml-1">¥298</span>
                         </div>
                         <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold">
-                          抢购
+                          支付
                         </div>
                       </div>
                     </div>
@@ -201,7 +312,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 {/* Package 2 */}
                 <motion.div 
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setStep(3)}
+                  onClick={() => setStep(4)}
                   className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
                 >
                   <div className="flex gap-4">
@@ -222,19 +333,24 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                           <span className="text-slate-300 text-xs line-through ml-1">¥888</span>
                         </div>
                         <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold">
-                          抢购
+                          支付
                         </div>
                       </div>
                     </div>
                   </div>
                 </motion.div>
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Step 3: Detail Page */}
-          {step === 3 && (
-            <div className="flex-1 flex flex-col bg-white overflow-y-auto pb-24">
+          {/* Step 4: Package Detail */}
+          {step === 4 && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col bg-white overflow-y-auto pb-24"
+            >
               {/* Header Image */}
               <div className="relative h-72 bg-slate-200 shrink-0">
                 <img 
@@ -242,8 +358,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   alt="Detail" 
                   className="w-full h-full object-cover"
                 />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
                 <button 
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(3)}
                   className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
                 >
                   <ArrowLeft className="w-6 h-6" />
@@ -303,13 +420,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   onClick={() => setIsPaying(true)}
                   className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
                 >
-                  立即抢购 ¥198
+                  支付 ¥198
                 </motion.button>
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Step 4: Payment Verification Overlay */}
+          {/* Step 5: Payment Verification Overlay */}
           {isPaying && (
             <div className="fixed inset-0 z-[2002] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
               <motion.div 
@@ -339,9 +456,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
           )}
 
-          {/* Step 5: Success Page */}
-          {step === 5 && (
-            <div className="flex-1 flex flex-col items-center justify-center bg-white p-6 text-center">
+          {/* Step 6: Success Page */}
+          {step === 6 && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex-1 flex flex-col items-center justify-center bg-white p-6 text-center"
+            >
               <motion.div 
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -356,7 +477,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <div className="w-full space-y-4">
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => { setStep(1); onNavigate('encounter'); }}
+                  onClick={() => setStep(7)}
                   className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg"
                 >
                   查看订单
@@ -365,7 +486,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => { setStep(1); onNavigate('encounter'); }}
+                    onClick={() => { 
+                      // Add transition effect here if needed
+                      setStep(1); 
+                      onNavigate('encounter'); 
+                    }}
                     className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all group"
                   >
                     <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors">
@@ -376,7 +501,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => { setStep(1); onNavigate('moments'); }}
+                    onClick={() => { 
+                      // Add transition effect here if needed
+                      setStep(1); 
+                      onNavigate('moments'); 
+                    }}
                     className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all group relative"
                   >
                     {/* Notification Bubble */}
@@ -390,7 +519,89 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   </motion.button>
                 </div>
               </div>
-            </div>
+            </motion.div>
+          )}
+
+          {/* Step 7: Order Detail Page */}
+          {step === 7 && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
+            >
+              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+                <button 
+                  onClick={() => setStep(6)}
+                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <h1 className="text-xl font-bold text-slate-900">订单详情</h1>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {/* QR Code Card */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                  <h3 className="font-bold text-lg text-slate-900 mb-1">初见·双人轻食套餐</h3>
+                  <p className="text-slate-500 text-sm mb-6">有效期至 2026-03-15</p>
+                  
+                  <div className="w-48 h-48 bg-slate-900 rounded-xl flex items-center justify-center mb-4">
+                    <ScanLine className="w-24 h-24 text-white opacity-50" />
+                  </div>
+                  
+                  <div className="bg-slate-50 px-4 py-2 rounded-lg mb-2">
+                    <span className="text-slate-400 text-xs block mb-1">核销码</span>
+                    <span className="text-xl font-mono font-bold text-slate-900 tracking-widest">8829 1034</span>
+                  </div>
+                  <p className="text-xs text-slate-400">请向店员出示此码核销</p>
+                </div>
+
+                {/* Order Info */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-4">
+                  <div className="flex items-center gap-3 pb-4 border-b border-slate-50">
+                    <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden">
+                      <img 
+                        src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&q=80" 
+                        alt="Restaurant" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900">花田错·西餐厅</h4>
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <MapPin className="w-3 h-3" />
+                        三里屯太古里北区 N4-30
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">下单时间</span>
+                      <span className="text-slate-900">2026-02-13 14:30:25</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">支付方式</span>
+                      <span className="text-slate-900">Face ID 支付</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">实付金额</span>
+                      <span className="font-bold text-slate-900">¥198.00</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button className="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm">
+                    联系商家
+                  </button>
+                  <button className="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm">
+                    申请退款
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           )}
         </motion.div>
       )}
@@ -420,11 +631,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
           <div className="flex-1 px-6 overflow-y-auto pb-48">
             <div className="grid grid-cols-2 gap-4">
-              {RELATIONS_STEP2.map((item) => (
+              {RELATIONS_STEP1.map((item) => (
                 <motion.button
                   key={item.id}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => setStep(2)} // This actually goes to the package list now, logic needs to be updated
+                  onClick={() => setStep(2)}
                   className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-all"
                 >
                   <motion.div 

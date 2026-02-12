@@ -156,7 +156,7 @@ export default function FriendsPage() {
         </div>
 
         {/* Content */}
-        <div className="px-4 py-2">
+        <div className="px-4 py-2 pb-24">
           {activeTab === "friends" ? (
             <div className="space-y-3">
               {filteredFriends.map(friend => (
