@@ -377,8 +377,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <motion.button 
                     whileTap={{ scale: 0.95 }}
                     onClick={() => { setStep(1); onNavigate('moments'); }}
-                    className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all group"
+                    className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md transition-all group relative"
                   >
+                    {/* Notification Bubble */}
+                    <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm animate-bounce">
+                      +3条新动态
+                    </div>
                     <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center group-hover:bg-purple-100 transition-colors">
                       <Camera className="w-6 h-6 text-purple-500" />
                     </div>
