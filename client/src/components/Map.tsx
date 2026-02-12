@@ -100,15 +100,18 @@ function loadMapScript() {
     }
     
     const script = document.createElement("script");
+    // Use a fallback mechanism or ensure the proxy URL is correct. 
+    // For this demo, we'll try to load, but resolve anyway on error to prevent app crash.
     script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
     script.async = true;
     script.crossOrigin = "anonymous";
     script.onload = () => {
       resolve(null);
-      // Do not remove script tag as it might be needed by other components or re-renders
     };
-    script.onerror = () => {
-      console.error("Failed to load Google Maps script");
+    script.onerror = (e) => {
+      console.error("Failed to load Google Maps script", e);
+      // Resolve anyway to allow the app to continue (e.g. in fallback mode)
+      resolve(null); 
     };
     document.head.appendChild(script);
   });
@@ -140,23 +143,31 @@ export default function MapView({
       return;
     }
     if (window.google && window.google.maps) {
-      map.current = new window.google.maps.Map(mapContainer.current, {
-        zoom: initialZoom,
-        center: initialCenter,
-        mapTypeControl: false,
-        fullscreenControl: false,
-        zoomControl: false,
-        streetViewControl: false,
-        scaleControl: false,
-        rotateControl: false,
-        panControl: false,
-        mapId: "DEMO_MAP_ID",
-        gestureHandling: "greedy", // Enable single-finger panning
-        clickableIcons: false, // Disable default POI clicks
-      });
-    }
-    if (onMapReady && map.current) {
-      onMapReady(map.current);
+      try {
+        map.current = new window.google.maps.Map(mapContainer.current, {
+          zoom: initialZoom,
+          center: initialCenter,
+          mapTypeControl: false,
+          fullscreenControl: false,
+          zoomControl: false,
+          streetViewControl: false,
+          scaleControl: false,
+          rotateControl: false,
+          panControl: false,
+          mapId: "DEMO_MAP_ID",
+          gestureHandling: "greedy", // Enable single-finger panning
+          clickableIcons: false, // Disable default POI clicks
+        });
+        
+        if (onMapReady && map.current) {
+          onMapReady(map.current);
+        }
+      } catch (error) {
+        console.error("Error initializing Google Map:", error);
+      }
+    } else {
+      console.warn("Google Maps API not loaded, map will not be displayed.");
+      // Optionally render a fallback UI here if needed, but for now we just prevent the crash
     }
   });
 
