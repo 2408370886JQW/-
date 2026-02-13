@@ -23,92 +23,51 @@ import {
   Navigation,
   X,
   Utensils,
-  Receipt
+  Receipt,
+  SkipForward
 } from 'lucide-react';
 
 // --- Data & Constants ---
 
-// Step 1: Relations
-const RELATIONS_STEP1 = [
-  { id: 'first_meet', icon: Heart, label: '第一次见面', bg: 'bg-pink-50', color: 'text-pink-500' },
-  { id: 'couple', icon: Heart, label: '情侣/暧昧', bg: 'bg-red-50', color: 'text-red-500' },
-  { id: 'bestie', icon: Camera, label: '闺蜜', bg: 'bg-purple-50', color: 'text-purple-500' },
-  { id: 'bro', icon: Beer, label: '兄弟', bg: 'bg-blue-50', color: 'text-blue-500' },
-  { id: 'alone', icon: User, label: '独处时光', bg: 'bg-slate-50', color: 'text-slate-500' },
-  { id: 'family', icon: Users, label: '阖家团圆', bg: 'bg-orange-50', color: 'text-orange-500' },
+// Relations for the overlay card
+const RELATIONS = [
+  { id: 'first_meet', icon: Heart, label: '第一次见面', bg: 'bg-pink-50', color: 'text-pink-500', tag: 'romantic' },
+  { id: 'couple', icon: Heart, label: '情侣/暧昧', bg: 'bg-red-50', color: 'text-red-500', tag: 'romantic' },
+  { id: 'bestie', icon: Camera, label: '闺蜜', bg: 'bg-purple-50', color: 'text-purple-500', tag: 'friends' },
+  { id: 'bro', icon: Beer, label: '兄弟', bg: 'bg-blue-50', color: 'text-blue-500', tag: 'friends' },
+  { id: 'alone', icon: User, label: '独处时光', bg: 'bg-slate-50', color: 'text-slate-500', tag: 'solo' },
+  { id: 'family', icon: Users, label: '阖家团圆', bg: 'bg-orange-50', color: 'text-orange-500', tag: 'family' },
 ];
 
-// Step 2: Restaurants
-const RESTAURANTS_STEP2 = [
-  {
-    id: 1,
-    name: '花田错·西餐厅',
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
-    location: '三里屯太古里北区 N4-30',
-    tags: ['轻松不尴尬', '环境安静'],
-    rating: 4.8,
-    price: '¥198/人',
-    // New data for Venue Detail
-    gallery: [
-      'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
-      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
-      'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80'
-    ],
-    dishes: [
-      { name: '澳洲M5和牛', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80', price: '¥288' },
-      { name: '黑松露意面', image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&q=80', price: '¥128' },
-      { name: '提拉米苏', image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80', price: '¥68' }
-    ],
-    reviews: [
-      { user: 'Alice', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80', content: '环境非常棒，适合约会！', rating: 5 },
-      { user: 'Bob', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&q=80', content: '牛排鲜嫩多汁，服务也很周到。', rating: 4.8 }
-    ]
-  },
-  // ... other restaurants (simplified for brevity, in real app would have full data)
-  {
-    id: 2,
-    name: 'Blue Note Jazz Club',
-    image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80',
-    location: '前门东大街23号',
-    tags: ['爵士乐', '氛围感'],
-    rating: 4.9,
-    price: '¥320/人',
-    gallery: [], dishes: [], reviews: []
-  },
-  {
-    id: 3,
-    name: 'TRB Hutong',
-    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
-    location: '沙滩北街23号',
-    tags: ['胡同景观', '法餐'],
-    rating: 4.7,
-    price: '¥580/人',
-    gallery: [], dishes: [], reviews: []
-  },
-  {
-    id: 4,
-    name: 'The Georg',
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
-    location: '东不压桥胡同45号',
-    tags: ['北欧风', '艺术感'],
-    rating: 4.6,
-    price: '¥450/人',
-    gallery: [], dishes: [], reviews: []
-  },
-  {
-    id: 5,
-    name: 'Opera BOMBANA',
-    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
-    location: '东大桥路9号侨福芳草地',
-    tags: ['米其林', '意式'],
-    rating: 4.9,
-    price: '¥880/人',
-    gallery: [], dishes: [], reviews: []
-  }
-];
+// The FIXED restaurant that the user "scanned into"
+const CURRENT_RESTAURANT = {
+  id: 1,
+  name: '花田错·西餐厅',
+  image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
+  location: '三里屯太古里北区 N4-30',
+  tags: ['轻松不尴尬', '环境安静'],
+  rating: 4.8,
+  price: '¥198/人',
+  phone: '010-6417-8899',
+  hours: '11:00 - 22:00',
+  gallery: [
+    'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
+    'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80'
+  ],
+  dishes: [
+    { name: '澳洲M5和牛', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80', price: '¥288' },
+    { name: '黑松露意面', image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&q=80', price: '¥128' },
+    { name: '提拉米苏', image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80', price: '¥68' }
+  ],
+  reviews: [
+    { user: 'Alice', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80', content: '环境非常棒，适合约会！', rating: 5 },
+    { user: 'Bob', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&q=80', content: '牛排鲜嫩多汁，服务也很周到。', rating: 4.8 }
+  ]
+};
 
-// Step 4: Packages (Mock Data)
-const PACKAGES_STEP4 = [
+// Packages for this restaurant, with relation tags for filtering
+const RESTAURANT_PACKAGES = [
   {
     id: 101,
     name: '初见·双人轻食套餐',
@@ -117,6 +76,7 @@ const PACKAGES_STEP4 = [
     originalPrice: 298,
     image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80',
     heroImage: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+    relationTags: ['romantic', 'friends', 'solo'],
     items: [
       { name: '牛油果鲜虾沙拉', qty: 1 },
       { name: '黑松露奶油意面', qty: 1 },
@@ -133,11 +93,12 @@ const PACKAGES_STEP4 = [
   {
     id: 102,
     name: '心动·法式浪漫晚餐',
-    desc: '澳洲M5和牛眼肉 + 鹅肝慕斯 + 甜点拼盘',
+    desc: '澳洲M5和牛眼肉 + 鹅肝慕斯 + 甜点拼盘 + 红酒x2',
     price: 520,
     originalPrice: 888,
     image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80',
     heroImage: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&q=80',
+    relationTags: ['romantic'],
     items: [
       { name: '澳洲M5和牛眼肉', qty: 1 },
       { name: '鹅肝慕斯', qty: 1 },
@@ -159,6 +120,7 @@ const PACKAGES_STEP4 = [
     originalPrice: 198,
     image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80',
     heroImage: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=800&q=80',
+    relationTags: ['romantic', 'friends', 'solo'],
     items: [
       { name: '精选甜点三层塔', qty: 1 },
       { name: '手冲咖啡', qty: 2 },
@@ -169,6 +131,49 @@ const PACKAGES_STEP4 = [
       'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80'
     ],
     notes: ['有效期：购买后30天内有效', '使用时间：14:00 - 17:00', '需提前1小时预约']
+  },
+  {
+    id: 104,
+    name: '兄弟·豪华烤肉拼盘',
+    desc: '澳洲安格斯牛排 + 黑椒猪排 + 精酿啤酒x4',
+    price: 368,
+    originalPrice: 568,
+    image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&q=80',
+    relationTags: ['friends', 'family'],
+    items: [
+      { name: '澳洲安格斯牛排', qty: 1 },
+      { name: '黑椒猪排', qty: 1 },
+      { name: '精酿啤酒', qty: 4 },
+      { name: '薯条拼盘', qty: 1 }
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80'
+    ],
+    notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 22:00', '需提前1小时预约']
+  },
+  {
+    id: 105,
+    name: '阖家·团圆家宴套餐',
+    desc: '红烧肉 + 清蒸鲈鱼 + 时蔬拼盘 + 汤品 (4-6人)',
+    price: 688,
+    originalPrice: 1088,
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80',
+    relationTags: ['family'],
+    items: [
+      { name: '红烧肉', qty: 1 },
+      { name: '清蒸鲈鱼', qty: 1 },
+      { name: '时蔬拼盘', qty: 2 },
+      { name: '老火靓汤', qty: 1 },
+      { name: '米饭', qty: 6 }
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80'
+    ],
+    notes: ['有效期：购买后15天内有效', '使用时间：11:00 - 21:00', '需提前1天预约', '4-6人套餐']
   }
 ];
 
@@ -177,28 +182,57 @@ interface MeetPageProps {
 }
 
 export default function MeetPage({ onNavigate }: MeetPageProps) {
-  // Steps: 
-  // 1: Relation Selection (Main View)
-  // 2: Restaurant List (Full Screen)
-  // 3: Venue Detail (Full Screen)
-  // 4: Package List (Full Screen) - Browse multiple packages as cards
-  // 5: Package Detail (Full Screen) - Single package full-screen view
-  // 6: Payment Page (Full Screen) - Select payment method & confirm
-  // 7: Success Page (Full Screen) - With navigation to Encounter/Moments
-  // 8: Order Detail (Full Screen)
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
+  // New simplified steps:
+  // 1: Scan Entry Page (with scan button)
+  // 2: Restaurant Detail + Package List (single restaurant, blurred bg + relation card overlay)
+  // 3: Package Detail (full screen single package)
+  // 4: Payment Page (payment method selection)
+  // 5: Success Page (with encounter/moments navigation)
+  // 6: Order Detail Page
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const [isPaying, setIsPaying] = useState(false);
-  const [selectedRestaurant, setSelectedRestaurant] = useState<typeof RESTAURANTS_STEP2[0] | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<typeof PACKAGES_STEP4[0] | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<typeof RESTAURANT_PACKAGES[0] | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
+  
+  // Relation overlay state
+  const [showRelationOverlay, setShowRelationOverlay] = useState(false);
+  const [selectedRelation, setSelectedRelation] = useState<string | null>(null);
+  const [relationTag, setRelationTag] = useState<string | null>(null);
 
-  // Simulate Face ID scan
+  // Filtered packages based on relation selection
+  const filteredPackages = relationTag 
+    ? RESTAURANT_PACKAGES.filter(pkg => pkg.relationTags.includes(relationTag))
+    : RESTAURANT_PACKAGES;
+
+  // Handle scan action - go directly to restaurant with relation overlay
+  const handleScan = () => {
+    setStep(2);
+    setShowRelationOverlay(true);
+  };
+
+  // Handle relation selection
+  const handleSelectRelation = (relation: typeof RELATIONS[0]) => {
+    setSelectedRelation(relation.id);
+    setRelationTag(relation.tag);
+    // Delay to show selection feedback, then dismiss overlay
+    setTimeout(() => {
+      setShowRelationOverlay(false);
+    }, 400);
+  };
+
+  // Handle skip relation
+  const handleSkipRelation = () => {
+    setSelectedRelation(null);
+    setRelationTag(null);
+    setShowRelationOverlay(false);
+  };
+
+  // Simulate payment completion
   useEffect(() => {
     if (isPaying) {
       const timer = setTimeout(() => {
-        setStep(7);
+        setStep(5);
         setIsPaying(false);
-        // Trigger confetti on success
         confetti({
           particleCount: 150,
           spread: 70,
@@ -210,17 +244,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     }
   }, [isPaying]);
 
-  const handleBack = () => {
-    if (step > 1) {
-      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8);
-    } else {
-      onNavigate('encounter');
-    }
-  };
-
   // --- Portal Content for Full Screen Steps ---
-  // This ensures these steps are rendered at document.body level, 
-  // completely bypassing the main app layout and bottom tab bar.
   const fullScreenContent = (
     <AnimatePresence mode="wait">
       {step >= 2 && (
@@ -231,283 +255,212 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col overflow-hidden"
         >
-          {/* Step 2: Restaurant List */}
+          {/* Step 2: Restaurant Detail + Package List (Single Restaurant) */}
           {step === 2 && (
             <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className={`flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24 transition-all duration-500 ${showRelationOverlay ? 'blur-sm scale-[0.98]' : 'blur-0 scale-100'}`}
             >
-              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
-                <button 
-                  onClick={() => setStep(1)}
-                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <ArrowLeft className="w-5 h-5 text-slate-600" />
-                </button>
-                <h1 className="text-xl font-bold text-slate-900">推荐餐厅</h1>
-              </div>
-
-              <div className="p-4 space-y-4">
-                {RESTAURANTS_STEP2.map((restaurant) => (
-                  <motion.div
-                    key={restaurant.id}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setSelectedRestaurant(restaurant);
-                      setStep(3);
-                    }}
-                    className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100"
-                  >
-                    <div className="h-40 relative">
-                      <img 
-                        src={restaurant.image} 
-                        alt={restaurant.name} 
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500">
-                        <Star className="w-3 h-3 fill-current" />
-                        {restaurant.rating}
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-lg text-slate-900">{restaurant.name}</h3>
-                        <span className="text-slate-900 font-bold text-sm">{restaurant.price}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
-                        <MapPin className="w-3 h-3" />
-                        {restaurant.location}
-                      </div>
-                      <div className="flex gap-2">
-                        {restaurant.tags.map(tag => (
-                          <span key={tag} className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 3: Venue Detail Page (Refactored) */}
-          {step === 3 && selectedRestaurant && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
-            >
-              {/* Header Image */}
-              <div className="relative h-64 bg-slate-200">
+              {/* Restaurant Header Image */}
+              <div className="relative h-56 bg-slate-200 shrink-0">
                 <img 
-                  src={selectedRestaurant.image} 
-                  alt={selectedRestaurant.name} 
+                  src={CURRENT_RESTAURANT.image} 
+                  alt={CURRENT_RESTAURANT.name} 
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20"></div>
                 <button 
-                  onClick={() => setStep(2)}
+                  onClick={() => { setStep(1); setSelectedRelation(null); setRelationTag(null); }}
                   className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </button>
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h1 className="text-3xl font-bold mb-2">{selectedRestaurant.name}</h1>
-                  <div className="flex items-center gap-2 text-sm opacity-90">
-                    <MapPin className="w-4 h-4" />
-                    <span>{selectedRestaurant.location}</span>
+                <div className="absolute bottom-4 left-6 right-6 text-white">
+                  <h1 className="text-2xl font-bold mb-1">{CURRENT_RESTAURANT.name}</h1>
+                  <div className="flex items-center gap-3 text-sm opacity-90">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{CURRENT_RESTAURANT.location}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 fill-current text-yellow-400" />
+                      <span className="text-yellow-400 font-bold">{CURRENT_RESTAURANT.rating}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Suggestion Card */}
-              <div className="px-6 pt-6 pb-2">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-5 relative overflow-hidden"
-                >
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-white/40 rounded-full -mr-8 -mt-8 blur-xl"></div>
-                  
-                  <div className="flex items-start gap-4 relative z-10">
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-indigo-500 shrink-0">
-                      <Star className="w-5 h-5 fill-current" />
+              {/* Restaurant Info Bar */}
+              <div className="bg-white px-6 py-4 border-b border-slate-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-sm text-slate-500">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>{CURRENT_RESTAURANT.hours}</span>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-indigo-900 mb-1">今日约会建议</h3>
-                      <div className="flex items-center gap-2 text-sm text-indigo-700/80 mb-3">
-                        <span className="bg-white/60 px-2 py-0.5 rounded text-xs font-medium">轻松不尴尬</span>
-                        <span className="bg-white/60 px-2 py-0.5 rounded text-xs font-medium">环境安静</span>
-                      </div>
-                      
-                      {/* Timeline */}
-                      <div className="flex items-center gap-2 text-xs text-indigo-800">
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span>14:00 见面破冰</span>
-                        </div>
-                        <div className="w-4 h-[1px] bg-indigo-300"></div>
-                        <div className="flex items-center gap-1 opacity-60">
-                          <Camera className="w-3 h-3" />
-                          <span>16:00 一起看展</span>
-                        </div>
-                      </div>
-                    </div>
+                    <span className="text-slate-900 font-bold">{CURRENT_RESTAURANT.price}</span>
                   </div>
-                </motion.div>
+                  {selectedRelation && (
+                    <motion.div 
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex items-center gap-1 bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-xs font-bold"
+                    >
+                      <Heart className="w-3 h-3" />
+                      {RELATIONS.find(r => r.id === selectedRelation)?.label}
+                    </motion.div>
+                  )}
+                </div>
               </div>
 
               {/* Environment Gallery */}
-              <div className="px-6 py-4">
-                <h3 className="font-bold text-lg text-slate-900 mb-3">环境展示</h3>
+              <div className="px-6 pt-5 pb-2">
+                <h3 className="font-bold text-slate-900 mb-3">环境展示</h3>
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                  {selectedRestaurant.gallery?.map((img, idx) => (
+                  {CURRENT_RESTAURANT.gallery.map((img, idx) => (
                     <img 
                       key={idx}
                       src={img} 
-                      alt={`Environment ${idx}`} 
+                      alt={`环境 ${idx + 1}`} 
                       className="w-32 h-24 rounded-xl object-cover flex-shrink-0"
                     />
                   ))}
-                  {(!selectedRestaurant.gallery || selectedRestaurant.gallery.length === 0) && (
-                    <div className="text-slate-400 text-sm italic">暂无环境图</div>
-                  )}
                 </div>
               </div>
 
-              {/* Signature Dishes */}
-              <div className="px-6 py-4">
-                <h3 className="font-bold text-lg text-slate-900 mb-3">特色菜品</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {selectedRestaurant.dishes?.map((dish, idx) => (
-                    <div key={idx} className="flex flex-col gap-1">
-                      <img 
-                        src={dish.image} 
-                        alt={dish.name} 
-                        className="w-full h-24 rounded-xl object-cover"
-                      />
-                      <span className="text-xs font-bold text-slate-900 truncate">{dish.name}</span>
-                      <span className="text-xs text-orange-500 font-medium">{dish.price}</span>
-                    </div>
-                  ))}
-                  {(!selectedRestaurant.dishes || selectedRestaurant.dishes.length === 0) && (
-                    <div className="col-span-3 text-slate-400 text-sm italic">暂无菜品信息</div>
-                  )}
+              {/* Package List Section */}
+              <div className="px-6 pt-4 pb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-lg text-slate-900">
+                    {relationTag ? '为你推荐的套餐' : '全部套餐'}
+                  </h3>
+                  <span className="text-xs text-slate-400">{filteredPackages.length}个套餐可选</span>
                 </div>
-              </div>
 
-              {/* Reviews */}
-              <div className="px-6 py-4 pb-24">
-                <h3 className="font-bold text-lg text-slate-900 mb-3">用户评价</h3>
                 <div className="space-y-4">
-                  {selectedRestaurant.reviews?.map((review, idx) => (
-                    <div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-                      <div className="flex items-center gap-2 mb-2">
-                        <img src={review.avatar} alt={review.user} className="w-8 h-8 rounded-full" />
-                        <span className="font-bold text-sm text-slate-900">{review.user}</span>
-                        <div className="flex items-center gap-0.5 ml-auto">
-                          <Star className="w-3 h-3 fill-orange-400 text-orange-400" />
-                          <span className="text-xs font-bold text-orange-500">{review.rating}</span>
+                  {filteredPackages.map((pkg) => {
+                    const discount = Math.round((pkg.price / pkg.originalPrice) * 10);
+                    return (
+                      <motion.div 
+                        key={pkg.id}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setSelectedPackage(pkg);
+                          setStep(3);
+                        }}
+                        className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer"
+                      >
+                        <div className="relative h-36">
+                          <img 
+                            src={pkg.image} 
+                            alt={pkg.name} 
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+                            {discount}折
+                          </div>
                         </div>
-                      </div>
-                      <p className="text-slate-600 text-sm">{review.content}</p>
+                        <div className="p-4">
+                          <h4 className="font-bold text-slate-900 text-base mb-1">{pkg.name}</h4>
+                          <p className="text-slate-400 text-xs line-clamp-1 mb-3">{pkg.desc}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-orange-500 font-bold text-sm">¥</span>
+                              <span className="text-orange-500 font-bold text-xl">{pkg.price}</span>
+                              <span className="text-slate-300 text-xs line-through ml-2">¥{pkg.originalPrice}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-slate-400 text-xs">
+                              <span>查看详情</span>
+                              <ChevronRight className="w-4 h-4" />
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Relation Selection Overlay (appears on top of blurred restaurant page) */}
+          <AnimatePresence>
+            {showRelationOverlay && step === 2 && (
+              <>
+                {/* Semi-transparent backdrop */}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[10000] bg-black/40"
+                />
+                
+                {/* Relation Card */}
+                <motion.div 
+                  initial={{ y: '100%', opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: '100%', opacity: 0 }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                  className="fixed inset-x-0 bottom-0 z-[10001] bg-white rounded-t-3xl shadow-2xl pb-safe"
+                >
+                  <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-2" />
+                  
+                  <div className="px-6 pt-2 pb-6">
+                    {/* Header */}
+                    <div className="text-center mb-6">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-1">今天和谁相见？</h2>
+                      <p className="text-slate-400 text-sm">选择关系，为你推荐最合适的套餐</p>
                     </div>
-                  ))}
-                  {(!selectedRestaurant.reviews || selectedRestaurant.reviews.length === 0) && (
-                    <div className="text-slate-400 text-sm italic">暂无评价</div>
-                  )}
-                </div>
-              </div>
 
-              {/* Floating Action Button */}
-              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
-                <button 
-                  onClick={() => setStep(4)}
-                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg active:scale-95 transition-transform"
-                >
-                  查看套餐
-                </button>
-              </div>
-            </motion.div>
-          )}
+                    {/* Relation Grid */}
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                      {RELATIONS.map((item) => (
+                        <motion.button
+                          key={item.id}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleSelectRelation(item)}
+                          className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                            selectedRelation === item.id 
+                              ? 'border-indigo-500 bg-indigo-50 shadow-md' 
+                              : 'border-slate-100 bg-white'
+                          }`}
+                        >
+                          <div className={`w-12 h-12 ${item.bg} rounded-full flex items-center justify-center`}>
+                            <item.icon className={`w-6 h-6 ${item.color}`} />
+                          </div>
+                          <span className="font-bold text-slate-900 text-xs">{item.label}</span>
+                          {selectedRelation === item.id && (
+                            <motion.div 
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center"
+                            >
+                              <Check className="w-3 h-3 text-white" />
+                            </motion.div>
+                          )}
+                        </motion.button>
+                      ))}
+                    </div>
 
-
-
-
-
-          {/* Step 4: Package List Page */}
-          {step === 4 && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
-            >
-              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
-                <button 
-                  onClick={() => setStep(3)}
-                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <ArrowLeft className="w-5 h-5 text-slate-600" />
-                </button>
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900">套餐列表</h1>
-                  <p className="text-xs text-slate-400">{selectedRestaurant?.name || '花田错·西餐厅'}</p>
-                </div>
-              </div>
-
-              <div className="p-4 space-y-4">
-                {PACKAGES_STEP4.map((pkg) => {
-                  const discount = Math.round((pkg.price / pkg.originalPrice) * 10);
-                  return (
-                    <motion.div 
-                      key={pkg.id}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        setSelectedPackage(pkg);
-                        setStep(5);
-                      }}
-                      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer"
+                    {/* Skip Button */}
+                    <motion.button 
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleSkipRelation}
+                      className="w-full py-4 bg-slate-100 text-slate-500 rounded-full font-bold text-base flex items-center justify-center gap-2"
                     >
-                      <div className="relative h-40">
-                        <img 
-                          src={pkg.image} 
-                          alt={pkg.name} 
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
-                          {discount}折
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h4 className="font-bold text-slate-900 text-lg mb-1">{pkg.name}</h4>
-                        <p className="text-slate-400 text-xs line-clamp-2 mb-3">{pkg.desc}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-orange-500 font-bold text-sm">¥</span>
-                            <span className="text-orange-500 font-bold text-2xl">{pkg.price}</span>
-                            <span className="text-slate-300 text-xs line-through ml-2">¥{pkg.originalPrice}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-slate-400 text-xs">
-                            <span>查看详情</span>
-                            <ChevronRight className="w-4 h-4" />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
+                      <SkipForward className="w-4 h-4" />
+                      跳过，直接看全部套餐
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
 
-          {/* Step 5: Package Detail Page (Full Screen) */}
-          {step === 5 && selectedPackage && (
+          {/* Step 3: Package Detail Page (Full Screen) */}
+          {step === 3 && selectedPackage && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -523,7 +476,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
                 <button 
-                  onClick={() => setStep(4)}
+                  onClick={() => setStep(2)}
                   className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
                 >
                   <ArrowLeft className="w-6 h-6" />
@@ -582,6 +535,26 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       ))}
                     </ul>
                   </section>
+
+                  {/* Restaurant Info */}
+                  <div className="h-[1px] bg-slate-100"></div>
+                  <section>
+                    <h3 className="font-bold text-slate-900 mb-3">商家信息</h3>
+                    <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl">
+                      <img 
+                        src={CURRENT_RESTAURANT.image} 
+                        alt={CURRENT_RESTAURANT.name} 
+                        className="w-14 h-14 rounded-xl object-cover"
+                      />
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{CURRENT_RESTAURANT.name}</h4>
+                        <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+                          <MapPin className="w-3 h-3" />
+                          <span>{CURRENT_RESTAURANT.location}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
                 </div>
               </div>
 
@@ -589,7 +562,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setStep(6)}
+                  onClick={() => setStep(4)}
                   className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
                 >
                   选择此套餐 ¥{selectedPackage.price}
@@ -598,8 +571,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.div>
           )}
 
-          {/* Step 6: Payment Page (Method Selection) */}
-          {step === 6 && selectedPackage && (
+          {/* Step 4: Payment Page (Method Selection) */}
+          {step === 4 && selectedPackage && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -608,7 +581,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             >
               <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
                 <button 
-                  onClick={() => setStep(5)}
+                  onClick={() => setStep(3)}
                   className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
                 >
                   <ArrowLeft className="w-5 h-5 text-slate-600" />
@@ -627,7 +600,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     />
                     <div className="flex-1">
                       <h4 className="font-bold text-slate-900 mb-1">{selectedPackage.name}</h4>
-                      <p className="text-slate-500 text-xs mb-2">{selectedRestaurant?.name || '花田错·西餐厅'}</p>
+                      <p className="text-slate-500 text-xs mb-2">{CURRENT_RESTAURANT.name}</p>
                       <div className="text-orange-500 font-bold">¥{selectedPackage.price}</div>
                     </div>
                   </div>
@@ -752,8 +725,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
           )}
 
-          {/* Step 7: Success Page */}
-          {step === 7 && (
+          {/* Step 5: Success Page */}
+          {step === 5 && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -773,7 +746,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <div className="w-full space-y-4">
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setStep(8)}
+                  onClick={() => setStep(6)}
                   className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg"
                 >
                   查看订单
@@ -847,8 +820,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.div>
           )}
 
-          {/* Step 8: Order Detail Page */}
-          {step === 8 && (
+          {/* Step 6: Order Detail Page */}
+          {step === 6 && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -857,7 +830,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             >
               <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
                 <button 
-                  onClick={() => setStep(1)}
+                  onClick={() => { setStep(1); setSelectedRelation(null); setRelationTag(null); }}
                   className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
                 >
                   <X className="w-5 h-5 text-slate-600" />
@@ -887,16 +860,16 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <div className="flex items-center gap-3 pb-4 border-b border-slate-50">
                     <div className="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden">
                       <img 
-                        src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&q=80" 
+                        src={CURRENT_RESTAURANT.image} 
                         alt="Restaurant" 
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900">花田错·西餐厅</h4>
+                      <h4 className="font-bold text-slate-900">{CURRENT_RESTAURANT.name}</h4>
                       <div className="flex items-center gap-1 text-xs text-slate-500">
                         <MapPin className="w-3 h-3" />
-                        三里屯太古里北区 N4-30
+                        {CURRENT_RESTAURANT.location}
                       </div>
                     </div>
                   </div>
@@ -904,11 +877,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-slate-500">下单时间</span>
-                      <span className="text-slate-900">2026-02-13 14:30:25</span>
+                      <span className="text-slate-900">{new Date().toLocaleString('zh-CN')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">支付方式</span>
-                      <span className="text-slate-900">Face ID 支付</span>
+                      <span className="text-slate-900">{paymentMethod === 'wechat' ? '微信支付' : '支付宝'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">实付金额</span>
@@ -938,10 +911,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       {/* Render Full Screen Steps via Portal */}
       {createPortal(fullScreenContent, document.body)}
 
-      {/* Step 1: Relation Selection (Main View) */}
+      {/* Step 1: Scan Entry Page */}
       {step === 1 && (
         <div className="flex-1 flex flex-col bg-white relative h-full">
-          {/* Global Back Button - Fixed at Top Left */}
+          {/* Global Back Button */}
           <button 
             onClick={() => onNavigate('encounter')}
             className="fixed top-12 left-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]"
@@ -950,32 +923,86 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           </button>
 
           <div className="px-6 pt-24 pb-4">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">今天和谁相见</h1>
-            <p className="text-slate-400 text-sm">选择一个场景，开启你的社交之旅</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">相见</h1>
+            <p className="text-slate-400 text-sm">扫码进店，开启你的社交之旅</p>
           </div>
 
+          {/* Restaurant Preview Card */}
           <div className="flex-1 px-6 overflow-y-auto pb-48">
-            <div className="grid grid-cols-2 gap-4">
-              {RELATIONS_STEP1.map((item) => (
-                <motion.button
-                  key={item.id}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setStep(2)}
-                  className="bg-white border border-slate-100 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm hover:shadow-md transition-all"
-                >
-                  <motion.div 
-                    whileTap={{ scale: 1.2, rotate: 10 }}
-                    className={`w-16 h-16 ${item.bg} rounded-full flex items-center justify-center`}
-                  >
-                    <item.icon className={`w-8 h-8 ${item.color}`} />
-                  </motion.div>
-                  <span className="font-bold text-slate-900">{item.label}</span>
-                </motion.button>
-              ))}
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 mb-6"
+            >
+              <div className="relative h-48">
+                <img 
+                  src={CURRENT_RESTAURANT.image} 
+                  alt={CURRENT_RESTAURANT.name} 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <h3 className="font-bold text-lg">{CURRENT_RESTAURANT.name}</h3>
+                  <div className="flex items-center gap-2 text-xs opacity-90 mt-1">
+                    <MapPin className="w-3 h-3" />
+                    <span>{CURRENT_RESTAURANT.location}</span>
+                  </div>
+                </div>
+                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500">
+                  <Star className="w-3 h-3 fill-current" />
+                  {CURRENT_RESTAURANT.rating}
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  {CURRENT_RESTAURANT.tags.map((tag, idx) => (
+                    <span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-1 text-slate-500">
+                    <Clock className="w-4 h-4" />
+                    <span>{CURRENT_RESTAURANT.hours}</span>
+                  </div>
+                  <span className="text-slate-900 font-bold">{CURRENT_RESTAURANT.price}</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Quick Info Cards */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              <motion.div 
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="bg-indigo-50 rounded-xl p-3 text-center"
+              >
+                <Utensils className="w-5 h-5 text-indigo-500 mx-auto mb-1" />
+                <span className="text-xs font-bold text-indigo-700">{RESTAURANT_PACKAGES.length}个套餐</span>
+              </motion.div>
+              <motion.div 
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="bg-orange-50 rounded-xl p-3 text-center"
+              >
+                <Star className="w-5 h-5 text-orange-500 mx-auto mb-1 fill-current" />
+                <span className="text-xs font-bold text-orange-700">{CURRENT_RESTAURANT.rating}分好评</span>
+              </motion.div>
+              <motion.div 
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="bg-green-50 rounded-xl p-3 text-center"
+              >
+                <Users className="w-5 h-5 text-green-500 mx-auto mb-1" />
+                <span className="text-xs font-bold text-green-700">28人在附近</span>
+              </motion.div>
             </div>
           </div>
 
-          {/* Bottom Scan Card - Fixed at Bottom */}
+          {/* Bottom Scan Card */}
           <div className="absolute bottom-0 left-0 right-0 p-4 pb-24 bg-gradient-to-t from-white via-white to-transparent pt-12 z-[100]">
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
@@ -999,7 +1026,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setStep(2)}
+                  onClick={handleScan}
                   className="w-full bg-white text-indigo-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg text-sm"
                 >
                   <Camera className="w-4 h-4" />

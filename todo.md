@@ -14,3 +14,12 @@
 - [x] Fix flow: Package List → Package Detail → Payment
 - [x] Restore post-payment navigation buttons (Go to Encounter + View Nearby Moments)
 - [x] Verify complete flow: Select Package → Payment → Success → Navigation buttons
+
+## Scan Flow Refactoring
+- [x] Scan = already in-store, skip multi-restaurant list
+- [x] Scan → blurred restaurant background + relation selection card overlay
+- [x] Path A: select relation → filter packages by relation → package list
+- [x] Path B: skip relation → show all packages directly
+- [x] After relation selection, card disappears, background becomes clear
+- [x] No multi-restaurant recommendation after scan
+- [x] Complete flow: Scan → Restaurant Detail + Packages → Select Package → Payment → Success
