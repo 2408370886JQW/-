@@ -491,30 +491,37 @@ export default function Home() {
             {/* Tab Switcher */}
             <div className="flex items-center justify-between px-2">
               {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as TabType)}
-                  className="flex flex-col items-center gap-0.5 group"
-                >
-                  <span className={cn(
-                    "text-base font-bold transition-colors drop-shadow-sm",
-                    activeTab === tab.id ? "text-slate-900" : "text-slate-600/90 group-hover:text-slate-800"
-                  )}>
-                    {tab.label}
-                  </span>
-                  <span className={cn(
-                    "text-[10px] font-medium transition-colors drop-shadow-sm",
-                    activeTab === tab.id ? "text-blue-600" : "text-slate-500/80"
-                  )}>
-                    {tab.subtitle}
-                  </span>
-                  {activeTab === tab.id && (
-                    <motion.div
-                      layoutId="activeTabIndicator"
-                      className="w-4 h-1 bg-blue-500 rounded-full mt-1"
-                    />
-                  )}
-                </button>
+                  <motion.button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id as TabType);
+                      if (navigator.vibrate) {
+                        navigator.vibrate(10);
+                      }
+                    }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    className="relative flex flex-col items-center justify-center py-2 px-1 z-10"
+                  >
+                    <span className={cn(
+                      "text-[15px] font-bold transition-colors drop-shadow-sm",
+                      activeTab === tab.id ? "text-slate-900" : "text-slate-600/90 group-hover:text-slate-800"
+                    )}>
+                      {tab.label}
+                    </span>
+                    <span className={cn(
+                      "text-[10px] font-medium transition-colors drop-shadow-sm",
+                      activeTab === tab.id ? "text-blue-600" : "text-slate-500/80"
+                    )}>
+                      {tab.subtitle}
+                    </span>
+                    {activeTab === tab.id && (
+                      <motion.div
+                        layoutId="activeTabIndicator"
+                        className="w-4 h-1 bg-blue-500 rounded-full mt-1"
+                      />
+                    )}
+                  </motion.button>
               ))}
             </div>
           </div>
