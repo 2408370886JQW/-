@@ -330,7 +330,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // online-5: Payment
   // online-6: Success
   // online-7: Order detail
-  const [onlineStep, setOnlineStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
+  // online-8: Pure group-buy restaurant list (no relation, normal packages)
+  // online-9: Restaurant detail + normal package list
+  const [onlineStep, setOnlineStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9>(1);
 
   // ---- SCAN FLOW STEPS ----
   // scan-1: Restaurant detail page (clear, with two entry buttons)
@@ -342,6 +344,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // scan-7: Success
   // scan-8: Order detail
   const [scanStep, setScanStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
+
+  // Track which path user took for online package detail back navigation
+  const [onlinePackageSource, setOnlinePackageSource] = useState<'relation' | 'normal'>('relation');
 
   // Shared state
   const [selectedRelation, setSelectedRelation] = useState<string | null>(null);
@@ -375,6 +380,20 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const handleOnlineSelectRestaurant = (restaurant: RestaurantType) => {
     setSelectedRestaurant(restaurant);
     setOnlineStep(3);
+  };
+
+  // Online: skip relation → go to pure group-buy restaurant list
+  const handleOnlineSkipRelation = () => {
+    setFlowMode('online');
+    setSelectedRelation(null);
+    setRelationTag(null);
+    setOnlineStep(8);
+  };
+
+  // Online: select restaurant for normal packages (no relation)
+  const handleOnlineSelectRestaurantNormal = (restaurant: RestaurantType) => {
+    setSelectedRestaurant(restaurant);
+    setOnlineStep(9);
   };
 
   // Scan: enter scan flow → go directly to restaurant detail page
@@ -578,8 +597,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   ) : null;
 
   // --- Success Page ---
-  const renderSuccessPage = (onViewOrder: () => void) => (
-    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center bg-white p-6 text-center">
+  const renderSuccessPage = (onViewOrder: () => void, onBack: () => void) => (
+    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col bg-white p-6 text-center overflow-y-auto">
+      {/* Back button */}
+      <div className="flex items-center mb-4 -mx-2">
+        <button onClick={onBack} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
+      </div>
+      <div className="flex-1 flex flex-col items-center justify-center">
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }} className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
         <Check className="w-12 h-12 text-green-600" />
       </motion.div>
@@ -610,14 +634,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           </motion.button>
         </div>
       </div>
+      </div>
     </motion.div>
   );
 
   // --- Order Detail Page ---
-  const renderOrderDetail = (pkg: PackageType | null, restaurant: RestaurantType | null) => (
+  const renderOrderDetail = (pkg: PackageType | null, restaurant: RestaurantType | null, onBack: () => void) => (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24">
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
-        <button onClick={resetAll} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><X className="w-5 h-5 text-slate-600" /></button>
+        <button onClick={onBack} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
         <h1 className="text-xl font-bold text-slate-900">订单详情</h1>
       </div>
       <div className="p-4 space-y-4">
@@ -875,12 +900,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {onlineStep === 3 && selectedRestaurant && renderRestaurantWithRelationPackages(
             selectedRestaurant,
             () => setOnlineStep(2),
-            (pkg) => { setSelectedPackage(pkg); setOnlineStep(4); }
+            (pkg) => { setSelectedPackage(pkg); setOnlinePackageSource('relation'); setOnlineStep(4); }
           )}
           {/* Online Step 4: Package Detail */}
           {onlineStep === 4 && selectedPackage && selectedRestaurant && renderPackageDetail(
             selectedPackage, selectedRestaurant,
-            () => setOnlineStep(3),
+            () => setOnlineStep(onlinePackageSource === 'normal' ? 9 : 3),
             () => setOnlineStep(5)
           )}
           {/* Online Step 5: Payment */}
@@ -890,9 +915,59 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           )}
           {renderPaymentOverlay()}
           {/* Online Step 6: Success */}
-          {onlineStep === 6 && renderSuccessPage(() => setOnlineStep(7))}
+          {onlineStep === 6 && renderSuccessPage(
+            () => setOnlineStep(7),
+            () => setOnlineStep(onlinePackageSource === 'normal' ? 9 : 3)
+          )}
           {/* Online Step 7: Order Detail */}
-          {onlineStep === 7 && renderOrderDetail(selectedPackage, selectedRestaurant)}
+          {onlineStep === 7 && renderOrderDetail(selectedPackage, selectedRestaurant, () => setOnlineStep(6))}
+
+          {/* Online Step 8: Pure Group-Buy Restaurant List (no relation) */}
+          {onlineStep === 8 && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
+              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+                <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">团购商家</h1>
+                  <p className="text-xs text-slate-400">吃 / 喝 / 玩 · 热门套餐</p>
+                </div>
+              </div>
+              <div className="p-4 space-y-4">
+                {ALL_RESTAURANTS.map(restaurant => (
+                  <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurantNormal(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+                    <div className="relative h-40">
+                      <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3 text-white">
+                        <h3 className="font-bold text-lg">{restaurant.name}</h3>
+                        <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
+                      </div>
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        {restaurant.tags.map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">{restaurant.normalPackages.length}个团购套餐可选</span>
+                        <div className="flex items-center gap-1 text-slate-900 font-bold">{restaurant.price}<ChevronRight className="w-4 h-4" /></div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Online Step 9: Restaurant Detail + Normal Package List */}
+          {onlineStep === 9 && selectedRestaurant && renderPackageList(
+            '团购套餐',
+            `${selectedRestaurant.name} · 全部团购`,
+            selectedRestaurant.normalPackages,
+            selectedRestaurant,
+            () => setOnlineStep(8),
+            (pkg) => { setSelectedPackage(pkg); setOnlinePackageSource('normal'); setOnlineStep(4); }
+          )}
         </motion.div>
       )}
 
@@ -968,10 +1043,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {renderPaymentOverlay()}
 
           {/* Scan Step 7: Success */}
-          {scanStep === 7 && renderSuccessPage(() => setScanStep(8))}
+          {scanStep === 7 && renderSuccessPage(() => setScanStep(8), () => setScanStep(5))}
 
           {/* Scan Step 8: Order Detail */}
-          {scanStep === 8 && renderOrderDetail(selectedPackage, selectedRestaurant)}
+          {scanStep === 8 && renderOrderDetail(selectedPackage, selectedRestaurant, () => setScanStep(7))}
         </motion.div>
       )}
     </AnimatePresence>
@@ -1026,6 +1101,19 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 );
               })}
             </div>
+
+            {/* Skip Relation Button */}
+            <motion.button
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleOnlineSkipRelation}
+              className="mt-4 w-full bg-slate-50 border-2 border-dashed border-slate-200 text-slate-500 rounded-2xl p-4 flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors"
+            >
+              <SkipForward className="w-4 h-4" />
+              <span className="font-medium text-sm">暂不选择关系，直接看团购套餐</span>
+            </motion.button>
           </div>
 
           {/* Bottom Scan Card (Fixed) */}

@@ -44,3 +44,13 @@
 - [x] No second scan page after scan
 - [x] Verify Path A: scan → restaurant → select relation → relation packages → order
 - [x] Verify Path B: scan → restaurant → skip → normal packages → order
+
+## 相见页关系选择逻辑优化
+- [x] 在线流程关系选择页新增「暂不选择关系」选项
+- [x] 选择「暂不选择关系」后直接进入纯团购套餐选商家页面
+- [x] 纯团购页面只展示吃/喝/玩相关商家与套餐，不基于关系推荐
+
+## 支付成功页返回逻辑优化
+- [x] 支付成功页增加【返回上一页】按钮
+- [x] 查看订单后返回支付成功页，而非跳转到地图首页
+- [x] 整体返回路径：支付成功页 → 上一业务页 → 而非强制回首页
