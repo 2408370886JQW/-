@@ -26,6 +26,7 @@ const ALL_RESTAURANTS = [
   {
     id: 1,
     name: '花田错·西餐厅',
+    category: '美食' as const,
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
     location: '三里屯太古里北区 N4-30',
     tags: ['轻松不尴尬', '环境安静', '适合约会'],
@@ -148,6 +149,7 @@ const ALL_RESTAURANTS = [
   {
     id: 2,
     name: '丝路有约·中东融合餐厅',
+    category: '美食' as const,
     image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80',
     location: '国贸CBD 银泰中心B1',
     tags: ['异域风情', '私密包间', '适合商务'],
@@ -208,6 +210,7 @@ const ALL_RESTAURANTS = [
   {
     id: 3,
     name: '炭火青春·日式烤肉',
+    category: '美食' as const,
     image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&q=80',
     location: '望京SOHO T2-B1',
     tags: ['氛围感', '大口吃肉', '适合聚会'],
@@ -268,6 +271,7 @@ const ALL_RESTAURANTS = [
   {
     id: 4,
     name: '云端·Sky Lounge',
+    category: '饮品' as const,
     image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80',
     location: '朝阳门外大街 凯恒中心顶层',
     tags: ['高空景观', '鸡尾酒', '适合约会'],
@@ -348,6 +352,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // Track which path user took for online package detail back navigation
   const [onlinePackageSource, setOnlinePackageSource] = useState<'relation' | 'normal'>('relation');
 
+  // Category filter for pure group-buy restaurant list
+  const [selectedCategory, setSelectedCategory] = useState<string>('全部');
+
   // Shared state
   const [selectedRelation, setSelectedRelation] = useState<string | null>(null);
   const [relationTag, setRelationTag] = useState<string | null>(null);
@@ -360,6 +367,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const filteredRestaurants = relationTag
     ? ALL_RESTAURANTS.filter(r => r.relationTags.includes(relationTag))
     : ALL_RESTAURANTS;
+
+  // Category-filtered restaurants for pure group-buy list
+  const RESTAURANT_CATEGORIES = ['全部', '美食', '饮品', '娱乐'];
+  const categoryFilteredRestaurants = selectedCategory === '全部'
+    ? ALL_RESTAURANTS
+    : ALL_RESTAURANTS.filter(r => r.category === selectedCategory);
 
   // Get relation packages filtered by tag
   const getRelationPackages = (restaurant: RestaurantType) => {
@@ -387,6 +400,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     setFlowMode('online');
     setSelectedRelation(null);
     setRelationTag(null);
+    setSelectedCategory('全部');
     setOnlineStep(8);
   };
 
@@ -446,6 +460,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     setSelectedPackage(null);
     setPaymentMethod('wechat');
     setIsPaying(false);
+    setSelectedCategory('全部');
   };
 
   // ========== SHARED UI COMPONENTS ==========
@@ -925,15 +940,40 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {/* Online Step 8: Pure Group-Buy Restaurant List (no relation) */}
           {onlineStep === 8 && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
-              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
-                <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900">团购商家</h1>
-                  <p className="text-xs text-slate-400">吃 / 喝 / 玩 · 热门套餐</p>
+              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-100">
+                <div className="px-4 pt-12 pb-3 flex items-center gap-4">
+                  <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
+                  <div>
+                    <h1 className="text-xl font-bold text-slate-900">团购商家</h1>
+                    <p className="text-xs text-slate-400">吃 / 喝 / 玩 · 热门套餐</p>
+                  </div>
+                </div>
+                {/* Category Filter Tabs */}
+                <div className="px-4 pb-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                  {RESTAURANT_CATEGORIES.map(cat => (
+                    <motion.button
+                      key={cat}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                        selectedCategory === cat
+                          ? 'bg-slate-900 text-white'
+                          : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      {cat}
+                    </motion.button>
+                  ))}
                 </div>
               </div>
               <div className="p-4 space-y-4">
-                {ALL_RESTAURANTS.map(restaurant => (
+                {categoryFilteredRestaurants.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                    <ShoppingBag className="w-12 h-12 mb-3 opacity-40" />
+                    <p className="text-sm">暂无「{selectedCategory}」类商家</p>
+                    <button onClick={() => setSelectedCategory('全部')} className="mt-3 text-sm text-blue-500 font-medium">查看全部商家</button>
+                  </div>
+                ) : categoryFilteredRestaurants.map(restaurant => (
                   <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurantNormal(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
                     <div className="relative h-40">
                       <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
@@ -946,7 +986,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     </div>
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        {restaurant.tags.map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
+                        <span className="bg-blue-50 text-blue-500 text-xs px-2 py-1 rounded-lg font-medium">{restaurant.category}</span>
+                        {restaurant.tags.slice(0, 2).map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-500">{restaurant.normalPackages.length}个团购套餐可选</span>
