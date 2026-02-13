@@ -47,8 +47,24 @@ const RESTAURANTS_STEP2 = [
     location: '三里屯太古里北区 N4-30',
     tags: ['轻松不尴尬', '环境安静'],
     rating: 4.8,
-    price: '¥198/人'
+    price: '¥198/人',
+    // New data for Venue Detail
+    gallery: [
+      'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
+      'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80'
+    ],
+    dishes: [
+      { name: '澳洲M5和牛', image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80', price: '¥288' },
+      { name: '黑松露意面', image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&q=80', price: '¥128' },
+      { name: '提拉米苏', image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80', price: '¥68' }
+    ],
+    reviews: [
+      { user: 'Alice', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80', content: '环境非常棒，适合约会！', rating: 5 },
+      { user: 'Bob', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&q=80', content: '牛排鲜嫩多汁，服务也很周到。', rating: 4.8 }
+    ]
   },
+  // ... other restaurants (simplified for brevity, in real app would have full data)
   {
     id: 2,
     name: 'Blue Note Jazz Club',
@@ -56,7 +72,8 @@ const RESTAURANTS_STEP2 = [
     location: '前门东大街23号',
     tags: ['爵士乐', '氛围感'],
     rating: 4.9,
-    price: '¥320/人'
+    price: '¥320/人',
+    gallery: [], dishes: [], reviews: []
   },
   {
     id: 3,
@@ -65,25 +82,48 @@ const RESTAURANTS_STEP2 = [
     location: '沙滩北街23号',
     tags: ['胡同景观', '法餐'],
     rating: 4.7,
-    price: '¥580/人'
+    price: '¥580/人',
+    gallery: [], dishes: [], reviews: []
   },
   {
     id: 4,
     name: 'The Georg',
-    image: 'https://images.unsplash.com/photo-1550966871-3ed3c622171d?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
     location: '东不压桥胡同45号',
     tags: ['北欧风', '艺术感'],
     rating: 4.6,
-    price: '¥450/人'
+    price: '¥450/人',
+    gallery: [], dishes: [], reviews: []
   },
   {
     id: 5,
     name: 'Opera BOMBANA',
-    image: 'https://images.unsplash.com/photo-1551632436-cbf8dd354ca8?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
     location: '东大桥路9号侨福芳草地',
     tags: ['米其林', '意式'],
     rating: 4.9,
-    price: '¥880/人'
+    price: '¥880/人',
+    gallery: [], dishes: [], reviews: []
+  }
+];
+
+// Step 4: Packages (Mock Data)
+const PACKAGES_STEP4 = [
+  {
+    id: 101,
+    name: '初见·双人轻食套餐',
+    desc: '牛油果鲜虾沙拉 + 黑松露奶油意面 + 特调气泡水x2',
+    price: 198,
+    originalPrice: 298,
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80'
+  },
+  {
+    id: 102,
+    name: '心动·法式浪漫晚餐',
+    desc: '澳洲M5和牛眼肉 + 鹅肝慕斯 + 甜点拼盘',
+    price: 520,
+    originalPrice: 888,
+    image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80'
   }
 ];
 
@@ -103,6 +143,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
   const [isPaying, setIsPaying] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState<typeof RESTAURANTS_STEP2[0] | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<typeof PACKAGES_STEP4[0] | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
 
   // Simulate Face ID scan
   useEffect(() => {
@@ -206,7 +248,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.div>
           )}
 
-          {/* Step 3: Package List (Restaurant Detail) */}
+          {/* Step 3: Venue Detail Page (Refactored) */}
           {step === 3 && selectedRestaurant && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
@@ -274,71 +316,227 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 </motion.div>
               </div>
 
-              {/* Package List */}
-              <div className="px-6 py-6 space-y-6">
-                <h3 className="font-bold text-lg text-slate-900">精选套餐</h3>
-                
-                {/* Package 1 */}
-                <motion.div 
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setStep(4)}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
-                >
-                  <div className="flex gap-4">
+              {/* Environment Gallery */}
+              <div className="px-6 py-4">
+                <h3 className="font-bold text-lg text-slate-900 mb-3">环境展示</h3>
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                  {selectedRestaurant.gallery?.map((img, idx) => (
                     <img 
-                      src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80" 
-                      alt="Food" 
-                      className="w-24 h-24 rounded-xl object-cover"
+                      key={idx}
+                      src={img} 
+                      alt={`Environment ${idx}`} 
+                      className="w-32 h-24 rounded-xl object-cover flex-shrink-0"
                     />
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <h4 className="font-bold text-slate-900 text-lg mb-1">初见·双人轻食套餐</h4>
-                        <p className="text-slate-400 text-xs line-clamp-2">牛油果鲜虾沙拉 + 黑松露奶油意面 + 特调气泡水x2</p>
-                      </div>
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-orange-500 font-bold text-sm">¥</span>
-                          <span className="text-orange-500 font-bold text-xl">198</span>
-                          <span className="text-slate-300 text-xs line-through ml-1">¥298</span>
-                        </div>
-                        <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold">
-                          支付
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+                  ))}
+                  {(!selectedRestaurant.gallery || selectedRestaurant.gallery.length === 0) && (
+                    <div className="text-slate-400 text-sm italic">暂无环境图</div>
+                  )}
+                </div>
+              </div>
 
-                {/* Package 2 */}
-                <motion.div 
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setStep(4)}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
-                >
-                  <div className="flex gap-4">
-                    <img 
-                      src="https://images.unsplash.com/photo-1544025162-d76690b6d0ce?w=400&q=80" 
-                      alt="Food" 
-                      className="w-24 h-24 rounded-xl object-cover"
-                    />
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <h4 className="font-bold text-slate-900 text-lg mb-1">心动·法式浪漫晚餐</h4>
-                        <p className="text-slate-400 text-xs line-clamp-2">澳洲M5和牛眼肉 + 鹅肝慕斯 + 甜点拼盘</p>
-                      </div>
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-orange-500 font-bold text-sm">¥</span>
-                          <span className="text-orange-500 font-bold text-xl">520</span>
-                          <span className="text-slate-300 text-xs line-through ml-1">¥888</span>
+              {/* Signature Dishes */}
+              <div className="px-6 py-4">
+                <h3 className="font-bold text-lg text-slate-900 mb-3">特色菜品</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {selectedRestaurant.dishes?.map((dish, idx) => (
+                    <div key={idx} className="flex flex-col gap-1">
+                      <img 
+                        src={dish.image} 
+                        alt={dish.name} 
+                        className="w-full h-24 rounded-xl object-cover"
+                      />
+                      <span className="text-xs font-bold text-slate-900 truncate">{dish.name}</span>
+                      <span className="text-xs text-orange-500 font-medium">{dish.price}</span>
+                    </div>
+                  ))}
+                  {(!selectedRestaurant.dishes || selectedRestaurant.dishes.length === 0) && (
+                    <div className="col-span-3 text-slate-400 text-sm italic">暂无菜品信息</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Reviews */}
+              <div className="px-6 py-4 pb-24">
+                <h3 className="font-bold text-lg text-slate-900 mb-3">用户评价</h3>
+                <div className="space-y-4">
+                  {selectedRestaurant.reviews?.map((review, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src={review.avatar} alt={review.user} className="w-8 h-8 rounded-full" />
+                        <span className="font-bold text-sm text-slate-900">{review.user}</span>
+                        <div className="flex items-center gap-0.5 ml-auto">
+                          <Star className="w-3 h-3 fill-orange-400 text-orange-400" />
+                          <span className="text-xs font-bold text-orange-500">{review.rating}</span>
                         </div>
-                        <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold">
-                          支付
+                      </div>
+                      <p className="text-slate-600 text-sm">{review.content}</p>
+                    </div>
+                  ))}
+                  {(!selectedRestaurant.reviews || selectedRestaurant.reviews.length === 0) && (
+                    <div className="text-slate-400 text-sm italic">暂无评价</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Floating Action Button */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
+                <button 
+                  onClick={() => setStep(4)}
+                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg active:scale-95 transition-transform"
+                >
+                  查看套餐
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 4: Package Selection Page (New) */}
+          {step === 4 && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
+            >
+              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+                <button 
+                  onClick={() => setStep(3)}
+                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <h1 className="text-xl font-bold text-slate-900">选择套餐</h1>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {PACKAGES_STEP4.map((pkg) => (
+                  <motion.div 
+                    key={pkg.id}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setSelectedPackage(pkg);
+                      setStep(5); // Go to Payment Page
+                    }}
+                    className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
+                  >
+                    <div className="flex gap-4">
+                      <img 
+                        src={pkg.image} 
+                        alt={pkg.name} 
+                        className="w-24 h-24 rounded-xl object-cover"
+                      />
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-lg mb-1">{pkg.name}</h4>
+                          <p className="text-slate-400 text-xs line-clamp-2">{pkg.desc}</p>
+                        </div>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-orange-500 font-bold text-sm">¥</span>
+                            <span className="text-orange-500 font-bold text-xl">{pkg.price}</span>
+                            <span className="text-slate-300 text-xs line-through ml-1">¥{pkg.originalPrice}</span>
+                          </div>
+                          <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold">
+                            购买
+                          </div>
                         </div>
                       </div>
                     </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 5: Payment Page (New) */}
+          {step === 5 && selectedPackage && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
+            >
+              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+                <button 
+                  onClick={() => setStep(4)}
+                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <h1 className="text-xl font-bold text-slate-900">确认支付</h1>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {/* Order Summary */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                  <h3 className="font-bold text-lg text-slate-900 mb-4">订单信息</h3>
+                  <div className="flex gap-4 mb-4">
+                    <img 
+                      src={selectedPackage.image} 
+                      alt={selectedPackage.name} 
+                      className="w-20 h-20 rounded-xl object-cover"
+                    />
+                    <div>
+                      <h4 className="font-bold text-slate-900 mb-1">{selectedPackage.name}</h4>
+                      <p className="text-slate-500 text-xs mb-2">{selectedRestaurant?.name}</p>
+                      <div className="text-orange-500 font-bold">¥{selectedPackage.price}</div>
+                    </div>
                   </div>
-                </motion.div>
+                  <div className="border-t border-slate-50 pt-4 flex justify-between items-center">
+                    <span className="text-slate-500 font-bold">总计</span>
+                    <span className="text-2xl font-bold text-slate-900">¥{selectedPackage.price}</span>
+                  </div>
+                </div>
+
+                {/* Payment Method */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                  <h3 className="font-bold text-lg text-slate-900 mb-4">支付方式</h3>
+                  <div className="space-y-4">
+                    <div 
+                      onClick={() => setPaymentMethod('wechat')}
+                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'wechat' ? 'border-green-500 bg-green-50' : 'border-slate-100'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white">
+                          <span className="font-bold text-xs">微</span>
+                        </div>
+                        <span className="font-bold text-slate-900">微信支付</span>
+                      </div>
+                      {paymentMethod === 'wechat' && <Check className="w-5 h-5 text-green-500" />}
+                    </div>
+
+                    <div 
+                      onClick={() => setPaymentMethod('alipay')}
+                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'alipay' ? 'border-blue-500 bg-blue-50' : 'border-slate-100'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                          <span className="font-bold text-xs">支</span>
+                        </div>
+                        <span className="font-bold text-slate-900">支付宝</span>
+                      </div>
+                      {paymentMethod === 'alipay' && <Check className="w-5 h-5 text-blue-500" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
+                <button 
+                  onClick={() => setIsPaying(true)}
+                  disabled={isPaying}
+                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg active:scale-95 transition-transform disabled:opacity-70 disabled:scale-100 flex items-center justify-center gap-2"
+                >
+                  {isPaying ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      支付中...
+                    </>
+                  ) : (
+                    `确认支付 ¥${selectedPackage.price}`
+                  )}
+                </button>
               </div>
             </motion.div>
           )}

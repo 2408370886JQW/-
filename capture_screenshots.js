@@ -1,96 +1,183 @@
-import puppeteer from 'puppeteer';
-import fs from 'fs';
-import path from 'path';
+const puppeteer = require('puppeteer');
+const fs = require('fs');
+const path = require('path');
 
-const OUTPUT_DIR = '/home/ubuntu/social-life-app/screenshots_export';
-if (!fs.existsSync(OUTPUT_DIR)) {
-  fs.mkdirSync(OUTPUT_DIR);
-}
+// Configuration
+const BASE_URL = 'http://localhost:3000';
+const OUTPUT_DIR = '/home/ubuntu/social-life-app/product_package';
+const VIEWPORT = { width: 390, height: 844, deviceScaleFactor: 2 }; // iPhone 12/13 Pro
 
-(async () => {
+// Helper to find element by text
+const findByText = async (page, selector, text) => {
+  const elements = await page.$$(selector);
+  for (const el of elements) {
+    const content = await page.evaluate(e => e.textContent, el);
+    if (content && content.includes(text)) return el;
+  }
+  return null;
+};
+
+// Structure definition
+const STRUCTURE = {
+  '相见链路': [
+    { name: '相见页-01-关系选择', action: async (page) => {
+      await page.goto(BASE_URL);
+      // Click "相见" tab
+      const tab = await findByText(page, 'button span', '相见');
+      if (tab) await tab.evaluate(b => b.closest('button').click());
+      await new Promise(r => setTimeout(r, 1000));
+    }},
+    { name: '相见页-02-商家列表', action: async (page) => {
+      // Click "第一次见面"
+      const btn = await findByText(page, 'span', '第一次见面');
+      if (btn) await btn.evaluate(b => b.closest('button').click());
+      await new Promise(r => setTimeout(r, 1500));
+    }},
+    { name: '相见页-03-商家详情', action: async (page) => {
+      // Click first restaurant card
+      const card = await page.$('.bg-white.rounded-2xl');
+      if (card) await card.click();
+      await new Promise(r => setTimeout(r, 1500));
+    }},
+    { name: '相见页-04-套餐选择', action: async (page) => {
+      // Already in detail page, just wait a bit
+      await new Promise(r => setTimeout(r, 500));
+    }},
+    { name: '相见页-05-支付页', action: async (page) => {
+      // Click "立即预订"
+      const btn = await findByText(page, 'button', '立即预订');
+      if (btn) await btn.click();
+      await new Promise(r => setTimeout(r, 2000)); // Wait for payment modal
+    }},
+    { name: '相见页-06-支付完成引导', action: async (page) => {
+      // Wait for payment success simulation (2.5s in code)
+      await new Promise(r => setTimeout(r, 3000));
+    }},
+    { name: '相见页-07-订单详情', action: async (page) => {
+      // Click "查看订单"
+      const btn = await findByText(page, 'button', '查看订单');
+      if (btn) await btn.click();
+      await new Promise(r => setTimeout(r, 1000));
+    }}
+  ],
+  '偶遇链路': [
+    { name: '偶遇页-01-地图首页', action: async (page) => {
+      await page.goto(BASE_URL);
+      // Click "偶遇" tab
+      const tab = await findByText(page, 'button span', '偶遇');
+      if (tab) await tab.evaluate(b => b.closest('button').click());
+      await new Promise(r => setTimeout(r, 2000));
+    }},
+    { name: '偶遇页-02-筛选弹窗', action: async (page) => {
+      // Click filter button (icon filter)
+      await page.evaluate(() => {
+        const icons = Array.from(document.querySelectorAll('svg'));
+        const filterIcon = icons.find(i => i.classList.contains('lucide-filter'));
+        if (filterIcon) filterIcon.closest('button').click();
+      });
+      await new Promise(r => setTimeout(r, 1000));
+    }}
+  ],
+  '好友链路': [
+    { name: '好友页-01-列表模式', action: async (page) => {
+      await page.goto(BASE_URL);
+      // Click "好友" tab
+      const tab = await findByText(page, 'button span', '好友');
+      if (tab) await tab.evaluate(b => b.closest('button').click());
+      await new Promise(r => setTimeout(r, 1000));
+      
+      // Click list toggle button (icon users)
+      await page.evaluate(() => {
+        const icons = Array.from(document.querySelectorAll('svg'));
+        const usersIcon = icons.find(i => i.classList.contains('lucide-users'));
+        if (usersIcon) usersIcon.closest('button').click();
+      });
+      await new Promise(r => setTimeout(r, 1000));
+    }}
+  ],
+  '动态链路': [
+    { name: '动态页-01-动态流', action: async (page) => {
+      await page.goto(BASE_URL);
+      // Click "动态" tab
+      const tab = await findByText(page, 'button span', '动态');
+      if (tab) await tab.evaluate(b => b.closest('button').click());
+      await new Promise(r => setTimeout(r, 1000));
+    }},
+    { name: '动态页-02-发布动态', action: async (page) => {
+      // Click plus button
+      await page.evaluate(() => {
+        const plusBtn = document.querySelector('button.bg-slate-900.rounded-full');
+        if (plusBtn) plusBtn.click();
+      });
+      await new Promise(r => setTimeout(r, 1000));
+    }}
+  ],
+  '消息链路': [
+    { name: '消息页-01-消息列表', action: async (page) => {
+      await page.goto(BASE_URL);
+      // Click "消息" bottom tab
+      const tab = await findByText(page, 'span', '消息');
+      if (tab) await tab.evaluate(b => b.closest('a, button').click());
+      await new Promise(r => setTimeout(r, 1000));
+    }}
+  ],
+  '我的链路': [
+    { name: '我的页-01-个人中心', action: async (page) => {
+      await page.goto(BASE_URL);
+      // Click "我的" bottom tab
+      const tab = await findByText(page, 'span', '我的');
+      if (tab) await tab.evaluate(b => b.closest('a, button').click());
+      await new Promise(r => setTimeout(r, 1000));
+    }}
+  ]
+};
+
+async function run() {
   const browser = await puppeteer.launch({
-    headless: "new",
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    defaultViewport: { width: 390, height: 844, isMobile: true, hasTouch: true } // iPhone 12 Pro dimensions
+    headless: true
   });
-  const page = await browser.newPage();
-
-  // Helper to wait and screenshot
-  const takeScreenshot = async (name) => {
-    await new Promise(r => setTimeout(r, 1000)); // Wait for animations
-    await page.screenshot({ path: path.join(OUTPUT_DIR, name), fullPage: true });
-    console.log(`Captured: ${name}`);
-  };
 
   try {
-    console.log('Navigating to app...');
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
+    // Create output directories
+    if (fs.existsSync(OUTPUT_DIR)) {
+      fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
+    }
+    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-    // 0. Initial State (Home)
-    // Click "Meet" tab (assuming it's the 4th tab based on icon count, or find by text/icon)
-    // The tabs are at the bottom. Let's look for the text "相见"
-    const meetTab = await page.waitForSelector('xpath///span[text()="相见"]/..');
-    if (meetTab) {
-        await meetTab.click();
-        await takeScreenshot('0_Meet_Tab.png');
-    } else {
-        console.error('Could not find Meet tab');
+    for (const [category, items] of Object.entries(STRUCTURE)) {
+      const categoryDir = path.join(OUTPUT_DIR, category);
+      if (!fs.existsSync(categoryDir)) fs.mkdirSync(categoryDir);
+
+      console.log(`Processing category: ${category}`);
+
+      // Create a new page for each category to ensure clean state
+      const page = await browser.newPage();
+      await page.setViewport(VIEWPORT);
+      
+      for (const item of items) {
+        console.log(`  Capturing: ${item.name}`);
+        const itemDir = path.join(categoryDir, item.name);
+        if (!fs.existsSync(itemDir)) fs.mkdirSync(itemDir);
+        
+        try {
+          await item.action(page);
+          await page.screenshot({ path: path.join(itemDir, 'preview.png') });
+        } catch (e) {
+          console.error(`  Error capturing ${item.name}:`, e);
+          // Take error screenshot
+          await page.screenshot({ path: path.join(itemDir, 'error.png') });
+        }
+      }
+      await page.close();
     }
 
-    // 1. Entry Page (Simulate Scan)
-    // Click "模拟扫码进店" button
-    const scanBtn = await page.waitForSelector('xpath///button[contains(., "模拟扫码进店")]');
-    await scanBtn.click();
-    await takeScreenshot('1_Store_Entry.png');
-
-    // 2. Login Page
-    // Click "模拟扫码 (scene=store)"
-    const simulateScanBtn = await page.waitForSelector('xpath///button[contains(., "模拟扫码 (scene=store)")]');
-    await simulateScanBtn.click();
-    await takeScreenshot('2_Login.png');
-
-    // 3. Store Home & Modal
-    // Fill phone (optional as mock doesn't validate) and click Login
-    const loginBtn = await page.waitForSelector('xpath///button[contains(., "登录并绑定门店")]');
-    await loginBtn.click();
-    // Wait for modal to appear
-    await page.waitForSelector('xpath///h2[contains(., "你今天是和谁来吃饭")]');
-    await takeScreenshot('3_Relationship_Modal.png');
-
-    // 4. Scenario Page
-    // Select "第一次见面" (First Date)
-    const firstDateBtn = await page.waitForSelector('xpath///span[contains(., "第一次见面")]/..');
-    await firstDateBtn.click();
-    await takeScreenshot('4_Scenario_Page.png');
-
-    // 5. Package Detail
-    // Click the first package
-    const firstPackage = await page.waitForSelector('xpath///h4[contains(., "初见·双人轻食套餐")]/../../..');
-    await firstPackage.click();
-    await takeScreenshot('5_Package_Detail.png');
-
-    // 6. Payment & Success
-    // Click "立即下单"
-    const orderBtn = await page.waitForSelector('xpath///button[contains(., "立即下单")]');
-    // Use evaluate to click to avoid overlay issues
-    await page.evaluate(el => el.click(), orderBtn);
-    
-    // Wait for payment simulation (2s) + transition
-    // Explicitly wait for the "支付成功" text to appear
-    try {
-      await page.waitForSelector('xpath///h2[contains(., "支付成功")]', { timeout: 10000 });
-      // Add a small buffer for animations to settle
-      await new Promise(r => setTimeout(r, 1000));
-      await takeScreenshot('6_Success_Page.png');
-    } catch (e) {
-      console.error('Timeout waiting for Success Page:', e);
-      // Take a debug screenshot to see where it got stuck
-      await takeScreenshot('6_Debug_Stuck.png');
-    }
-
-  } catch (e) {
-    console.error('Error capturing screenshots:', e);
+    console.log('All screenshots captured successfully.');
+  } catch (error) {
+    console.error('Global error:', error);
   } finally {
     await browser.close();
   }
-})();
+}
+
+run();
