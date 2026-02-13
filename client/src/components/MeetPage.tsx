@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, SkipForward, Sparkles, Cake
+  Utensils, Receipt, SkipForward, Sparkles, Cake, ShoppingBag
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -38,7 +38,8 @@ const ALL_RESTAURANTS = [
       'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
       'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
     ],
-    packages: [
+    // RELATION packages (only shown when user selects a relation)
+    relationPackages: [
       {
         id: 101, name: '初见·双人轻食套餐', desc: '牛油果鲜虾沙拉 + 黑松露奶油意面 + 特调气泡水x2',
         price: 198, originalPrice: 298,
@@ -69,7 +70,80 @@ const ALL_RESTAURANTS = [
         gallery: ['https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80'],
         notes: ['有效期：购买后30天内有效', '使用时间：14:00 - 17:00']
       },
-    ]
+      {
+        id: 104, name: '兄弟·畅饮烧烤套餐', desc: '精选烤串拼盘 + 精酿啤酒x4 + 毛豆花生',
+        price: 268, originalPrice: 398,
+        image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&q=80',
+        relationTags: ['friends'],
+        items: [{ name: '精选烤串拼盘', qty: 1 }, { name: '精酿啤酒', qty: 4 }, { name: '毛豆花生', qty: 1 }],
+        gallery: ['https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 22:00']
+      },
+      {
+        id: 105, name: '商务·精致位上套餐', desc: '前菜拼盘 + 主厨推荐牛排 + 甜品 + 红酒2杯',
+        price: 458, originalPrice: 688,
+        image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80',
+        relationTags: ['business'],
+        items: [{ name: '前菜拼盘', qty: 1 }, { name: '主厨推荐牛排', qty: 1 }, { name: '甜品', qty: 1 }, { name: '红酒', qty: 2 }],
+        gallery: ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&q=80'],
+        notes: ['有效期：购买后15天内有效', '含包间费', '需提前1天预约']
+      },
+      {
+        id: 106, name: '阖家·温馨家宴套餐', desc: '红烧肉 + 清蒸鲈鱼 + 时蔬拼盘 + 汤品 (4-6人)',
+        price: 688, originalPrice: 1088,
+        image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80',
+        relationTags: ['family'],
+        items: [{ name: '红烧肉', qty: 1 }, { name: '清蒸鲈鱼', qty: 1 }, { name: '时蔬拼盘', qty: 2 }, { name: '老火靓汤', qty: 1 }, { name: '米饭', qty: 6 }],
+        gallery: ['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80'],
+        notes: ['有效期：购买后15天内有效', '4-6人套餐', '需提前1天预约']
+      },
+    ],
+    // NORMAL group-buy packages (Meituan-style, no relation tags)
+    normalPackages: [
+      {
+        id: 901, name: '双人精选套餐', desc: '主菜x2 + 汤品x1 + 甜品x2 + 饮品x2',
+        price: 168, originalPrice: 256,
+        image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '主厨推荐主菜', qty: 2 }, { name: '每日例汤', qty: 1 }, { name: '精选甜品', qty: 2 }, { name: '鲜榨果汁', qty: 2 }],
+        gallery: ['https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用']
+      },
+      {
+        id: 902, name: '三人欢聚套餐', desc: '主菜x3 + 凉菜x2 + 汤品x1 + 饮品x3',
+        price: 238, originalPrice: 378,
+        image: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '主厨推荐主菜', qty: 3 }, { name: '精选凉菜', qty: 2 }, { name: '每日例汤', qty: 1 }, { name: '鲜榨果汁', qty: 3 }],
+        gallery: ['https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用']
+      },
+      {
+        id: 903, name: '四人豪华套餐', desc: '主菜x4 + 凉菜x2 + 汤品x1 + 甜品x4 + 饮品x4',
+        price: 358, originalPrice: 528,
+        image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '主厨推荐主菜', qty: 4 }, { name: '精选凉菜', qty: 2 }, { name: '每日例汤', qty: 1 }, { name: '精选甜品', qty: 4 }, { name: '鲜榨果汁', qty: 4 }],
+        gallery: ['https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用']
+      },
+      {
+        id: 904, name: '单人商务简餐', desc: '主菜x1 + 汤品x1 + 甜品x1 + 咖啡x1',
+        price: 88, originalPrice: 138,
+        image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '主厨推荐主菜', qty: 1 }, { name: '每日例汤', qty: 1 }, { name: '精选甜品', qty: 1 }, { name: '现磨咖啡', qty: 1 }],
+        gallery: ['https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 14:00', '仅限工作日']
+      },
+    ],
   },
   {
     id: 2,
@@ -86,7 +160,7 @@ const ALL_RESTAURANTS = [
       'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80',
       'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80',
     ],
-    packages: [
+    relationPackages: [
       {
         id: 201, name: '商务·精致位上套餐', desc: '前菜拼盘 + 主厨推荐牛排 + 甜品 + 红酒2杯',
         price: 458, originalPrice: 688,
@@ -107,7 +181,29 @@ const ALL_RESTAURANTS = [
         gallery: ['https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80'],
         notes: ['有效期：购买后30天内有效', '使用时间：14:00 - 17:30']
       },
-    ]
+    ],
+    normalPackages: [
+      {
+        id: 911, name: '双人精选套餐', desc: '主菜x2 + 中东小食x3 + 饮品x2',
+        price: 198, originalPrice: 308,
+        image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '主厨推荐主菜', qty: 2 }, { name: '中东小食', qty: 3 }, { name: '特调饮品', qty: 2 }],
+        gallery: ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：11:30 - 22:00']
+      },
+      {
+        id: 912, name: '四人聚会套餐', desc: '主菜x4 + 中东小食x5 + 汤品x1 + 饮品x4',
+        price: 388, originalPrice: 588,
+        image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '主厨推荐主菜', qty: 4 }, { name: '中东小食', qty: 5 }, { name: '每日例汤', qty: 1 }, { name: '特调饮品', qty: 4 }],
+        gallery: ['https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：11:30 - 22:00']
+      },
+    ],
   },
   {
     id: 3,
@@ -124,7 +220,7 @@ const ALL_RESTAURANTS = [
       'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&q=80',
       'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80',
     ],
-    packages: [
+    relationPackages: [
       {
         id: 301, name: '兄弟·豪华烤肉拼盘', desc: '安格斯牛排 + 黑椒猪排 + 精酿啤酒x4',
         price: 368, originalPrice: 568,
@@ -145,7 +241,29 @@ const ALL_RESTAURANTS = [
         gallery: ['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80'],
         notes: ['有效期：购买后15天内有效', '4-6人套餐', '需提前1天预约']
       },
-    ]
+    ],
+    normalPackages: [
+      {
+        id: 921, name: '双人烤肉套餐', desc: '精选肉品拼盘 + 蔬菜拼盘 + 饮品x2',
+        price: 188, originalPrice: 288,
+        image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '精选肉品拼盘', qty: 1 }, { name: '蔬菜拼盘', qty: 1 }, { name: '饮品', qty: 2 }],
+        gallery: ['https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 01:00']
+      },
+      {
+        id: 922, name: '四人畅吃套餐', desc: '豪华肉品拼盘 + 海鲜拼盘 + 蔬菜拼盘 + 饮品x4',
+        price: 398, originalPrice: 608,
+        image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '豪华肉品拼盘', qty: 1 }, { name: '海鲜拼盘', qty: 1 }, { name: '蔬菜拼盘', qty: 1 }, { name: '饮品', qty: 4 }],
+        gallery: ['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80'],
+        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 01:00']
+      },
+    ],
   },
   {
     id: 4,
@@ -161,7 +279,7 @@ const ALL_RESTAURANTS = [
     gallery: [
       'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80',
     ],
-    packages: [
+    relationPackages: [
       {
         id: 401, name: '星空·双人鸡尾酒套餐', desc: '招牌鸡尾酒x2 + 精选小食拼盘',
         price: 288, originalPrice: 456,
@@ -172,14 +290,26 @@ const ALL_RESTAURANTS = [
         gallery: ['https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80'],
         notes: ['有效期：购买后15天内有效', '仅限晚间时段', '需提前预约']
       },
-    ]
+    ],
+    normalPackages: [
+      {
+        id: 931, name: '双人微醺套餐', desc: '鸡尾酒x2 + 小食拼盘x1',
+        price: 258, originalPrice: 398,
+        image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&q=80',
+        heroImage: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80',
+        relationTags: [] as string[],
+        items: [{ name: '鸡尾酒', qty: 2 }, { name: '小食拼盘', qty: 1 }],
+        gallery: ['https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80'],
+        notes: ['有效期：购买后15天内有效', '仅限晚间时段']
+      },
+    ],
   },
 ];
 
 // The FIXED restaurant for scan flow
 const SCAN_RESTAURANT = ALL_RESTAURANTS[0];
 
-type PackageType = typeof ALL_RESTAURANTS[0]['packages'][0];
+type PackageType = typeof ALL_RESTAURANTS[0]['relationPackages'][0];
 type RestaurantType = typeof ALL_RESTAURANTS[0];
 
 // ========== COMPONENT ==========
@@ -193,9 +323,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [flowMode, setFlowMode] = useState<'online' | 'scan' | null>(null);
 
   // ---- ONLINE FLOW STEPS ----
-  // online-1: Relation selection page (entry)
+  // online-1: Entry page (relation selection) - rendered in main return
   // online-2: Multi-restaurant list (filtered by relation)
-  // online-3: Restaurant detail + package list
+  // online-3: Restaurant detail + relation package list
   // online-4: Package detail
   // online-5: Payment
   // online-6: Success
@@ -203,13 +333,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [onlineStep, setOnlineStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
 
   // ---- SCAN FLOW STEPS ----
-  // scan-1: Restaurant page (blurred) + relation overlay
-  // scan-2: Restaurant page (clear) + filtered package list
-  // scan-3: Package detail
-  // scan-4: Payment
-  // scan-5: Success
-  // scan-6: Order detail
-  const [scanStep, setScanStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  // scan-1: Restaurant detail page (clear, with two entry buttons)
+  // scan-2: Relation selection modal (from scan-1)
+  // scan-3: Relation package list (filtered by selected relation)
+  // scan-4: Normal package list (group-buy style)
+  // scan-5: Package detail
+  // scan-6: Payment
+  // scan-7: Success
+  // scan-8: Order detail
+  const [scanStep, setScanStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
 
   // Shared state
   const [selectedRelation, setSelectedRelation] = useState<string | null>(null);
@@ -218,17 +350,16 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
   const [isPaying, setIsPaying] = useState(false);
-  const [showScanRelationOverlay, setShowScanRelationOverlay] = useState(false);
 
   // Filtered restaurants for online flow
   const filteredRestaurants = relationTag
     ? ALL_RESTAURANTS.filter(r => r.relationTags.includes(relationTag))
     : ALL_RESTAURANTS;
 
-  // Filtered packages for current restaurant
-  const getFilteredPackages = (restaurant: RestaurantType) => {
-    if (!relationTag) return restaurant.packages;
-    return restaurant.packages.filter(p => p.relationTags.includes(relationTag));
+  // Get relation packages filtered by tag
+  const getRelationPackages = (restaurant: RestaurantType) => {
+    if (!relationTag) return restaurant.relationPackages;
+    return restaurant.relationPackages.filter(p => p.relationTags.includes(relationTag));
   };
 
   // ---- HANDLERS ----
@@ -246,30 +377,30 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     setOnlineStep(3);
   };
 
-  // Scan: enter scan flow
+  // Scan: enter scan flow → go directly to restaurant detail page
   const handleScan = () => {
     setFlowMode('scan');
     setSelectedRestaurant(SCAN_RESTAURANT);
     setScanStep(1);
-    setShowScanRelationOverlay(true);
   };
 
-  // Scan: select relation
+  // Scan: open relation selection modal
+  const handleScanOpenRelation = () => {
+    setScanStep(2);
+  };
+
+  // Scan: select relation → go to relation package list
   const handleScanSelectRelation = (relation: typeof RELATIONS[0]) => {
     setSelectedRelation(relation.id);
     setRelationTag(relation.tag);
-    setTimeout(() => {
-      setShowScanRelationOverlay(false);
-      setScanStep(2);
-    }, 400);
+    setScanStep(3);
   };
 
-  // Scan: skip relation
+  // Scan: skip relation → go to normal package list
   const handleScanSkipRelation = () => {
     setSelectedRelation(null);
     setRelationTag(null);
-    setShowScanRelationOverlay(false);
-    setScanStep(2);
+    setScanStep(4);
   };
 
   // Shared: payment completion
@@ -278,7 +409,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       const timer = setTimeout(() => {
         setIsPaying(false);
         if (flowMode === 'online') setOnlineStep(6);
-        else setScanStep(5);
+        else setScanStep(7);
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#FF69B4', '#FFD700', '#00BFFF', '#32CD32'] });
       }, 2500);
       return () => clearTimeout(timer);
@@ -296,7 +427,6 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     setSelectedPackage(null);
     setPaymentMethod('wechat');
     setIsPaying(false);
-    setShowScanRelationOverlay(false);
   };
 
   // ========== SHARED UI COMPONENTS ==========
@@ -523,9 +653,43 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     </motion.div>
   );
 
-  // --- Restaurant Detail + Package List (shared between online step 3 and scan step 2) ---
-  const renderRestaurantWithPackages = (restaurant: RestaurantType, onBack: () => void, onSelectPkg: (pkg: PackageType) => void) => {
-    const pkgs = getFilteredPackages(restaurant);
+  // --- Package List (reusable for both relation and normal packages) ---
+  const renderPackageList = (title: string, subtitle: string, packages: PackageType[], restaurant: RestaurantType, onBack: () => void, onSelectPkg: (pkg: PackageType) => void) => (
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+        <button onClick={onBack} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+          <p className="text-xs text-slate-400">{subtitle}</p>
+        </div>
+      </div>
+      <div className="p-4 space-y-4">
+        {packages.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">暂无匹配套餐</div>
+        ) : packages.map(pkg => (
+          <motion.div key={pkg.id} whileTap={{ scale: 0.98 }} onClick={() => onSelectPkg(pkg)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+            <div className="flex">
+              <img src={pkg.image} alt={pkg.name} className="w-28 h-28 object-cover shrink-0" />
+              <div className="flex-1 p-3 flex flex-col justify-between">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm mb-1">{pkg.name}</h4>
+                  <p className="text-slate-500 text-xs line-clamp-2">{pkg.desc}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-orange-500 font-bold text-lg">¥{pkg.price}</span>
+                  <span className="text-slate-400 line-through text-xs">¥{pkg.originalPrice}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
+
+  // --- Restaurant Detail + Package List (for ONLINE flow step 3) ---
+  const renderRestaurantWithRelationPackages = (restaurant: RestaurantType, onBack: () => void, onSelectPkg: (pkg: PackageType) => void) => {
+    const pkgs = getRelationPackages(restaurant);
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24">
         <div className="relative h-56 bg-slate-200 shrink-0">
@@ -551,11 +715,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {selectedRelation && (
             <div className="flex items-center gap-2 px-1">
               <Sparkles className="w-4 h-4 text-orange-400" />
-              <span className="text-sm text-slate-500">已为你筛选「{RELATIONS.find(r => r.id === selectedRelation)?.label}」相关套餐</span>
+              <span className="text-sm text-slate-500">已为你筛选「{RELATIONS.find(r => r.id === selectedRelation)?.label}」专属套餐</span>
             </div>
           )}
           <div className="space-y-4">
-            <h3 className="font-bold text-lg text-slate-900 px-1">可选套餐</h3>
+            <h3 className="font-bold text-lg text-slate-900 px-1">关系专属套餐</h3>
             {pkgs.length === 0 ? (
               <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">暂无匹配套餐</div>
             ) : pkgs.map(pkg => (
@@ -567,7 +731,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       <h4 className="font-bold text-slate-900 text-sm mb-1">{pkg.name}</h4>
                       <p className="text-slate-500 text-xs line-clamp-2">{pkg.desc}</p>
                     </div>
-                    <div className="flex items-baseline gap-2">
+                    <div className="flex items-center justify-between">
                       <span className="text-orange-500 font-bold text-lg">¥{pkg.price}</span>
                       <span className="text-slate-400 line-through text-xs">¥{pkg.originalPrice}</span>
                     </div>
@@ -580,6 +744,90 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       </motion.div>
     );
   };
+
+  // --- Scan: Restaurant Detail Page (Step 1) with two entry buttons ---
+  const renderScanRestaurantDetail = (restaurant: RestaurantType) => (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-32">
+      {/* Hero Image */}
+      <div className="relative h-56 bg-slate-200 shrink-0">
+        <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20" />
+        <button onClick={resetAll} className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5" /></button>
+        <div className="absolute bottom-4 left-4 right-4 text-white">
+          <h2 className="font-bold text-xl">{restaurant.name}</h2>
+          <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
+        </div>
+        <div className="absolute top-12 right-6 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+      </div>
+
+      {/* Restaurant Info */}
+      <div className="p-4 space-y-4 -mt-6 relative z-10">
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+          <div className="flex items-center gap-2 mb-3">
+            {restaurant.tags.map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-1 text-slate-500"><Clock className="w-4 h-4" /><span>{restaurant.hours}</span></div>
+            <span className="text-slate-900 font-bold">{restaurant.price}</span>
+          </div>
+        </div>
+
+        {/* Gallery */}
+        {restaurant.gallery && restaurant.gallery.length > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+            <h3 className="font-bold text-slate-900 mb-3">门店环境</h3>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2">
+              {restaurant.gallery.map((img, idx) => (
+                <img key={idx} src={img} alt={`环境 ${idx + 1}`} className="w-40 h-28 rounded-xl object-cover shrink-0" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* How to order section */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+          <h3 className="font-bold text-lg text-slate-900 mb-2">选择点餐方式</h3>
+          <p className="text-sm text-slate-400 mb-5">选择关系获取专属推荐，或直接浏览全部团购套餐</p>
+
+          {/* Path A: Select Relation */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleScanOpenRelation}
+            className="w-full mb-3 bg-gradient-to-r from-pink-500 to-orange-400 text-white rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-pink-100 active:shadow-sm transition-shadow"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-left">
+                <div className="font-bold text-base">选择关系 · 专属推荐</div>
+                <div className="text-white/80 text-xs mt-0.5">情侣 / 闺蜜 / 兄弟 / 商务...</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/80" />
+          </motion.button>
+
+          {/* Path B: Skip → Normal Packages */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleScanSkipRelation}
+            className="w-full bg-slate-50 border-2 border-slate-200 text-slate-700 rounded-2xl p-5 flex items-center justify-between hover:bg-slate-100 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-slate-200">
+                <ShoppingBag className="w-6 h-6 text-slate-500" />
+              </div>
+              <div className="text-left">
+                <div className="font-bold text-base text-slate-800">直接点餐 · 团购套餐</div>
+                <div className="text-slate-400 text-xs mt-0.5">双人餐 / 三人餐 / 四人餐...</div>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-slate-400" />
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
 
   // ========== PORTAL CONTENT ==========
   const fullScreenContent = (
@@ -614,7 +862,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         {restaurant.tags.map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">{restaurant.packages.length}个套餐可选</span>
+                        <span className="text-slate-500">{restaurant.relationPackages.length}个套餐可选</span>
                         <div className="flex items-center gap-1 text-slate-900 font-bold">{restaurant.price}<ChevronRight className="w-4 h-4" /></div>
                       </div>
                     </div>
@@ -623,8 +871,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               </div>
             </motion.div>
           )}
-          {/* Online Step 3: Restaurant Detail + Package List */}
-          {onlineStep === 3 && selectedRestaurant && renderRestaurantWithPackages(
+          {/* Online Step 3: Restaurant Detail + Relation Package List */}
+          {onlineStep === 3 && selectedRestaurant && renderRestaurantWithRelationPackages(
             selectedRestaurant,
             () => setOnlineStep(2),
             (pkg) => { setSelectedPackage(pkg); setOnlineStep(4); }
@@ -651,19 +899,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       {/* ===== SCAN FLOW ===== */}
       {flowMode === 'scan' && (
         <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col overflow-hidden">
-          {/* Scan Step 1 & 2: Restaurant page (blurred when overlay shown) */}
-          {(scanStep === 1 || scanStep === 2) && selectedRestaurant && (
-            <div className={`flex-1 flex flex-col transition-all duration-500 ${showScanRelationOverlay ? 'blur-sm scale-[0.98]' : 'blur-0 scale-100'}`}>
-              {renderRestaurantWithPackages(
-                selectedRestaurant,
-                () => { resetAll(); },
-                (pkg) => { setSelectedPackage(pkg); setScanStep(3); }
-              )}
-            </div>
-          )}
-          {/* Scan Relation Overlay */}
+          {/* Scan Step 1: Restaurant Detail with two entry buttons */}
+          {scanStep === 1 && selectedRestaurant && renderScanRestaurantDetail(selectedRestaurant)}
+
+          {/* Scan Step 2: Relation Selection Modal */}
           <AnimatePresence>
-            {showScanRelationOverlay && (
+            {scanStep === 2 && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/40">
                 <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white w-full max-w-md rounded-t-3xl p-6 pb-10 max-h-[80vh] overflow-y-auto">
                   <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
@@ -672,49 +913,71 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <div className="grid grid-cols-2 gap-3 mb-6">
                     {RELATIONS.map(relation => {
                       const Icon = relation.icon;
-                      const isSelected = selectedRelation === relation.id;
                       return (
                         <motion.button key={relation.id} whileTap={{ scale: 0.95 }} onClick={() => handleScanSelectRelation(relation)}
-                          className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${isSelected ? `${relation.bg} ${relation.border} shadow-sm` : 'border-slate-100 bg-white hover:bg-slate-50'}`}>
-                          <div className={`w-10 h-10 rounded-full ${relation.bg} flex items-center justify-center`}><Icon className={`w-5 h-5 ${relation.color}`} /></div>
+                          className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all border-slate-100 bg-white hover:bg-slate-50 ${relation.bg}`}>
+                          <div className={`w-10 h-10 rounded-full bg-white/80 flex items-center justify-center`}><Icon className={`w-5 h-5 ${relation.color}`} /></div>
                           <div className="text-left">
                             <div className="font-bold text-slate-900 text-sm">{relation.label}</div>
                             <div className="text-[10px] text-slate-400">{relation.desc}</div>
                           </div>
-                          {isSelected && <Check className={`w-5 h-5 ${relation.color} ml-auto`} />}
                         </motion.button>
                       );
                     })}
                   </div>
-                  <button onClick={handleScanSkipRelation} className="w-full py-3 text-slate-400 text-sm font-medium flex items-center justify-center gap-1">
-                    <SkipForward className="w-4 h-4" />跳过，直接看全部套餐
+                  <button onClick={() => setScanStep(1)} className="w-full py-3 text-slate-400 text-sm font-medium flex items-center justify-center gap-1">
+                    <ArrowLeft className="w-4 h-4" />返回商家页
                   </button>
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
-          {/* Scan Step 3: Package Detail */}
-          {scanStep === 3 && selectedPackage && selectedRestaurant && renderPackageDetail(
-            selectedPackage, selectedRestaurant,
-            () => setScanStep(2),
-            () => setScanStep(4)
+
+          {/* Scan Step 3: Relation Package List (separate page, separate data) */}
+          {scanStep === 3 && selectedRestaurant && renderPackageList(
+            '关系专属套餐',
+            `${selectedRestaurant.name} · ${RELATIONS.find(r => r.id === selectedRelation)?.label || ''}推荐`,
+            getRelationPackages(selectedRestaurant),
+            selectedRestaurant,
+            () => setScanStep(1),
+            (pkg) => { setSelectedPackage(pkg); setScanStep(5); }
           )}
-          {/* Scan Step 4: Payment */}
-          {scanStep === 4 && selectedPackage && selectedRestaurant && renderPaymentPage(
+
+          {/* Scan Step 4: Normal Package List (separate page, separate data, no relation tags) */}
+          {scanStep === 4 && selectedRestaurant && renderPackageList(
+            '团购套餐',
+            `${selectedRestaurant.name} · 全部团购`,
+            selectedRestaurant.normalPackages,
+            selectedRestaurant,
+            () => setScanStep(1),
+            (pkg) => { setSelectedPackage(pkg); setScanStep(5); }
+          )}
+
+          {/* Scan Step 5: Package Detail */}
+          {scanStep === 5 && selectedPackage && selectedRestaurant && renderPackageDetail(
             selectedPackage, selectedRestaurant,
-            () => setScanStep(3)
+            () => setScanStep(selectedRelation ? 3 : 4),
+            () => setScanStep(6)
+          )}
+
+          {/* Scan Step 6: Payment */}
+          {scanStep === 6 && selectedPackage && selectedRestaurant && renderPaymentPage(
+            selectedPackage, selectedRestaurant,
+            () => setScanStep(5)
           )}
           {renderPaymentOverlay()}
-          {/* Scan Step 5: Success */}
-          {scanStep === 5 && renderSuccessPage(() => setScanStep(6))}
-          {/* Scan Step 6: Order Detail */}
-          {scanStep === 6 && renderOrderDetail(selectedPackage, selectedRestaurant)}
+
+          {/* Scan Step 7: Success */}
+          {scanStep === 7 && renderSuccessPage(() => setScanStep(8))}
+
+          {/* Scan Step 8: Order Detail */}
+          {scanStep === 8 && renderOrderDetail(selectedPackage, selectedRestaurant)}
         </motion.div>
       )}
     </AnimatePresence>
   );
 
-  // ========== MAIN ENTRY PAGE (Step 1 - Online Flow Entry) ==========
+  // ========== MAIN ENTRY PAGE (Online Flow Entry) ==========
   return (
     <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
       {createPortal(fullScreenContent, document.body)}

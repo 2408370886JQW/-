@@ -32,3 +32,15 @@
 - [x] Offline flow must lock to single restaurant (no multi-restaurant list)
 - [x] Both flows end with social/encounter navigation buttons
 - [x] Verify both flows run to completion independently
+
+## Scan Flow Dual-Path Refactoring (Relation Packages vs Normal Packages)
+- [x] Scan → go directly to restaurant detail page (no relation overlay)
+- [x] Restaurant detail page has two clear entry points: select relation / skip
+- [x] Path A: select relation → relation-specific package list (separate data)
+- [x] Path B: skip → normal group-buy package list (双人餐/三人餐/四人餐, no relation tags)
+- [x] Relation packages and normal packages are completely separate data structures
+- [x] Relation packages and normal packages are on different pages, never mixed
+- [x] No multi-restaurant recommendation after scan
+- [x] No second scan page after scan
+- [x] Verify Path A: scan → restaurant → select relation → relation packages → order
+- [x] Verify Path B: scan → restaurant → skip → normal packages → order
