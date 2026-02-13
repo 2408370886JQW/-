@@ -23,3 +23,12 @@
 - [x] After relation selection, card disappears, background becomes clear
 - [x] No multi-restaurant recommendation after scan
 - [x] Complete flow: Scan → Restaurant Detail + Packages → Select Package → Payment → Success
+
+## Dual Flow Refactoring (Online + Offline)
+- [x] Online flow: 相见 entry → select relation page → multi-restaurant list → select restaurant → package list → package detail → payment → social guide
+- [x] Offline flow: scan button → single fixed restaurant → relation overlay → filtered packages → package detail → payment → social guide
+- [x] Two flows must be completely independent, no mixing
+- [x] Online flow must show multiple restaurants (not just one)
+- [x] Offline flow must lock to single restaurant (no multi-restaurant list)
+- [x] Both flows end with social/encounter navigation buttons
+- [x] Verify both flows run to completion independently
