@@ -1109,40 +1109,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {/* Header */}
           <div className="px-6 pt-24 pb-2">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">相见</h1>
-            <p className="text-slate-400 text-sm leading-relaxed">这次见面怎么安排？<br/>选择你们的关系，为你推荐最合适的去处</p>
-          </div>
-
-          {/* Two Path Entry Cards */}
-          <div className="px-6 pt-4 grid grid-cols-2 gap-3">
-            {/* Path A: Select Relation */}
-            <motion.div
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-pink-50 to-orange-50 border-2 border-pink-200 rounded-2xl p-4 flex flex-col items-center gap-2"
-            >
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-                <Heart className="w-5 h-5 text-pink-500" />
-              </div>
-              <span className="font-bold text-sm text-slate-900">选择关系</span>
-              <span className="text-[10px] text-slate-400 text-center">根据关系推荐专属套餐</span>
-            </motion.div>
-
-            {/* Path B: Skip Relation → Pure Group Buy */}
-            <motion.button
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.15 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleOnlineSkipRelation}
-              className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-4 flex flex-col items-center gap-2 hover:shadow-md transition-all"
-            >
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-                <ShoppingBag className="w-5 h-5 text-blue-500" />
-              </div>
-              <span className="font-bold text-sm text-slate-900">不选关系</span>
-              <span className="text-[10px] text-slate-400 text-center">直接看团购套餐</span>
-            </motion.button>
+            <p className="text-slate-400 text-sm leading-relaxed">这次见面怎么安排？<br/>请选择适合你的关系场景</p>
           </div>
 
           {/* Relation Grid */}
@@ -1186,7 +1153,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               className="mt-4 w-full bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 text-blue-600 rounded-2xl p-4 flex items-center justify-center gap-3 hover:shadow-md transition-all"
             >
               <ShoppingBag className="w-5 h-5" />
-              <span className="font-bold text-sm">暂不选择关系，直接看团购套餐</span>
+              <span className="font-bold text-sm">暂不选择关系，直接查看团购套餐</span>
               <ChevronRight className="w-4 h-4" />
             </motion.button>
           </div>
