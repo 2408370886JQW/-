@@ -138,7 +138,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
    // 3: Venue Detail (Full Screen)
   // 4: View Package (Full Screen) - Browse packages
   // 5: Select Package (Full Screen) - Confirm selection
-  // 6: Payment Page (Full Screen)
+  // 6: Payment Page (Full Screen) - Select payment method
   // 7: Success Page (Full Screen)
   // 8: Order Detail (Full Screen)
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
@@ -542,7 +542,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.div>
           )}
 
-          {/* Step 4: Package Detail */}
+          {/* Step 4: View Package (Pure Display) */}
           {step === 4 && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
@@ -612,20 +612,159 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 </div>
               </div>
 
-              {/* Bottom Bar - Fixed at bottom of flex container */}
+              {/* Bottom Bar - View Only */}
               <div className="p-4 border-t border-slate-100 bg-white shrink-0 z-[2001]">
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsPaying(true)}
+                  onClick={() => setStep(5)}
                   className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
                 >
-                  支付
+                  选择此套餐
                 </motion.button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 5: Payment Verification Overlay (WeChat Style) */}
+          {/* Step 5: Select Package (Confirmation) */}
+          {step === 5 && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
+            >
+              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+                <button 
+                  onClick={() => setStep(4)}
+                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <h1 className="text-xl font-bold text-slate-900">确认选择</h1>
+              </div>
+
+              <div className="p-4">
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-4">
+                  <h3 className="font-bold text-lg text-slate-900 mb-2">已选套餐</h3>
+                  <div className="flex gap-4">
+                    <img 
+                      src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&q=80" 
+                      alt="Package" 
+                      className="w-20 h-20 rounded-lg object-cover"
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold text-slate-900">初见·双人轻食套餐</div>
+                      <div className="text-sm text-slate-500 mt-1">包含沙拉、意面、饮品等</div>
+                      <div className="text-orange-500 font-bold mt-2">¥198</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                  <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                    <span className="text-slate-600">数量</span>
+                    <span className="font-bold text-slate-900">1</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 pt-4">
+                    <span className="text-slate-600">小计</span>
+                    <span className="font-bold text-xl text-orange-500">¥198</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setStep(6)}
+                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
+                >
+                  确认选择
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 6: Payment Page (Method Selection) */}
+          {step === 6 && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
+            >
+              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+                <button 
+                  onClick={() => setStep(5)}
+                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                </button>
+                <h1 className="text-xl font-bold text-slate-900">支付订单</h1>
+              </div>
+
+              <div className="p-4 space-y-4">
+                {/* Order Summary */}
+                <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-slate-100">
+                  <div className="text-sm text-slate-500 mb-2">支付金额</div>
+                  <div className="text-4xl font-bold text-slate-900 mb-1">¥198.00</div>
+                  <div className="text-sm text-slate-400">初见·双人轻食套餐</div>
+                </div>
+
+                {/* Payment Methods */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                  <h3 className="font-bold text-slate-900 mb-4">选择支付方式</h3>
+                  
+                  <div className="space-y-3">
+                    <div 
+                      onClick={() => setPaymentMethod('wechat')}
+                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'wechat' ? 'border-green-500 bg-green-50' : 'border-slate-100'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white">
+                          <span className="font-bold text-xs">微</span>
+                        </div>
+                        <span className="font-bold text-slate-900">微信支付</span>
+                      </div>
+                      {paymentMethod === 'wechat' && <Check className="w-5 h-5 text-green-500" />}
+                    </div>
+
+                    <div 
+                      onClick={() => setPaymentMethod('alipay')}
+                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'alipay' ? 'border-blue-500 bg-blue-50' : 'border-slate-100'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                          <span className="font-bold text-xs">支</span>
+                        </div>
+                        <span className="font-bold text-slate-900">支付宝支付</span>
+                      </div>
+                      {paymentMethod === 'alipay' && <Check className="w-5 h-5 text-blue-500" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Action */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
+                <button 
+                  onClick={() => setIsPaying(true)}
+                  disabled={isPaying}
+                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg active:scale-95 transition-transform disabled:opacity-70 disabled:scale-100 flex items-center justify-center gap-2"
+                >
+                  {isPaying ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      支付中...
+                    </>
+                  ) : (
+                    `确认支付 ¥198`
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Payment Password Overlay (Simulated) */}
           {isPaying && (
             <div className="fixed inset-0 z-[2002] bg-black/60 backdrop-blur-sm flex items-end justify-center sm:items-center">
               <motion.div 
@@ -635,7 +774,6 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                 className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden"
               >
-                {/* Header */}
                 <div className="relative border-b border-slate-100 p-4 text-center">
                   <button 
                     onClick={() => setIsPaying(false)}
@@ -645,13 +783,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   </button>
                   <h3 className="font-bold text-slate-900 text-lg">请输入支付密码</h3>
                 </div>
-
-                {/* Content */}
                 <div className="p-8 flex flex-col items-center">
                   <div className="text-sm text-slate-500 mb-2">FIND ME 发现我</div>
                   <div className="text-3xl font-bold text-slate-900 mb-8">¥198.00</div>
-
-                  {/* Password Dots */}
                   <div className="flex gap-2 mb-8">
                     {[1, 2, 3, 4, 5, 6].map((_, i) => (
                       <div key={i} className="w-12 h-12 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50">
@@ -665,8 +799,6 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     ))}
                   </div>
                 </div>
-
-                {/* Keyboard (Visual Only) */}
                 <div className="grid grid-cols-3 bg-slate-100 gap-[1px] pt-[1px]">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
                     <button key={num} className="bg-white py-5 text-xl font-medium active:bg-slate-50">
