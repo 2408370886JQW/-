@@ -135,12 +135,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // Steps: 
   // 1: Relation Selection (Main View)
   // 2: Restaurant List (Full Screen)
-  // 3: Package List (Full Screen)
-  // 4: Package Detail (Full Screen)
-  // 5: Payment Verification (Overlay)
-  // 6: Success Page (Full Screen)
-  // 7: Order Detail (Full Screen)
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
+   // 3: Venue Detail (Full Screen)
+  // 4: View Package (Full Screen) - Browse packages
+  // 5: Select Package (Full Screen) - Confirm selection
+  // 6: Payment Page (Full Screen)
+  // 7: Success Page (Full Screen)
+  // 8: Order Detail (Full Screen)
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
   const [isPaying, setIsPaying] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState<typeof RESTAURANTS_STEP2[0] | null>(null);
   const [selectedPackage, setSelectedPackage] = useState<typeof PACKAGES_STEP4[0] | null>(null);
@@ -682,8 +683,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
           )}
 
-          {/* Step 6: Success Page */}
-          {step === 6 && (
+          {/* Step 7: Success Page */}
+          {step === 7 && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -703,7 +704,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <div className="w-full space-y-4">
                 <motion.button 
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setStep(7)}
+                  onClick={() => setStep(8)}
                   className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg"
                 >
                   查看订单
@@ -777,8 +778,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.div>
           )}
 
-          {/* Step 7: Order Detail Page */}
-          {step === 7 && (
+          {/* Step 8: Order Detail Page */}
+          {step === 8 && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -787,10 +788,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             >
               <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
                 <button 
-                  onClick={() => setStep(6)}
+                  onClick={() => setStep(1)}
                   className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
                 >
-                  <ArrowLeft className="w-5 h-5 text-slate-600" />
+                  <X className="w-5 h-5 text-slate-600" />
                 </button>
                 <h1 className="text-xl font-bold text-slate-900">订单详情</h1>
               </div>
