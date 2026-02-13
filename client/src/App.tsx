@@ -25,8 +25,8 @@ import StorePackageDetailPage from "./pages/StorePackageDetailPage";
 import StorePaymentSuccessPage from "./pages/StorePaymentSuccessPage";
 import ScanSimulationPage from "./pages/ScanSimulationPage";
 
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path="/" component={Home} />

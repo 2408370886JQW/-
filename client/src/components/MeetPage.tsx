@@ -115,7 +115,20 @@ const PACKAGES_STEP4 = [
     desc: '牛油果鲜虾沙拉 + 黑松露奶油意面 + 特调气泡水x2',
     price: 198,
     originalPrice: 298,
-    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80',
+    items: [
+      { name: '牛油果鲜虾沙拉', qty: 1 },
+      { name: '黑松露奶油意面', qty: 1 },
+      { name: '特调气泡水', qty: 2 },
+      { name: '餐前面包', qty: 1 }
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=80',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80',
+      'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=600&q=80'
+    ],
+    notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '需提前2小时预约', '不可与其他优惠同享']
   },
   {
     id: 102,
@@ -123,7 +136,39 @@ const PACKAGES_STEP4 = [
     desc: '澳洲M5和牛眼肉 + 鹅肝慕斯 + 甜点拼盘',
     price: 520,
     originalPrice: 888,
-    image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80'
+    image: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&q=80',
+    items: [
+      { name: '澳洲M5和牛眼肉', qty: 1 },
+      { name: '鹅肝慕斯', qty: 1 },
+      { name: '甜点拼盘', qty: 1 },
+      { name: '红酒一杯', qty: 2 }
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80',
+      'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80',
+      'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80'
+    ],
+    notes: ['有效期：购买后15天内有效', '仅限晚餐时段 17:30 - 22:00', '需提前1天预约', '含服务费，不可与其他优惠同享']
+  },
+  {
+    id: 103,
+    name: '微醺·下午茶甜蜜时光',
+    desc: '精选甜点三层塔 + 手冲咖啡x2 + 季节限定蛋糕',
+    price: 128,
+    originalPrice: 198,
+    image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=800&q=80',
+    items: [
+      { name: '精选甜点三层塔', qty: 1 },
+      { name: '手冲咖啡', qty: 2 },
+      { name: '季节限定蛋糕', qty: 1 }
+    ],
+    gallery: [
+      'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80',
+      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80'
+    ],
+    notes: ['有效期：购买后30天内有效', '使用时间：14:00 - 17:00', '需提前1小时预约']
   }
 ];
 
@@ -135,11 +180,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // Steps: 
   // 1: Relation Selection (Main View)
   // 2: Restaurant List (Full Screen)
-   // 3: Venue Detail (Full Screen)
-  // 4: View Package (Full Screen) - Browse packages
-  // 5: Select Package (Full Screen) - Confirm selection
-  // 6: Payment Page (Full Screen) - Select payment method
-  // 7: Success Page (Full Screen)
+  // 3: Venue Detail (Full Screen)
+  // 4: Package List (Full Screen) - Browse multiple packages as cards
+  // 5: Package Detail (Full Screen) - Single package full-screen view
+  // 6: Payment Page (Full Screen) - Select payment method & confirm
+  // 7: Success Page (Full Screen) - With navigation to Encounter/Moments
   // 8: Order Detail (Full Screen)
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
   const [isPaying, setIsPaying] = useState(false);
@@ -151,7 +196,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   useEffect(() => {
     if (isPaying) {
       const timer = setTimeout(() => {
-        setStep(6);
+        setStep(7);
         setIsPaying(false);
         // Trigger confetti on success
         confetti({
@@ -167,7 +212,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
   const handleBack = () => {
     if (step > 1) {
-      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7);
+      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8);
     } else {
       onNavigate('encounter');
     }
@@ -391,7 +436,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.div>
           )}
 
-          {/* Step 4: Package Selection Page (New) */}
+
+
+
+
+          {/* Step 4: Package List Page */}
           {step === 4 && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
@@ -406,117 +455,227 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 >
                   <ArrowLeft className="w-5 h-5 text-slate-600" />
                 </button>
-                <h1 className="text-xl font-bold text-slate-900">选择套餐</h1>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">套餐列表</h1>
+                  <p className="text-xs text-slate-400">{selectedRestaurant?.name || '花田错·西餐厅'}</p>
+                </div>
               </div>
 
               <div className="p-4 space-y-4">
-                {PACKAGES_STEP4.map((pkg) => (
-                  <motion.div 
-                    key={pkg.id}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setSelectedPackage(pkg);
-                      setStep(5); // Go to Payment Page
-                    }}
-                    className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 cursor-pointer"
-                  >
-                    <div className="flex gap-4">
-                      <img 
-                        src={pkg.image} 
-                        alt={pkg.name} 
-                        className="w-24 h-24 rounded-xl object-cover"
-                      />
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-lg mb-1">{pkg.name}</h4>
-                          <p className="text-slate-400 text-xs line-clamp-2">{pkg.desc}</p>
+                {PACKAGES_STEP4.map((pkg) => {
+                  const discount = Math.round((pkg.price / pkg.originalPrice) * 10);
+                  return (
+                    <motion.div 
+                      key={pkg.id}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        setSelectedPackage(pkg);
+                        setStep(5);
+                      }}
+                      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer"
+                    >
+                      <div className="relative h-40">
+                        <img 
+                          src={pkg.image} 
+                          alt={pkg.name} 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-3 left-3 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+                          {discount}折
                         </div>
-                        <div className="flex items-center justify-between mt-2">
+                      </div>
+                      <div className="p-4">
+                        <h4 className="font-bold text-slate-900 text-lg mb-1">{pkg.name}</h4>
+                        <p className="text-slate-400 text-xs line-clamp-2 mb-3">{pkg.desc}</p>
+                        <div className="flex items-center justify-between">
                           <div className="flex items-baseline gap-1">
                             <span className="text-orange-500 font-bold text-sm">¥</span>
-                            <span className="text-orange-500 font-bold text-xl">{pkg.price}</span>
-                            <span className="text-slate-300 text-xs line-through ml-1">¥{pkg.originalPrice}</span>
+                            <span className="text-orange-500 font-bold text-2xl">{pkg.price}</span>
+                            <span className="text-slate-300 text-xs line-through ml-2">¥{pkg.originalPrice}</span>
                           </div>
-                          <div className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-xs font-bold">
-                            购买
+                          <div className="flex items-center gap-1 text-slate-400 text-xs">
+                            <span>查看详情</span>
+                            <ChevronRight className="w-4 h-4" />
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
           )}
 
-          {/* Step 5: Payment Page (New) */}
+          {/* Step 5: Package Detail Page (Full Screen) */}
           {step === 5 && selectedPackage && (
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex-1 flex flex-col bg-white overflow-y-auto pb-24"
+            >
+              {/* Hero Image */}
+              <div className="relative h-72 bg-slate-200 shrink-0">
+                <img 
+                  src={selectedPackage.heroImage} 
+                  alt={selectedPackage.name} 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
+                <button 
+                  onClick={() => setStep(4)}
+                  className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 px-6 py-6">
+                <h1 className="text-2xl font-bold text-slate-900 mb-2">{selectedPackage.name}</h1>
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-orange-500 font-bold text-2xl">¥{selectedPackage.price}</span>
+                  <span className="text-slate-400 text-sm line-through">¥{selectedPackage.originalPrice}</span>
+                  <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded ml-2">
+                    {Math.round((selectedPackage.price / selectedPackage.originalPrice) * 10)}折
+                  </span>
+                </div>
+                <p className="text-slate-500 text-sm mb-6">{selectedPackage.desc}</p>
+
+                {/* Gallery */}
+                {selectedPackage.gallery && selectedPackage.gallery.length > 0 && (
+                  <section className="mb-6">
+                    <h3 className="font-bold text-slate-900 mb-3">环境展示</h3>
+                    <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2">
+                      {selectedPackage.gallery.map((img: string, idx: number) => (
+                        <img 
+                          key={idx}
+                          src={img} 
+                          alt={`环境 ${idx + 1}`}
+                          className="w-40 h-28 rounded-xl object-cover shrink-0"
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                <div className="space-y-6">
+                  <section>
+                    <h3 className="font-bold text-slate-900 mb-3">套餐内容</h3>
+                    <div className="space-y-3 text-sm text-slate-600">
+                      {selectedPackage.items.map((item: {name: string; qty: number}, idx: number) => (
+                        <div key={idx} className="flex justify-between">
+                          <span>{item.name}</span>
+                          <span>x{item.qty}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <div className="h-[1px] bg-slate-100"></div>
+
+                  <section>
+                    <h3 className="font-bold text-slate-900 mb-3">购买须知</h3>
+                    <ul className="space-y-2 text-sm text-slate-500 list-disc pl-4">
+                      {selectedPackage.notes.map((note: string, idx: number) => (
+                        <li key={idx}>{note}</li>
+                      ))}
+                    </ul>
+                  </section>
+                </div>
+              </div>
+
+              {/* Bottom Bar - Select Package */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
+                <motion.button 
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setStep(6)}
+                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
+                >
+                  选择此套餐 ¥{selectedPackage.price}
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 6: Payment Page (Method Selection) */}
+          {step === 6 && selectedPackage && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
               className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
             >
               <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
                 <button 
-                  onClick={() => setStep(4)}
+                  onClick={() => setStep(5)}
                   className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
                 >
                   <ArrowLeft className="w-5 h-5 text-slate-600" />
                 </button>
-                <h1 className="text-xl font-bold text-slate-900">确认支付</h1>
+                <h1 className="text-xl font-bold text-slate-900">支付订单</h1>
               </div>
 
               <div className="p-4 space-y-4">
                 {/* Order Summary */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                  <h3 className="font-bold text-lg text-slate-900 mb-4">订单信息</h3>
                   <div className="flex gap-4 mb-4">
                     <img 
                       src={selectedPackage.image} 
                       alt={selectedPackage.name} 
                       className="w-20 h-20 rounded-xl object-cover"
                     />
-                    <div>
+                    <div className="flex-1">
                       <h4 className="font-bold text-slate-900 mb-1">{selectedPackage.name}</h4>
-                      <p className="text-slate-500 text-xs mb-2">{selectedRestaurant?.name}</p>
+                      <p className="text-slate-500 text-xs mb-2">{selectedRestaurant?.name || '花田错·西餐厅'}</p>
                       <div className="text-orange-500 font-bold">¥{selectedPackage.price}</div>
                     </div>
                   </div>
                   <div className="border-t border-slate-50 pt-4 flex justify-between items-center">
-                    <span className="text-slate-500 font-bold">总计</span>
-                    <span className="text-2xl font-bold text-slate-900">¥{selectedPackage.price}</span>
+                    <span className="text-slate-500 font-bold">合计</span>
+                    <span className="text-3xl font-bold text-slate-900">¥{selectedPackage.price}.00</span>
                   </div>
                 </div>
 
-                {/* Payment Method */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                  <h3 className="font-bold text-lg text-slate-900 mb-4">支付方式</h3>
-                  <div className="space-y-4">
+                {/* Payment Methods */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                  <h3 className="font-bold text-slate-900 mb-4">选择支付方式</h3>
+                  
+                  <div className="space-y-3">
                     <div 
                       onClick={() => setPaymentMethod('wechat')}
-                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'wechat' ? 'border-green-500 bg-green-50' : 'border-slate-100'}`}
+                      className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'wechat' ? 'border-green-500 bg-green-50' : 'border-slate-100'}`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white">
-                          <span className="font-bold text-xs">微</span>
+                        <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center text-white">
+                          <span className="font-bold text-sm">微</span>
                         </div>
-                        <span className="font-bold text-slate-900">微信支付</span>
+                        <div>
+                          <span className="font-bold text-slate-900 block">微信支付</span>
+                          <span className="text-xs text-slate-400">推荐使用</span>
+                        </div>
                       </div>
-                      {paymentMethod === 'wechat' && <Check className="w-5 h-5 text-green-500" />}
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === 'wechat' ? 'border-green-500 bg-green-500' : 'border-slate-300'}`}>
+                        {paymentMethod === 'wechat' && <Check className="w-4 h-4 text-white" />}
+                      </div>
                     </div>
 
                     <div 
                       onClick={() => setPaymentMethod('alipay')}
-                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'alipay' ? 'border-blue-500 bg-blue-50' : 'border-slate-100'}`}
+                      className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'alipay' ? 'border-blue-500 bg-blue-50' : 'border-slate-100'}`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
-                          <span className="font-bold text-xs">支</span>
+                        <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white">
+                          <span className="font-bold text-sm">支</span>
                         </div>
-                        <span className="font-bold text-slate-900">支付宝</span>
+                        <div>
+                          <span className="font-bold text-slate-900 block">支付宝</span>
+                          <span className="text-xs text-slate-400">花呗可用</span>
+                        </div>
                       </div>
-                      {paymentMethod === 'alipay' && <Check className="w-5 h-5 text-blue-500" />}
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === 'alipay' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`}>
+                        {paymentMethod === 'alipay' && <Check className="w-4 h-4 text-white" />}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -536,228 +695,6 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     </>
                   ) : (
                     `确认支付 ¥${selectedPackage.price}`
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 4: View Package (Pure Display) */}
-          {step === 4 && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex-1 flex flex-col bg-white overflow-y-auto pb-24"
-            >
-              {/* Header Image */}
-              <div className="relative h-72 bg-slate-200 shrink-0">
-                <img 
-                  src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&q=80" 
-                  alt="Detail" 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent"></div>
-                <button 
-                  onClick={() => setStep(3)}
-                  className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
-                >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 px-6 py-6">
-                <h1 className="text-2xl font-bold text-slate-900 mb-2">初见·双人轻食套餐</h1>
-                <div className="flex items-baseline gap-2 mb-6">
-                  <span className="text-orange-500 font-bold text-2xl">¥198</span>
-                  <span className="text-slate-400 text-sm line-through">¥298</span>
-                  <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded ml-2">6.6折</span>
-                </div>
-
-                <div className="space-y-6">
-                  <section>
-                    <h3 className="font-bold text-slate-900 mb-3">套餐内容</h3>
-                    <div className="space-y-3 text-sm text-slate-600">
-                      <div className="flex justify-between">
-                        <span>牛油果鲜虾沙拉</span>
-                        <span>x1</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>黑松露奶油意面</span>
-                        <span>x1</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>特调气泡水</span>
-                        <span>x2</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>餐前面包</span>
-                        <span>x1</span>
-                      </div>
-                    </div>
-                  </section>
-
-                  <div className="h-[1px] bg-slate-100"></div>
-
-                  <section>
-                    <h3 className="font-bold text-slate-900 mb-3">购买须知</h3>
-                    <ul className="space-y-2 text-sm text-slate-500 list-disc pl-4">
-                      <li>有效期：购买后30天内有效</li>
-                      <li>使用时间：11:00 - 21:00</li>
-                      <li>需提前2小时预约</li>
-                      <li>不可与其他优惠同享</li>
-                    </ul>
-                  </section>
-                </div>
-              </div>
-
-              {/* Bottom Bar - View Only */}
-              <div className="p-4 border-t border-slate-100 bg-white shrink-0 z-[2001]">
-                <motion.button 
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setStep(5)}
-                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
-                >
-                  选择此套餐
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 5: Select Package (Confirmation) */}
-          {step === 5 && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
-            >
-              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
-                <button 
-                  onClick={() => setStep(4)}
-                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <ArrowLeft className="w-5 h-5 text-slate-600" />
-                </button>
-                <h1 className="text-xl font-bold text-slate-900">确认选择</h1>
-              </div>
-
-              <div className="p-4">
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-4">
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">已选套餐</h3>
-                  <div className="flex gap-4">
-                    <img 
-                      src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&q=80" 
-                      alt="Package" 
-                      className="w-20 h-20 rounded-lg object-cover"
-                    />
-                    <div className="flex-1">
-                      <div className="font-bold text-slate-900">初见·双人轻食套餐</div>
-                      <div className="text-sm text-slate-500 mt-1">包含沙拉、意面、饮品等</div>
-                      <div className="text-orange-500 font-bold mt-2">¥198</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                  <div className="flex justify-between items-center py-2 border-b border-slate-50">
-                    <span className="text-slate-600">数量</span>
-                    <span className="font-bold text-slate-900">1</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 pt-4">
-                    <span className="text-slate-600">小计</span>
-                    <span className="font-bold text-xl text-orange-500">¥198</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
-                <motion.button 
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setStep(6)}
-                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200"
-                >
-                  确认选择
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 6: Payment Page (Method Selection) */}
-          {step === 6 && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-24"
-            >
-              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
-                <button 
-                  onClick={() => setStep(5)}
-                  className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <ArrowLeft className="w-5 h-5 text-slate-600" />
-                </button>
-                <h1 className="text-xl font-bold text-slate-900">支付订单</h1>
-              </div>
-
-              <div className="p-4 space-y-4">
-                {/* Order Summary */}
-                <div className="bg-white rounded-2xl p-6 text-center shadow-sm border border-slate-100">
-                  <div className="text-sm text-slate-500 mb-2">支付金额</div>
-                  <div className="text-4xl font-bold text-slate-900 mb-1">¥198.00</div>
-                  <div className="text-sm text-slate-400">初见·双人轻食套餐</div>
-                </div>
-
-                {/* Payment Methods */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                  <h3 className="font-bold text-slate-900 mb-4">选择支付方式</h3>
-                  
-                  <div className="space-y-3">
-                    <div 
-                      onClick={() => setPaymentMethod('wechat')}
-                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'wechat' ? 'border-green-500 bg-green-50' : 'border-slate-100'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white">
-                          <span className="font-bold text-xs">微</span>
-                        </div>
-                        <span className="font-bold text-slate-900">微信支付</span>
-                      </div>
-                      {paymentMethod === 'wechat' && <Check className="w-5 h-5 text-green-500" />}
-                    </div>
-
-                    <div 
-                      onClick={() => setPaymentMethod('alipay')}
-                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === 'alipay' ? 'border-blue-500 bg-blue-50' : 'border-slate-100'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white">
-                          <span className="font-bold text-xs">支</span>
-                        </div>
-                        <span className="font-bold text-slate-900">支付宝支付</span>
-                      </div>
-                      {paymentMethod === 'alipay' && <Check className="w-5 h-5 text-blue-500" />}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Action */}
-              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
-                <button 
-                  onClick={() => setIsPaying(true)}
-                  disabled={isPaying}
-                  className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg active:scale-95 transition-transform disabled:opacity-70 disabled:scale-100 flex items-center justify-center gap-2"
-                >
-                  {isPaying ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      支付中...
-                    </>
-                  ) : (
-                    `确认支付 ¥198`
                   )}
                 </button>
               </div>
@@ -785,7 +722,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 </div>
                 <div className="p-8 flex flex-col items-center">
                   <div className="text-sm text-slate-500 mb-2">FIND ME 发现我</div>
-                  <div className="text-3xl font-bold text-slate-900 mb-8">¥198.00</div>
+                  <div className="text-3xl font-bold text-slate-900 mb-8">¥{selectedPackage?.price || 198}.00</div>
                   <div className="flex gap-2 mb-8">
                     {[1, 2, 3, 4, 5, 6].map((_, i) => (
                       <div key={i} className="w-12 h-12 border border-slate-200 rounded-lg flex items-center justify-center bg-slate-50">
@@ -931,7 +868,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <div className="p-4 space-y-4">
                 {/* QR Code Card */}
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
-                  <h3 className="font-bold text-lg text-slate-900 mb-1">初见·双人轻食套餐</h3>
+                  <h3 className="font-bold text-lg text-slate-900 mb-1">{selectedPackage?.name || '初见·双人轻食套餐'}</h3>
                   <p className="text-slate-500 text-sm mb-6">有效期至 2026-03-15</p>
                   
                   <div className="w-48 h-48 bg-slate-900 rounded-xl flex items-center justify-center mb-4">
@@ -975,7 +912,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">实付金额</span>
-                      <span className="font-bold text-slate-900">¥198.00</span>
+                      <span className="font-bold text-slate-900">¥{selectedPackage?.price || 198}.00</span>
                     </div>
                   </div>
                 </div>
