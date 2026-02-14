@@ -624,9 +624,28 @@ export default function Home() {
               >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-bold text-slate-900">筛选</h3>
-                  <button onClick={() => setShowFilterModal(false)} className="p-2 hover:bg-slate-100 rounded-full">
-                    <X className="w-5 h-5 text-slate-500" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => {
+                        setGenderFilter("all");
+                        setAgeFilter(null);
+                        setZodiacFilter(null);
+                      }}
+                      className={cn(
+                        "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
+                        (genderFilter !== "all" || ageFilter !== null || zodiacFilter !== null)
+                          ? "text-red-500 bg-red-50 border border-red-200 hover:bg-red-100 active:scale-95"
+                          : "text-slate-300 bg-slate-50 border border-slate-100 cursor-default"
+                      )}
+                      disabled={genderFilter === "all" && ageFilter === null && zodiacFilter === null}
+                    >
+                      <X className="w-3 h-3" />
+                      <span>清除筛选</span>
+                    </button>
+                    <button onClick={() => setShowFilterModal(false)} className="p-2 hover:bg-slate-100 rounded-full">
+                      <X className="w-5 h-5 text-slate-500" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-6">

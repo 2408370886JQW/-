@@ -949,20 +949,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       {cat}
                     </motion.button>
                   ))}
-                  {/* Clear Filter Button - always visible */}
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setSelectedCategory('全部')}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                      selectedCategory !== '全部'
-                        ? 'text-red-500 bg-red-50 border border-red-200 hover:bg-red-100'
-                        : 'text-slate-300 bg-slate-50 border border-slate-100 cursor-default'
-                    }`}
-                    disabled={selectedCategory === '全部'}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    <span>清除筛选</span>
-                  </motion.button>
+
                 </div>
               </div>
               <div className="p-4 space-y-4">
