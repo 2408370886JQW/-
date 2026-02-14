@@ -21,6 +21,66 @@ const RELATIONS = [
   { id: 'alone', icon: Coffee, label: '独处时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo' },
 ];
 
+// Relation Advice Card data - explains why selecting a relation matters
+const RELATION_ADVICE: Record<string, { emoji: string; title: string; subtitle: string; tips: string[]; atmosphere: string }> = {
+  first_meet: {
+    emoji: '💫',
+    title: '初次见面小贴士',
+    subtitle: '第一印象很重要，选对地方成功一半',
+    tips: ['选择安静、不拥挤的环境，方便交流', '避免太正式或太随意的场所', '预留"散步聊天"的空间，缓解紧张感'],
+    atmosphere: '轻松自然 · 不尴尬 · 有话题'
+  },
+  couple: {
+    emoji: '💕',
+    title: '约会氛围指南',
+    subtitle: '用心安排，让每次约会都有仪式感',
+    tips: ['烛光、花艺、音乐是浪漫三要素', '选择有窗景或露台的位置更加分', '甜点和饮品是约会的"甜蜜收尾"'],
+    atmosphere: '浪漫温馨 · 仪式感 · 私密空间'
+  },
+  bestie: {
+    emoji: '📸',
+    title: '闺蜜出行攻略',
+    subtitle: '好看、好吃、好拍，一个都不能少',
+    tips: ['选择高颜值、出片率高的店铺', '下午茶+拍照是闺蜜聚会经典组合', '甜品和饮品的摆盘要"上镜"'],
+    atmosphere: '精致好拍 · 甜蜜分享 · 畅聊时光'
+  },
+  bro: {
+    emoji: '🍻',
+    title: '兄弟聚会须知',
+    subtitle: '不用太讲究，放松就是最好的安排',
+    tips: ['大口吃肉、大口喝酒是核心需求', '选择不限时、氛围轻松的场所', '有台球、飞镖等娱乐设施更佳'],
+    atmosphere: '豪爽畅快 · 无拘无束 · 解压放松'
+  },
+  business: {
+    emoji: '🤝',
+    title: '商务宴请礼仪',
+    subtitle: '场合得体，细节决定成败',
+    tips: ['选择私密包间，保证谈话不被打扰', '提前了解客人饮食偏好和忌口', '酒水和茶品的档次要与场合匹配'],
+    atmosphere: '私密高端 · 专业得体 · 排面十足'
+  },
+  family: {
+    emoji: '🏠',
+    title: '家庭聚餐建议',
+    subtitle: '老少皆宜，温馨团圆最重要',
+    tips: ['菜品口味要兼顾老人和小孩', '选择宽敞、有包间的餐厅更方便', '提前预订，避免等位影响体验'],
+    atmosphere: '温馨团圆 · 老少皆宜 · 其乐融融'
+  },
+  birthday: {
+    emoji: '🎂',
+    title: '生日派对攻略',
+    subtitle: '让寿星感受到满满的用心和惊喜',
+    tips: ['提前和商家沟通生日布置和蛋糕', '选择可以唱歌、有氛围灯光的场所', 'KTV+大餐是经典生日组合'],
+    atmosphere: '惊喜满满 · 狂欢热闹 · 难忘回忆'
+  },
+  alone: {
+    emoji: '☕',
+    title: '独处时光指南',
+    subtitle: '给自己一段安静的好时光',
+    tips: ['选择有自然光、安静的角落位', '一杯好咖啡+一本书是最佳搭配', '不赶时间，享受慢下来的感觉'],
+    atmosphere: '安静惬意 · 放空自我 · 充电时刻'
+  },
+};
+
 // Multiple restaurants for the ONLINE flow
 const ALL_RESTAURANTS = [
   {
@@ -885,7 +945,55 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <p className="text-xs text-slate-400">{RELATIONS.find(r => r.id === selectedRelation)?.label} · 为你精选</p>
                 </div>
               </div>
-              <div className="p-4 space-y-4">
+              {/* Relation Advice Card */}
+              {selectedRelation && RELATION_ADVICE[selectedRelation] && (() => {
+                const advice = RELATION_ADVICE[selectedRelation];
+                const relation = RELATIONS.find(r => r.id === selectedRelation);
+                return (
+                  <div className="px-4 pt-4">
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                      className={`rounded-2xl overflow-hidden border-2 ${relation?.border || 'border-slate-200'} ${relation?.bg || 'bg-slate-50'}`}
+                    >
+                      {/* Card Header */}
+                      <div className="px-5 pt-5 pb-3 flex items-start gap-3">
+                        <span className="text-3xl">{advice.emoji}</span>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-slate-900 text-base">{advice.title}</h3>
+                          <p className="text-xs text-slate-500 mt-0.5">{advice.subtitle}</p>
+                        </div>
+                      </div>
+                      {/* Tips */}
+                      <div className="px-5 pb-3 space-y-2">
+                        {advice.tips.map((tip, idx) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <div className={`w-5 h-5 rounded-full bg-white/80 flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                              <Sparkles className={`w-3 h-3 ${relation?.color || 'text-slate-400'}`} />
+                            </div>
+                            <span className="text-sm text-slate-600 leading-relaxed">{tip}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Atmosphere Tag */}
+                      <div className="px-5 pb-4">
+                        <div className="bg-white/60 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                          <span className="text-xs text-slate-400">推荐氛围</span>
+                          <span className={`text-xs font-bold ${relation?.color || 'text-slate-600'}`}>{advice.atmosphere}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                    {/* Transition text */}
+                    <div className="flex items-center gap-3 py-4">
+                      <div className="flex-1 h-px bg-slate-200" />
+                      <span className="text-xs text-slate-400 flex-shrink-0">因为你选了「{relation?.label}」，为你推荐以下商家</span>
+                      <div className="flex-1 h-px bg-slate-200" />
+                    </div>
+                  </div>
+                );
+              })()}
+              <div className="px-4 pb-4 space-y-4">
                 {filteredRestaurants.map(restaurant => (
                   <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
                     <div className="relative h-40">
