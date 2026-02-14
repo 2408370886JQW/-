@@ -1007,7 +1007,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
       {/* Entry Page: Relation Selection */}
       {!flowMode && (
-        <div className="flex-1 flex flex-col bg-white relative h-full overflow-y-auto pb-16">
+        <div className="flex-1 flex flex-col bg-white relative h-full overflow-y-auto pb-36">
           {/* Back Button */}
           <button onClick={() => onNavigate('encounter')} className="fixed top-12 left-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]">
             <ArrowLeft className="w-5 h-5 text-slate-600" />
@@ -1057,7 +1057,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               transition={{ delay: 0.4 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleOnlineSkipRelation}
-              className="mt-4 w-full bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 text-blue-600 rounded-2xl p-4 flex items-center justify-center gap-3 hover:shadow-md transition-all"
+              className="mt-6 mb-8 w-full bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 text-blue-600 rounded-2xl p-4 flex items-center justify-center gap-3 hover:shadow-md transition-all"
             >
               <ShoppingBag className="w-5 h-5" />
               <span className="font-bold text-sm">暂不选择关系，直接查看团购套餐</span>
