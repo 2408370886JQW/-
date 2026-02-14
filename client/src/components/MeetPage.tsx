@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, SkipForward, Sparkles, Cake, ShoppingBag
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -370,9 +370,6 @@ const ALL_RESTAURANTS = [
   },
 ];
 
-// The FIXED restaurant for scan flow
-const SCAN_RESTAURANT = ALL_RESTAURANTS[0];
-
 type PackageType = typeof ALL_RESTAURANTS[0]['relationPackages'][0];
 type RestaurantType = typeof ALL_RESTAURANTS[0];
 
@@ -383,8 +380,8 @@ interface MeetPageProps {
 }
 
 export default function MeetPage({ onNavigate }: MeetPageProps) {
-  // Flow mode: 'online' or 'scan'
-  const [flowMode, setFlowMode] = useState<'online' | 'scan' | null>(null);
+  // Flow mode: 'online' for all flows
+  const [flowMode, setFlowMode] = useState<'online' | null>(null);
 
   // ---- ONLINE FLOW STEPS ----
   // online-1: Entry page (relation selection) - rendered in main return
@@ -398,16 +395,6 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // online-9: Restaurant detail + normal package list
   const [onlineStep, setOnlineStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9>(1);
 
-  // ---- SCAN FLOW STEPS ----
-  // scan-1: Restaurant detail page (clear, with two entry buttons)
-  // scan-2: Relation selection modal (from scan-1)
-  // scan-3: Relation package list (filtered by selected relation)
-  // scan-4: Normal package list (group-buy style)
-  // scan-5: Package detail
-  // scan-6: Payment
-  // scan-7: Success
-  // scan-8: Order detail
-  const [scanStep, setScanStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
 
   // Track which path user took for online package detail back navigation
   const [onlinePackageSource, setOnlinePackageSource] = useState<'relation' | 'normal'>('relation');
@@ -470,50 +457,23 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     setOnlineStep(9);
   };
 
-  // Scan: enter scan flow → go directly to restaurant detail page
-  const handleScan = () => {
-    setFlowMode('scan');
-    setSelectedRestaurant(SCAN_RESTAURANT);
-    setScanStep(1);
-  };
-
-  // Scan: open relation selection modal
-  const handleScanOpenRelation = () => {
-    setScanStep(2);
-  };
-
-  // Scan: select relation → go to relation package list
-  const handleScanSelectRelation = (relation: typeof RELATIONS[0]) => {
-    setSelectedRelation(relation.id);
-    setRelationTag(relation.tag);
-    setScanStep(3);
-  };
-
-  // Scan: skip relation → go to normal package list
-  const handleScanSkipRelation = () => {
-    setSelectedRelation(null);
-    setRelationTag(null);
-    setScanStep(4);
-  };
 
   // Shared: payment completion
   useEffect(() => {
     if (isPaying) {
       const timer = setTimeout(() => {
         setIsPaying(false);
-        if (flowMode === 'online') setOnlineStep(6);
-        else setScanStep(7);
+        setOnlineStep(6);
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#FF69B4', '#FFD700', '#00BFFF', '#32CD32'] });
       }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [isPaying, flowMode]);
+  }, [isPaying]);
 
   // Reset all state
   const resetAll = () => {
     setFlowMode(null);
     setOnlineStep(1);
-    setScanStep(1);
     setSelectedRelation(null);
     setRelationTag(null);
     setSelectedRestaurant(null);
@@ -845,89 +805,6 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     );
   };
 
-  // --- Scan: Restaurant Detail Page (Step 1) with two entry buttons ---
-  const renderScanRestaurantDetail = (restaurant: RestaurantType) => (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-32">
-      {/* Hero Image */}
-      <div className="relative h-56 bg-slate-200 shrink-0">
-        <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20" />
-        <button onClick={resetAll} className="absolute top-12 left-6 w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5" /></button>
-        <div className="absolute bottom-4 left-4 right-4 text-white">
-          <h2 className="font-bold text-xl">{restaurant.name}</h2>
-          <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
-        </div>
-        <div className="absolute top-12 right-6 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
-      </div>
-
-      {/* Restaurant Info */}
-      <div className="p-4 space-y-4 -mt-6 relative z-10">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 mb-3">
-            {restaurant.tags.map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-1 text-slate-500"><Clock className="w-4 h-4" /><span>{restaurant.hours}</span></div>
-            <span className="text-slate-900 font-bold">{restaurant.price}</span>
-          </div>
-        </div>
-
-        {/* Gallery */}
-        {restaurant.gallery && restaurant.gallery.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-3">门店环境</h3>
-            <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2">
-              {restaurant.gallery.map((img, idx) => (
-                <img key={idx} src={img} alt={`环境 ${idx + 1}`} className="w-40 h-28 rounded-xl object-cover shrink-0" />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* How to order section */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-lg text-slate-900 mb-2">选择点餐方式</h3>
-          <p className="text-sm text-slate-400 mb-5">选择关系获取专属推荐，或直接浏览全部团购套餐</p>
-
-          {/* Path A: Select Relation */}
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={handleScanOpenRelation}
-            className="w-full mb-3 bg-gradient-to-r from-pink-500 to-orange-400 text-white rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-pink-100 active:shadow-sm transition-shadow"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-left">
-                <div className="font-bold text-base">选择关系 · 专属推荐</div>
-                <div className="text-white/80 text-xs mt-0.5">情侣 / 闺蜜 / 兄弟 / 商务...</div>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-white/80" />
-          </motion.button>
-
-          {/* Path B: Skip → Normal Packages */}
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={handleScanSkipRelation}
-            className="w-full bg-slate-50 border-2 border-slate-200 text-slate-700 rounded-2xl p-5 flex items-center justify-between hover:bg-slate-100 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border border-slate-200">
-                <ShoppingBag className="w-6 h-6 text-slate-500" />
-              </div>
-              <div className="text-left">
-                <div className="font-bold text-base text-slate-800">直接点餐 · 团购套餐</div>
-                <div className="text-slate-400 text-xs mt-0.5">双人餐 / 三人餐 / 四人餐...</div>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-slate-400" />
-          </motion.button>
-        </div>
-      </div>
-    </motion.div>
-  );
 
   // ========== PORTAL CONTENT ==========
   const fullScreenContent = (
@@ -1120,84 +997,6 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
         </motion.div>
       )}
 
-      {/* ===== SCAN FLOW ===== */}
-      {flowMode === 'scan' && (
-        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col overflow-hidden">
-          {/* Scan Step 1: Restaurant Detail with two entry buttons */}
-          {scanStep === 1 && selectedRestaurant && renderScanRestaurantDetail(selectedRestaurant)}
-
-          {/* Scan Step 2: Relation Selection Modal */}
-          <AnimatePresence>
-            {scanStep === 2 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-end justify-center bg-black/40">
-                <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white w-full max-w-md rounded-t-3xl p-6 pb-10 max-h-[80vh] overflow-y-auto">
-                  <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6" />
-                  <h3 className="text-xl font-bold text-slate-900 mb-2 text-center">你们是什么关系？</h3>
-                  <p className="text-sm text-slate-400 text-center mb-6">选择关系后，为你推荐最合适的套餐</p>
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    {RELATIONS.map(relation => {
-                      const Icon = relation.icon;
-                      return (
-                        <motion.button key={relation.id} whileTap={{ scale: 0.95 }} onClick={() => handleScanSelectRelation(relation)}
-                          className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all border-slate-100 bg-white hover:bg-slate-50 ${relation.bg}`}>
-                          <div className={`w-10 h-10 rounded-full bg-white/80 flex items-center justify-center`}><Icon className={`w-5 h-5 ${relation.color}`} /></div>
-                          <div className="text-left">
-                            <div className="font-bold text-slate-900 text-sm">{relation.label}</div>
-                            <div className="text-[10px] text-slate-400">{relation.desc}</div>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                  <button onClick={() => setScanStep(1)} className="w-full py-3 text-slate-400 text-sm font-medium flex items-center justify-center gap-1">
-                    <ArrowLeft className="w-4 h-4" />返回商家页
-                  </button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Scan Step 3: Relation Package List (separate page, separate data) */}
-          {scanStep === 3 && selectedRestaurant && renderPackageList(
-            '关系专属套餐',
-            `${selectedRestaurant.name} · ${RELATIONS.find(r => r.id === selectedRelation)?.label || ''}推荐`,
-            getRelationPackages(selectedRestaurant),
-            selectedRestaurant,
-            () => setScanStep(1),
-            (pkg) => { setSelectedPackage(pkg); setScanStep(5); }
-          )}
-
-          {/* Scan Step 4: Normal Package List (separate page, separate data, no relation tags) */}
-          {scanStep === 4 && selectedRestaurant && renderPackageList(
-            '团购套餐',
-            `${selectedRestaurant.name} · 全部团购`,
-            selectedRestaurant.normalPackages,
-            selectedRestaurant,
-            () => setScanStep(1),
-            (pkg) => { setSelectedPackage(pkg); setScanStep(5); }
-          )}
-
-          {/* Scan Step 5: Package Detail */}
-          {scanStep === 5 && selectedPackage && selectedRestaurant && renderPackageDetail(
-            selectedPackage, selectedRestaurant,
-            () => setScanStep(selectedRelation ? 3 : 4),
-            () => setScanStep(6)
-          )}
-
-          {/* Scan Step 6: Payment */}
-          {scanStep === 6 && selectedPackage && selectedRestaurant && renderPaymentPage(
-            selectedPackage, selectedRestaurant,
-            () => setScanStep(5)
-          )}
-          {renderPaymentOverlay()}
-
-          {/* Scan Step 7: Success */}
-          {scanStep === 7 && renderSuccessPage(() => setScanStep(8), () => setScanStep(5))}
-
-          {/* Scan Step 8: Order Detail */}
-          {scanStep === 8 && renderOrderDetail(selectedPackage, selectedRestaurant, () => setScanStep(7))}
-        </motion.div>
-      )}
     </AnimatePresence>
   );
 
@@ -1206,9 +1005,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
       {createPortal(fullScreenContent, document.body)}
 
-      {/* Entry Page: Relation Selection + Scan Entry */}
+      {/* Entry Page: Relation Selection */}
       {!flowMode && (
-        <div className="flex-1 flex flex-col bg-white relative h-full overflow-y-auto pb-48">
+        <div className="flex-1 flex flex-col bg-white relative h-full overflow-y-auto pb-16">
           {/* Back Button */}
           <button onClick={() => onNavigate('encounter')} className="fixed top-12 left-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]">
             <ArrowLeft className="w-5 h-5 text-slate-600" />
@@ -1266,25 +1065,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.button>
           </div>
 
-          {/* Bottom Scan Card (Fixed) */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 pb-24 bg-gradient-to-t from-white via-white to-transparent pt-8 z-[100]">
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-4 text-white shadow-xl shadow-indigo-200 relative overflow-hidden"
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-8 -mt-8 blur-2xl" />
-              <div className="relative z-10 flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-base mb-0.5">已到店？扫码点餐</h3>
-                  <p className="text-indigo-100 text-xs opacity-90">扫码解锁专属优惠</p>
-                </div>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={handleScan} className="bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-lg text-sm">
-                  <ScanLine className="w-4 h-4" />模拟扫码
-                </motion.button>
-              </div>
-            </motion.div>
-          </div>
+
         </div>
       )}
     </div>
