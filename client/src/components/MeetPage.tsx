@@ -821,6 +821,28 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <p className="text-xs text-slate-400">{RELATIONS.find(r => r.id === selectedRelation)?.label} · 为你精选</p>
                 </div>
               </div>
+              {/* Smart Recommendation Banner */}
+              <div
+                className="mx-4 mt-4 rounded-2xl"
+                style={{ background: 'linear-gradient(135deg, #f97316 0%, #f59e0b 50%, #f97316 100%)' }}
+              >
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-sm leading-snug">
+                      基于你选择的场景智能推荐
+                    </p>
+                    <p className="text-white/80 text-xs mt-0.5">
+                      已为「{RELATIONS.find(r => r.id === selectedRelation)?.label}」匹配最合适的商家与套餐
+                    </p>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+              </div>
               {/* Relation Advice Card */}
               {selectedRelation && RELATION_ADVICE[selectedRelation] && (() => {
                 const advice = RELATION_ADVICE[selectedRelation];
