@@ -987,25 +987,28 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                                 <span className="text-xs text-slate-400">这个场景适合</span>
                                 <span className={`text-xs font-bold ${relation?.color || 'text-slate-600'}`}>{advice.atmosphere}</span>
                               </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Cycle to the next scene instead of closing
-                                  const currentIdx = RELATIONS.findIndex(r => r.id === selectedRelation);
-                                  const nextIdx = (currentIdx + 1) % RELATIONS.length;
-                                  const nextRelation = RELATIONS[nextIdx];
-                                  setSelectedRelation(nextRelation.id);
-                                  setRelationTag(nextRelation.tag);
-                                  setBannerDismissed(false);
-                                  setAdviceCollapsed(false);
-                                  // Scroll back to top
-                                  scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                                }}
-                                className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${relation?.color || 'text-slate-600'} bg-white/60 hover:bg-white/80`}
-                              >
-                                <RefreshCw className="w-3.5 h-3.5" />
-                                换个场景
-                              </button>
+                              {(() => {
+                                const currentIdx = RELATIONS.findIndex(r => r.id === selectedRelation);
+                                const nextIdx = (currentIdx + 1) % RELATIONS.length;
+                                const nextRelation = RELATIONS[nextIdx];
+                                return (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedRelation(nextRelation.id);
+                                      setRelationTag(nextRelation.tag);
+                                      setBannerDismissed(false);
+                                      setAdviceCollapsed(false);
+                                      scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }}
+                                    className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${relation?.color || 'text-slate-600'} bg-white/60 hover:bg-white/80`}
+                                  >
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    <span>换个场景</span>
+                                    <span className="text-slate-400 font-normal">→ {nextRelation.label}</span>
+                                  </button>
+                                );
+                              })()}
                             </div>
                           </motion.div>
                         )}
