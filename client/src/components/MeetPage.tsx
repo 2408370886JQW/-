@@ -11,14 +11,30 @@ import {
 // ========== DATA ==========
 
 const RELATIONS = [
-  { id: 'first_meet', icon: Heart, label: '第一次见面', desc: '初次约会不紧张', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic' },
-  { id: 'couple', icon: Heart, label: '情侣约会', desc: '浪漫二人世界', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic' },
-  { id: 'bestie', icon: Camera, label: '闺蜜聚会', desc: '拍照打卡必去', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends' },
-  { id: 'bro', icon: Beer, label: '兄弟小聚', desc: '放松畅聊解压', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends' },
-  { id: 'business', icon: Briefcase, label: '商务宴请', desc: '私密有排面', bg: 'bg-slate-100', color: 'text-slate-600', border: 'border-slate-200', tag: 'business' },
-  { id: 'family', icon: Users, label: '阖家团圆', desc: '温馨家庭聚餐', bg: 'bg-orange-50', color: 'text-orange-500', border: 'border-orange-200', tag: 'family' },
-  { id: 'birthday', icon: Cake, label: '生日派对', desc: '难忘生日趴', bg: 'bg-yellow-50', color: 'text-yellow-500', border: 'border-yellow-200', tag: 'friends' },
-  { id: 'alone', icon: Coffee, label: '独处时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo' },
+  { id: 'first_meet', icon: Heart, label: '初次见面', desc: '初次约会不紧张', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/KKMPAFsBgZZTRxVP.jpg',
+    overlayColor: 'rgba(0, 105, 92, 0.65)', peopleCount: 23 },
+  { id: 'couple', icon: Heart, label: '情侣约会', desc: '浪漫二人世界', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/nErbHJcgzurNYPeo.jpg',
+    overlayColor: 'rgba(200, 75, 49, 0.65)', peopleCount: 18 },
+  { id: 'bestie', icon: Camera, label: '闺蜜聚会', desc: '拍照打卡必去', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/YHPJLTEOSeuFPrtB.jpg',
+    overlayColor: 'rgba(139, 139, 0, 0.60)', peopleCount: 12 },
+  { id: 'bro', icon: Beer, label: '兄弟小聚', desc: '放松畅聊解压', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/WtousTGHvvbCvWeV.jpg',
+    overlayColor: 'rgba(27, 94, 32, 0.65)', peopleCount: 16 },
+  { id: 'business', icon: Briefcase, label: '商务宴请', desc: '私密有排面', bg: 'bg-slate-100', color: 'text-slate-600', border: 'border-slate-200', tag: 'business',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/YFbrnarqPhdDbOsd.jpg',
+    overlayColor: 'rgba(74, 20, 140, 0.60)', peopleCount: 7 },
+  { id: 'family', icon: Users, label: '阖家团圆', desc: '温馨家庭聚餐', bg: 'bg-orange-50', color: 'text-orange-500', border: 'border-orange-200', tag: 'family',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/ulMAPxOBqJESGHLH.jpg',
+    overlayColor: 'rgba(249, 168, 37, 0.60)', peopleCount: 28 },
+  { id: 'birthday', icon: Cake, label: '生日派对', desc: '难忘生日趴', bg: 'bg-yellow-50', color: 'text-yellow-500', border: 'border-yellow-200', tag: 'friends',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/GoAHPqkroxDgbtNB.jpg',
+    overlayColor: 'rgba(136, 14, 79, 0.65)', peopleCount: 11 },
+  { id: 'alone', icon: Coffee, label: '独处时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/vnlKbnnVBXsVPIXG.jpg',
+    overlayColor: 'rgba(0, 77, 64, 0.60)', peopleCount: 5 },
 ];
 
 // Relation Advice Card data - explains why selecting a relation matters
@@ -1006,67 +1022,121 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
       {createPortal(fullScreenContent, document.body)}
 
-      {/* Entry Page: Relation Selection */}
+      {/* Entry Page: Relation Selection - Hinge Explore Style */}
       {!flowMode && (
-        <div className="flex-1 flex flex-col bg-white relative h-full overflow-y-auto pb-36">
+        <div className="flex-1 flex flex-col bg-[#FAFAFA] relative h-full overflow-y-auto pb-36">
           {/* Back Button */}
           <button onClick={() => onNavigate('encounter')} className="fixed top-12 left-6 w-10 h-10 bg-white/80 backdrop-blur-md border border-slate-200 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-[10000]">
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
 
           {/* Header */}
-          <div className="px-6 pt-24 pb-2">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">相见</h1>
-            <p className="text-slate-400 text-sm leading-relaxed">这次见面怎么安排？<br/>请选择适合你的关系场景</p>
+          <div className="px-5 pt-24 pb-1">
+            <h1 className="text-[28px] font-extrabold text-slate-900 tracking-tight">相见</h1>
           </div>
 
-          {/* Relation Grid */}
-          <div className="px-6 pt-6">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">你们是什么关系？</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {RELATIONS.map((relation, idx) => {
-                const Icon = relation.icon;
-                return (
-                  <motion.button
-                    key={relation.id}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: idx * 0.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setFlowMode('online');
-                      handleOnlineSelectRelation(relation);
-                    }}
-                    className={`flex items-center gap-3 p-4 rounded-2xl border-2 ${relation.border} ${relation.bg} transition-all hover:shadow-md active:shadow-sm`}
-                  >
-                    <div className={`w-10 h-10 rounded-full bg-white/80 flex items-center justify-center shadow-sm`}>
-                      <Icon className={`w-5 h-5 ${relation.color}`} />
-                    </div>
-                    <div className="text-left">
-                      <div className="font-bold text-slate-900 text-sm">{relation.label}</div>
-                      <div className="text-[10px] text-slate-400">{relation.desc}</div>
-                    </div>
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            {/* Skip Relation Button (secondary, bottom of grid) */}
+          {/* Hero Card - First relation (couple) as featured */}
+          <div className="px-4 pt-3 pb-2">
             <motion.button
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
               whileTap={{ scale: 0.97 }}
-              onClick={handleOnlineSkipRelation}
-              className="mt-6 mb-8 w-full bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 text-blue-600 rounded-2xl p-4 flex items-center justify-center gap-3 hover:shadow-md transition-all"
+              onClick={() => {
+                setFlowMode('online');
+                handleOnlineSelectRelation(RELATIONS[1]);
+              }}
+              className="relative w-full rounded-2xl overflow-hidden shadow-md"
+              style={{ aspectRatio: '16/11' }}
             >
-              <ShoppingBag className="w-5 h-5" />
-              <span className="font-bold text-sm">暂不选择关系，直接查看团购套餐</span>
-              <ChevronRight className="w-4 h-4" />
+              <img
+                src={RELATIONS[1].image}
+                alt={RELATIONS[1].label}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div
+                className="absolute inset-0"
+                style={{ backgroundColor: RELATIONS[1].overlayColor }}
+              />
+              {/* People count badge */}
+              <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
+                <Users className="w-3.5 h-3.5 text-white" />
+                <span className="text-white text-xs font-bold">{RELATIONS[1].peopleCount}</span>
+              </div>
+              {/* Bottom text */}
+              <div className="absolute bottom-0 left-0 right-0 p-5">
+                <h3 className="text-white font-extrabold text-2xl tracking-tight">{RELATIONS[1].label}</h3>
+              </div>
             </motion.button>
           </div>
 
+          {/* Section Header */}
+          <div className="px-5 pt-4 pb-2">
+            <h2 className="text-base font-extrabold text-slate-900">这次见面怎么安排？</h2>
+            <p className="text-xs text-slate-400 mt-0.5">选择你们的关系，获取专属推荐</p>
+          </div>
 
+          {/* 2-Column Grid Cards */}
+          <div className="px-4 pb-2">
+            <div className="grid grid-cols-2 gap-3">
+              {RELATIONS.filter((_, i) => i !== 1).map((relation, idx) => (
+                <motion.button
+                  key={relation.id}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: idx * 0.06 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setFlowMode('online');
+                    handleOnlineSelectRelation(relation);
+                  }}
+                  className="relative rounded-2xl overflow-hidden shadow-sm"
+                  style={{ aspectRatio: '4/5' }}
+                >
+                  <img
+                    src={relation.image}
+                    alt={relation.label}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div
+                    className="absolute inset-0"
+                    style={{ backgroundColor: relation.overlayColor }}
+                  />
+                  {/* People count badge */}
+                  <div className="absolute top-2.5 right-2.5 bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
+                    <Users className="w-3 h-3 text-white" />
+                    <span className="text-white text-[10px] font-bold">{relation.peopleCount}</span>
+                  </div>
+                  {/* Bottom text */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                    <h3 className="text-white font-extrabold text-lg tracking-tight leading-tight">{relation.label}</h3>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* Skip Relation - Subtle bottom link */}
+          <div className="px-5 pt-4 pb-8">
+            <motion.button
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleOnlineSkipRelation}
+              className="w-full bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm active:bg-slate-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
+                  <ShoppingBag className="w-5 h-5 text-slate-500" />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-slate-900 text-sm">直接看团购套餐</div>
+                  <div className="text-[11px] text-slate-400">暂不选择关系，浏览全部商家</div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300" />
+            </motion.button>
+          </div>
         </div>
       )}
     </div>
