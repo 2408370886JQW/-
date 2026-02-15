@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -76,7 +76,8 @@ const ALL_RESTAURANTS = [
     category: '美食' as const,
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
     location: '三里屯太古里北区 N4-30',
-    tags: ['轻松不尴尬', '环境安静', '适合约会'],
+    distance: '1.2km',
+    tags: ['轻松不尬尬', '环境安静', '适合约会'],
     rating: 4.8,
     price: '¥198/人',
     phone: '010-6417-8899',
@@ -199,6 +200,7 @@ const ALL_RESTAURANTS = [
     category: '美食' as const,
     image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80',
     location: '国贸CBD 银泰中心B1',
+    distance: '3.5km',
     tags: ['异域风情', '私密包间', '适合商务'],
     rating: 4.6,
     price: '¥258/人',
@@ -260,6 +262,7 @@ const ALL_RESTAURANTS = [
     category: '美食' as const,
     image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&q=80',
     location: '望京SOHO T2-B1',
+    distance: '2.8km',
     tags: ['氛围感', '大口吃肉', '适合聚会'],
     rating: 4.7,
     price: '¥168/人',
@@ -321,6 +324,7 @@ const ALL_RESTAURANTS = [
     category: '饮品' as const,
     image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80',
     location: '朝阳门外大街 凯恒中心顶层',
+    distance: '4.1km',
     tags: ['高空景观', '鸡尾酒', '适合约会'],
     rating: 4.9,
     price: '¥328/人',
@@ -437,10 +441,22 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     return null;
   };
 
-  // Filtered restaurants for online flow
-  const filteredRestaurants = relationTag
+  // Compute numeric match score for sorting (higher = better match)
+  const getMatchScore = (restaurant: RestaurantType): number => {
+    if (!selectedRelation || !relationTag) return 0;
+    const matchingPackages = restaurant.relationPackages.filter(p => p.relationTags.includes(relationTag));
+    const hasDirectTag = restaurant.relationTags.includes(relationTag);
+    if (hasDirectTag && matchingPackages.length >= 2) return 3; // 高度匹配
+    if (hasDirectTag && matchingPackages.length >= 1) return 2; // 推荐
+    if (hasDirectTag) return 1; // 相关
+    return 0;
+  };
+
+  // Filtered restaurants for online flow — sorted by match score (best first)
+  const filteredRestaurants = (relationTag
     ? ALL_RESTAURANTS.filter(r => r.relationTags.includes(relationTag))
-    : ALL_RESTAURANTS;
+    : [...ALL_RESTAURANTS]
+  ).sort((a, b) => getMatchScore(b) - getMatchScore(a));
 
   // Category-filtered restaurants for pure group-buy list
   const RESTAURANT_CATEGORIES = ['全部', '美食', '饮品', '娱乐'];
@@ -913,12 +929,25 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                           </div>
                         ))}
                       </div>
-                      {/* Atmosphere Tag */}
-                      <div className="px-5 pb-4">
-                        <div className="bg-white/60 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                      {/* Atmosphere Tag + Switch Scene */}
+                      <div className="px-5 pb-4 flex items-center gap-2">
+                        <div className="bg-white/60 rounded-xl px-4 py-2.5 flex items-center gap-2 flex-1">
                           <span className="text-xs text-slate-400">推荐氛围</span>
                           <span className={`text-xs font-bold ${relation?.color || 'text-slate-600'}`}>{advice.atmosphere}</span>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOnlineStep(1);
+                            setSelectedRelation('');
+                            setRelationTag('');
+                            setBannerDismissed(false);
+                          }}
+                          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${relation?.color || 'text-slate-600'} bg-white/60 hover:bg-white/80`}
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          换个场景
+                        </button>
                       </div>
                     </motion.div>
                     {/* Transition text */}
@@ -931,21 +960,34 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 );
               })()}
               <div className="px-4 pb-4 space-y-4">
-                {filteredRestaurants.map(restaurant => {
+                {filteredRestaurants.map((restaurant, index) => {
                   const matchLevel = getMatchLevel(restaurant);
+                  const isBestMatch = index === 0 && matchLevel && matchLevel.label === '高度匹配';
                   return (
-                  <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+                  <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className={`bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow ${isBestMatch ? 'border-2 border-orange-300 ring-2 ring-orange-100' : 'border border-slate-100'}`}>
+                    {/* Best Match Top Banner */}
+                    {isBestMatch && (
+                      <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-1.5 flex items-center gap-1.5">
+                        <Award className="w-3.5 h-3.5 text-white" />
+                        <span className="text-xs font-bold text-white">最佳推荐</span>
+                        <span className="text-xs text-white/80 ml-1">与你的场景最匹配</span>
+                      </div>
+                    )}
                     <div className="relative h-40">
                       <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                       <div className="absolute bottom-3 left-3 right-3 text-white">
                         <h3 className="font-bold text-lg">{restaurant.name}</h3>
-                        <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
+                        <div className="flex items-center gap-2 text-xs opacity-90 mt-1">
+                          <MapPin className="w-3 h-3" /><span>{restaurant.location}</span>
+                          <span className="mx-0.5">·</span>
+                          <Navigation className="w-3 h-3" /><span>{restaurant.distance}</span>
+                        </div>
                       </div>
                       {/* Rating badge */}
                       <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
                       {/* Scene match level badge */}
-                      {matchLevel && (
+                      {matchLevel && !isBestMatch && (
                         <div className={`absolute top-3 left-3 ${matchLevel.bg} backdrop-blur px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs font-bold ${matchLevel.color} shadow-sm`}>
                           <Sparkles className="w-3 h-3" />
                           {matchLevel.label}
