@@ -1007,7 +1007,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             <p className="text-[13px] text-slate-400 mt-1">选择一种适合你们关系的见面方式</p>
           </div>
 
-          {/* Hero Card - 初次见面 (index 0) as featured full-width horizontal */}
+          {/* Hero Card - 初次见面 (index 0) as featured full-width horizontal with shimmer + badge */}
           <div className="px-4 pt-3 pb-2">
             <motion.button
               initial={{ y: 20, opacity: 0 }}
@@ -1017,7 +1017,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 setFlowMode('online');
                 handleOnlineSelectRelation(RELATIONS[0]);
               }}
-              className="relative w-full rounded-[16px] overflow-hidden"
+              className="relative w-full rounded-[16px] overflow-hidden hero-card-shimmer"
               style={{ aspectRatio: '16/10' }}
             >
               <img
@@ -1029,13 +1029,18 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 className="absolute inset-0"
                 style={{ backgroundColor: RELATIONS[0].overlayColor }}
               />
-              {/* People count badge */}
+              {/* 推荐 Badge - top left */}
+              <div className="absolute top-3 left-3 z-10 recommend-badge rounded-full px-3 py-1 flex items-center gap-1.5 shadow-lg">
+                <Sparkles className="w-3.5 h-3.5 text-white" />
+                <span className="text-white text-xs font-extrabold tracking-wide">推荐</span>
+              </div>
+              {/* People count badge - top right */}
               <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
                 <Users className="w-3.5 h-3.5 text-white" />
                 <span className="text-white text-xs font-bold">{RELATIONS[0].peopleCount}</span>
               </div>
               {/* Bottom left text with title + subtitle */}
-              <div className="absolute bottom-0 left-0 right-0 p-5">
+              <div className="absolute bottom-0 left-0 right-0 p-5 z-[1]">
                 <h3 className="text-white font-extrabold text-[22px] tracking-tight">{RELATIONS[0].label}</h3>
                 <p className="text-white/80 text-[13px] mt-0.5 font-medium">{RELATIONS[0].subtitle}</p>
               </div>

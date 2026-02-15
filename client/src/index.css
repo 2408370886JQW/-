@@ -212,3 +212,61 @@
     }
   }
 }
+
+/* Hero card gradient shimmer animation for 初次见面 */
+@keyframes hero-gradient-shimmer {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+@keyframes hero-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(234, 88, 12, 0), 0 8px 30px -4px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(234, 88, 12, 0.15), 0 8px 30px -4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.hero-card-shimmer {
+  animation: hero-glow-pulse 3s ease-in-out infinite;
+}
+
+.hero-card-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.08) 35%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 65%,
+    transparent 80%
+  );
+  background-size: 200% 100%;
+  animation: hero-gradient-shimmer 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Recommended badge gradient */
+@keyframes badge-shine {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+.recommend-badge {
+  background: linear-gradient(90deg, #ea580c, #f97316, #fbbf24, #f97316, #ea580c);
+  background-size: 300% 100%;
+  animation: badge-shine 3s ease-in-out infinite;
+}
