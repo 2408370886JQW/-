@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -1035,6 +1035,19 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   </motion.div>
                   );
                 })}
+              </div>
+
+              {/* Back to Top Button */}
+              <div className="flex justify-center py-6 pb-10">
+                <button
+                  onClick={() => {
+                    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white shadow-md border border-slate-100 text-slate-500 text-sm font-medium active:scale-95 transition-all hover:shadow-lg hover:text-slate-700"
+                >
+                  <ArrowUp className="w-4 h-4" />
+                  回到顶部
+                </button>
               </div>
               </div>
             </>
