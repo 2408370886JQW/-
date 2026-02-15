@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -366,7 +366,19 @@ interface MeetPageProps {
   onNavigate: (tab: string) => void;
 }
 
+const BADGE_TEXTS = ['推荐', '热门', '新手推荐'];
+
 export default function MeetPage({ onNavigate }: MeetPageProps) {
+  // Badge text rotation for hero card
+  const [badgeTextIndex, setBadgeTextIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBadgeTextIndex(prev => (prev + 1) % BADGE_TEXTS.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
+
   // Flow mode: 'online' for all flows
   const [flowMode, setFlowMode] = useState<'online' | null>(null);
 
@@ -1029,20 +1041,41 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 className="absolute inset-0"
                 style={{ backgroundColor: RELATIONS[0].overlayColor }}
               />
-              {/* 推荐 Badge - top left */}
+              {/* 推荐 Badge - top left with rotating text */}
               <div className="absolute top-3 left-3 z-10 recommend-badge rounded-full px-3 py-1 flex items-center gap-1.5 shadow-lg">
                 <Sparkles className="w-3.5 h-3.5 text-white" />
-                <span className="text-white text-xs font-extrabold tracking-wide">推荐</span>
+                <span className="text-white text-xs font-extrabold tracking-wide badge-text-rotate">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={badgeTextIndex}
+                      initial={{ y: 8, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -8, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="inline-block"
+                    >
+                      {BADGE_TEXTS[badgeTextIndex]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
               </div>
               {/* People count badge - top right */}
               <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
                 <Users className="w-3.5 h-3.5 text-white" />
                 <span className="text-white text-xs font-bold">{RELATIONS[0].peopleCount}</span>
               </div>
-              {/* Bottom left text with title + subtitle */}
+              {/* Bottom left text with title + subtitle + social proof */}
               <div className="absolute bottom-0 left-0 right-0 p-5 z-[1]">
                 <h3 className="text-white font-extrabold text-[22px] tracking-tight">{RELATIONS[0].label}</h3>
                 <p className="text-white/80 text-[13px] mt-0.5 font-medium">{RELATIONS[0].subtitle}</p>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <div className="flex -space-x-1.5">
+                    <div className="w-4 h-4 rounded-full bg-orange-300 border border-white/50" />
+                    <div className="w-4 h-4 rounded-full bg-pink-300 border border-white/50" />
+                    <div className="w-4 h-4 rounded-full bg-amber-300 border border-white/50" />
+                  </div>
+                  <span className="text-white/70 text-[11px] font-medium">已有 {RELATIONS[0].peopleCount} 人正在使用</span>
+                </div>
               </div>
             </motion.button>
           </div>
@@ -1061,12 +1094,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.06 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.93 }}
                 onClick={() => {
                   setFlowMode('online');
                   handleOnlineSelectRelation(RELATIONS[1]);
                 }}
-                className="relative rounded-[16px] overflow-hidden"
+                className="relative rounded-[16px] overflow-hidden relation-card-press"
                 style={{ aspectRatio: '4/3' }}
               >
                 <img
@@ -1090,12 +1123,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.12 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.93 }}
                 onClick={() => {
                   setFlowMode('online');
                   handleOnlineSelectRelation(RELATIONS[2]);
                 }}
-                className="relative rounded-[16px] overflow-hidden"
+                className="relative rounded-[16px] overflow-hidden relation-card-press"
                 style={{ aspectRatio: '4/3' }}
               >
                 <img
@@ -1124,12 +1157,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.18 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.93 }}
                 onClick={() => {
                   setFlowMode('online');
                   handleOnlineSelectRelation(RELATIONS[3]);
                 }}
-                className="relative rounded-[16px] overflow-hidden"
+                className="relative rounded-[16px] overflow-hidden relation-card-press"
                 style={{ aspectRatio: '3/4' }}
               >
                 <img
@@ -1153,12 +1186,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.24 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.93 }}
                 onClick={() => {
                   setFlowMode('online');
                   handleOnlineSelectRelation(RELATIONS[4]);
                 }}
-                className="relative rounded-[16px] overflow-hidden"
+                className="relative rounded-[16px] overflow-hidden relation-card-press"
                 style={{ aspectRatio: '3/4' }}
               >
                 <img
@@ -1185,9 +1218,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.96 }}
               onClick={handleOnlineSkipRelation}
-              className="relative w-full rounded-[16px] overflow-hidden"
+              className="relative w-full rounded-[16px] overflow-hidden relation-card-press"
               style={{ aspectRatio: '16/6' }}
             >
               <img
