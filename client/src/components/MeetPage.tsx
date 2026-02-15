@@ -885,10 +885,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {onlineStep === 2 && (
             <motion.div ref={scrollContainerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
               <div
-                className="sticky top-0 z-20 bg-white px-4 pt-10 pb-3 flex items-center gap-4"
-                style={{
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                }}
+                className="sticky top-0 z-20 bg-white px-4 pt-14 pb-4 flex items-center gap-4"
               >
                 <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
                 <div>
