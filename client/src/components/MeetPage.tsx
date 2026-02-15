@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -414,6 +414,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [isPaying, setIsPaying] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [headerHidden, setHeaderHidden] = useState(false);
+  const [adviceCollapsed, setAdviceCollapsed] = useState(false);
   const lastScrollY = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -479,6 +480,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     setSelectedRelation(relation.id);
     setRelationTag(relation.tag);
     setBannerDismissed(false);
+    setAdviceCollapsed(false);
     setOnlineStep(2);
   };
 
@@ -926,7 +928,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   </motion.div>
                 )}
               </AnimatePresence>
-              {/* Relation Advice Card */}
+              {/* Relation Advice Card - Collapsible */}
               {selectedRelation && RELATION_ADVICE[selectedRelation] && (() => {
                 const advice = RELATION_ADVICE[selectedRelation];
                 const relation = RELATIONS.find(r => r.id === selectedRelation);
@@ -938,50 +940,76 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       transition={{ delay: 0.1 }}
                       className={`rounded-2xl overflow-hidden border-2 ${relation?.border || 'border-slate-200'} ${relation?.bg || 'bg-slate-50'}`}
                     >
-                      {/* Card Header */}
-                      <div className="px-5 pt-5 pb-3 flex items-start gap-3">
+                      {/* Card Header - Always visible, clickable to toggle */}
+                      <button
+                        onClick={() => setAdviceCollapsed(!adviceCollapsed)}
+                        className="w-full px-5 pt-5 pb-3 flex items-start gap-3 text-left active:opacity-80 transition-opacity"
+                      >
                         <span className="text-3xl">{advice.emoji}</span>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <h3 className="font-bold text-slate-900 text-base">{advice.title}</h3>
-                          <p className="text-xs text-slate-500 mt-0.5">{advice.subtitle}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {adviceCollapsed ? advice.atmosphere : advice.subtitle}
+                          </p>
                         </div>
-                      </div>
-                      {/* Tips */}
-                      <div className="px-5 pb-3 space-y-2">
-                        {advice.tips.map((tip, idx) => (
-                          <div key={idx} className="flex items-start gap-2">
-                            <div className={`w-5 h-5 rounded-full bg-white/80 flex items-center justify-center flex-shrink-0 mt-0.5`}>
-                              <Sparkles className={`w-3 h-3 ${relation?.color || 'text-slate-400'}`} />
-                            </div>
-                            <span className="text-sm text-slate-600 leading-relaxed">{tip}</span>
-                          </div>
-                        ))}
-                      </div>
-                      {/* Atmosphere Tag + Switch Scene */}
-                      <div className="px-5 pb-4 flex items-center gap-2">
-                        <div className="bg-white/60 rounded-xl px-4 py-2.5 flex items-center gap-2 flex-1">
-                          <span className="text-xs text-slate-400">这个场景适合</span>
-                          <span className={`text-xs font-bold ${relation?.color || 'text-slate-600'}`}>{advice.atmosphere}</span>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Cycle to the next scene instead of closing
-                            const currentIdx = RELATIONS.findIndex(r => r.id === selectedRelation);
-                            const nextIdx = (currentIdx + 1) % RELATIONS.length;
-                            const nextRelation = RELATIONS[nextIdx];
-                            setSelectedRelation(nextRelation.id);
-                            setRelationTag(nextRelation.tag);
-                            setBannerDismissed(false);
-                            // Scroll back to top
-                            scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                          }}
-                          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${relation?.color || 'text-slate-600'} bg-white/60 hover:bg-white/80`}
+                        <motion.div
+                          animate={{ rotate: adviceCollapsed ? 0 : 180 }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
+                          className={`w-7 h-7 rounded-full bg-white/60 flex items-center justify-center flex-shrink-0 mt-1`}
                         >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          换个场景
-                        </button>
-                      </div>
+                          <ChevronUp className={`w-4 h-4 ${relation?.color || 'text-slate-400'}`} />
+                        </motion.div>
+                      </button>
+                      {/* Collapsible Content */}
+                      <AnimatePresence initial={false}>
+                        {!adviceCollapsed && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="overflow-hidden"
+                          >
+                            {/* Tips */}
+                            <div className="px-5 pb-3 space-y-2">
+                              {advice.tips.map((tip, idx) => (
+                                <div key={idx} className="flex items-start gap-2">
+                                  <div className={`w-5 h-5 rounded-full bg-white/80 flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                                    <Sparkles className={`w-3 h-3 ${relation?.color || 'text-slate-400'}`} />
+                                  </div>
+                                  <span className="text-sm text-slate-600 leading-relaxed">{tip}</span>
+                                </div>
+                              ))}
+                            </div>
+                            {/* Atmosphere Tag + Switch Scene */}
+                            <div className="px-5 pb-4 flex items-center gap-2">
+                              <div className="bg-white/60 rounded-xl px-4 py-2.5 flex items-center gap-2 flex-1">
+                                <span className="text-xs text-slate-400">这个场景适合</span>
+                                <span className={`text-xs font-bold ${relation?.color || 'text-slate-600'}`}>{advice.atmosphere}</span>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Cycle to the next scene instead of closing
+                                  const currentIdx = RELATIONS.findIndex(r => r.id === selectedRelation);
+                                  const nextIdx = (currentIdx + 1) % RELATIONS.length;
+                                  const nextRelation = RELATIONS[nextIdx];
+                                  setSelectedRelation(nextRelation.id);
+                                  setRelationTag(nextRelation.tag);
+                                  setBannerDismissed(false);
+                                  setAdviceCollapsed(false);
+                                  // Scroll back to top
+                                  scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${relation?.color || 'text-slate-600'} bg-white/60 hover:bg-white/80`}
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                换个场景
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                     {/* Simple divider */}
                     <div className="pt-2" />
