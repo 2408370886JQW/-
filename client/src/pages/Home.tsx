@@ -224,6 +224,7 @@ export default function Home() {
   const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
   const [ageFilter, setAgeFilter] = useState<string | null>(null);
   const [zodiacFilter, setZodiacFilter] = useState<string | null>(null);
+  const [distanceFilter, setDistanceFilter] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
 
   // State for Friend Card and Dynamics Detail
@@ -336,14 +337,30 @@ export default function Home() {
     const newOverlays: google.maps.OverlayView[] = [];
     const currentMarkers = markerData[activeTab as keyof typeof markerData] || [];
 
-    // Filter markers based on gender if in encounter tab
+    // Filter markers based on gender and distance if in encounter tab
     const filteredMarkers = activeTab === 'encounter' 
       ? currentMarkers.filter((m: any) => {
-          if (genderFilter === 'all') return true;
-          // Handle both "female"/"male" and "Woman"/"Man" formats
-          const gender = m.gender?.toLowerCase();
-          if (genderFilter === 'female') return gender === 'female' || gender === 'woman';
-          if (genderFilter === 'male') return gender === 'male' || gender === 'man';
+          // Gender filter
+          if (genderFilter !== 'all') {
+            const gender = m.gender?.toLowerCase();
+            if (genderFilter === 'female' && gender !== 'female' && gender !== 'woman') return false;
+            if (genderFilter === 'male' && gender !== 'male' && gender !== 'man') return false;
+          }
+          // Distance filter (simulate distance based on lat/lng offset from center)
+          if (distanceFilter && mapInstance) {
+            const center = mapInstance.getCenter();
+            if (center) {
+              const R = 6371000; // Earth radius in meters
+              const dLat = (m.lat - center.lat()) * Math.PI / 180;
+              const dLng = (m.lng - center.lng()) * Math.PI / 180;
+              const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(center.lat() * Math.PI / 180) * Math.cos(m.lat * Math.PI / 180) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+              const distance = R * c;
+              if (distance > parseInt(distanceFilter)) return false;
+            }
+          }
           return true;
         })
       : currentMarkers;
@@ -426,7 +443,7 @@ export default function Home() {
     return () => {
       newOverlays.forEach(overlay => overlay.setMap(null));
     };
-  }, [mapInstance, activeTab, markerData, genderFilter]);
+  }, [mapInstance, activeTab, markerData, genderFilter, distanceFilter]);
 
   return (
     <Layout showNav={true}>
@@ -630,14 +647,15 @@ export default function Home() {
                         setGenderFilter("all");
                         setAgeFilter(null);
                         setZodiacFilter(null);
+                        setDistanceFilter(null);
                       }}
                       className={cn(
                         "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-                        (genderFilter !== "all" || ageFilter !== null || zodiacFilter !== null)
+                        (genderFilter !== "all" || ageFilter !== null || zodiacFilter !== null || distanceFilter !== null)
                           ? "text-red-500 bg-red-50 border border-red-200 hover:bg-red-100 active:scale-95"
                           : "text-slate-300 bg-slate-50 border border-slate-100 cursor-default"
                       )}
-                      disabled={genderFilter === "all" && ageFilter === null && zodiacFilter === null}
+                      disabled={genderFilter === "all" && ageFilter === null && zodiacFilter === null && distanceFilter === null}
                     >
                       <X className="w-3 h-3" />
                       <span>清除筛选</span>
@@ -721,6 +739,31 @@ export default function Home() {
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Distance Filter */}
+                  <div>
+                    <label className="text-sm font-bold text-slate-900 mb-3 block">距离</label>
+                    <div className="flex gap-3">
+                      {[
+                        { value: "500", label: "500m" },
+                        { value: "1000", label: "1km" },
+                        { value: "3000", label: "3km" },
+                        { value: "5000", label: "5km" },
+                      ].map(dist => (
+                        <button 
+                          key={dist.value} 
+                          onClick={() => setDistanceFilter(dist.value === distanceFilter ? null : dist.value)}
+                          className={cn(
+                            "flex-1 py-2 rounded-lg text-xs font-medium transition-colors",
+                            dist.value === distanceFilter ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          )}
+                        >
+                          {dist.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2">选择后仅展示该距离范围内的用户</p>
                   </div>
                 </div>
 
