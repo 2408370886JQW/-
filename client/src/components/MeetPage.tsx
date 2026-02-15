@@ -13,25 +13,16 @@ import {
 const RELATIONS = [
   { id: 'first_meet', icon: Heart, label: '初次见面', desc: '初次约会不紧张', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/KKMPAFsBgZZTRxVP.jpg',
-    overlayColor: 'rgba(0, 105, 92, 0.65)', peopleCount: 23 },
+    overlayColor: 'rgba(180, 80, 40, 0.65)', peopleCount: 23 },
   { id: 'couple', icon: Heart, label: '情侣约会', desc: '浪漫二人世界', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/nErbHJcgzurNYPeo.jpg',
-    overlayColor: 'rgba(200, 75, 49, 0.65)', peopleCount: 18 },
+    overlayColor: 'rgba(140, 30, 30, 0.65)', peopleCount: 18 },
   { id: 'bestie', icon: Camera, label: '闺蜜聚会', desc: '拍照打卡必去', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/YHPJLTEOSeuFPrtB.jpg',
     overlayColor: 'rgba(139, 139, 0, 0.60)', peopleCount: 12 },
   { id: 'bro', icon: Beer, label: '兄弟小聚', desc: '放松畅聊解压', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends',
-    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/WtousTGHvvbCvWeV.jpg',
+    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/pxhrlUHwirgctNxR.jpeg',
     overlayColor: 'rgba(27, 94, 32, 0.65)', peopleCount: 16 },
-  { id: 'business', icon: Briefcase, label: '商务宴请', desc: '私密有排面', bg: 'bg-slate-100', color: 'text-slate-600', border: 'border-slate-200', tag: 'business',
-    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/YFbrnarqPhdDbOsd.jpg',
-    overlayColor: 'rgba(74, 20, 140, 0.60)', peopleCount: 7 },
-  { id: 'family', icon: Users, label: '阖家团圆', desc: '温馨家庭聚餐', bg: 'bg-orange-50', color: 'text-orange-500', border: 'border-orange-200', tag: 'family',
-    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/ulMAPxOBqJESGHLH.jpg',
-    overlayColor: 'rgba(249, 168, 37, 0.60)', peopleCount: 28 },
-  { id: 'birthday', icon: Cake, label: '生日派对', desc: '难忘生日趴', bg: 'bg-yellow-50', color: 'text-yellow-500', border: 'border-yellow-200', tag: 'friends',
-    image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/GoAHPqkroxDgbtNB.jpg',
-    overlayColor: 'rgba(136, 14, 79, 0.65)', peopleCount: 11 },
   { id: 'alone', icon: Coffee, label: '独处时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/vnlKbnnVBXsVPIXG.jpg',
     overlayColor: 'rgba(0, 77, 64, 0.60)', peopleCount: 5 },
@@ -67,27 +58,7 @@ const RELATION_ADVICE: Record<string, { emoji: string; title: string; subtitle: 
     tips: ['大口吃肉、大口喝酒是核心需求', '选择不限时、氛围轻松的场所', '有台球、飞镖等娱乐设施更佳'],
     atmosphere: '豪爽畅快 · 无拘无束 · 解压放松'
   },
-  business: {
-    emoji: '🤝',
-    title: '商务宴请礼仪',
-    subtitle: '场合得体，细节决定成败',
-    tips: ['选择私密包间，保证谈话不被打扰', '提前了解客人饮食偏好和忌口', '酒水和茶品的档次要与场合匹配'],
-    atmosphere: '私密高端 · 专业得体 · 排面十足'
-  },
-  family: {
-    emoji: '🏠',
-    title: '家庭聚餐建议',
-    subtitle: '老少皆宜，温馨团圆最重要',
-    tips: ['菜品口味要兼顾老人和小孩', '选择宽敞、有包间的餐厅更方便', '提前预订，避免等位影响体验'],
-    atmosphere: '温馨团圆 · 老少皆宜 · 其乐融融'
-  },
-  birthday: {
-    emoji: '🎂',
-    title: '生日派对攻略',
-    subtitle: '让寿星感受到满满的用心和惊喜',
-    tips: ['提前和商家沟通生日布置和蛋糕', '选择可以唱歌、有氛围灯光的场所', 'KTV+大餐是经典生日组合'],
-    atmosphere: '惊喜满满 · 狂欢热闹 · 难忘回忆'
-  },
+
   alone: {
     emoji: '☕',
     title: '独处时光指南',
@@ -1030,12 +1001,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
 
-          {/* Header */}
+          {/* Header + Subtitle */}
           <div className="px-5 pt-24 pb-1">
             <h1 className="text-[28px] font-extrabold text-slate-900 tracking-tight">相见</h1>
+            <p className="text-[13px] text-slate-400 mt-1">选择一种适合你们关系的见面方式</p>
           </div>
 
-          {/* Hero Card - First relation (couple) as featured */}
+          {/* Hero Card - 初次见面 (index 0) as featured full-width horizontal */}
           <div className="px-4 pt-3 pb-2">
             <motion.button
               initial={{ y: 20, opacity: 0 }}
@@ -1043,75 +1015,157 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               whileTap={{ scale: 0.97 }}
               onClick={() => {
                 setFlowMode('online');
-                handleOnlineSelectRelation(RELATIONS[1]);
+                handleOnlineSelectRelation(RELATIONS[0]);
               }}
-              className="relative w-full rounded-2xl overflow-hidden shadow-md"
-              style={{ aspectRatio: '16/11' }}
+              className="relative w-full rounded-[16px] overflow-hidden"
+              style={{ aspectRatio: '16/10' }}
             >
               <img
-                src={RELATIONS[1].image}
-                alt={RELATIONS[1].label}
+                src={RELATIONS[0].image}
+                alt={RELATIONS[0].label}
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div
                 className="absolute inset-0"
-                style={{ backgroundColor: RELATIONS[1].overlayColor }}
+                style={{ backgroundColor: RELATIONS[0].overlayColor }}
               />
               {/* People count badge */}
               <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
                 <Users className="w-3.5 h-3.5 text-white" />
-                <span className="text-white text-xs font-bold">{RELATIONS[1].peopleCount}</span>
+                <span className="text-white text-xs font-bold">{RELATIONS[0].peopleCount}</span>
               </div>
               {/* Bottom text */}
               <div className="absolute bottom-0 left-0 right-0 p-5">
-                <h3 className="text-white font-extrabold text-2xl tracking-tight">{RELATIONS[1].label}</h3>
+                <h3 className="text-white font-extrabold text-[22px] tracking-tight">{RELATIONS[0].label}</h3>
               </div>
             </motion.button>
           </div>
 
           {/* Section Header */}
           <div className="px-5 pt-4 pb-2">
-            <h2 className="text-base font-extrabold text-slate-900">这次见面怎么安排？</h2>
-            <p className="text-xs text-slate-400 mt-0.5">选择你们的关系，获取专属推荐</p>
+            <h2 className="text-[15px] font-extrabold text-slate-900">选择一种今天见面的场景</h2>
+            <p className="text-xs text-slate-400 mt-0.5">找到适合你们的见面流程</p>
           </div>
 
-          {/* 2-Column Grid Cards */}
+          {/* Mixed Layout: Row 1 - Two horizontal short cards */}
+          <div className="px-4 pb-3">
+            <div className="grid grid-cols-2 gap-3">
+              {/* 情侣约会 - horizontal short card */}
+              <motion.button
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.06 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setFlowMode('online');
+                  handleOnlineSelectRelation(RELATIONS[1]);
+                }}
+                className="relative rounded-[16px] overflow-hidden"
+                style={{ aspectRatio: '4/3' }}
+              >
+                <img
+                  src={RELATIONS[1].image}
+                  alt={RELATIONS[1].label}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0" style={{ backgroundColor: RELATIONS[1].overlayColor }} />
+                <div className="absolute top-2.5 right-2.5 bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
+                  <Users className="w-3 h-3 text-white" />
+                  <span className="text-white text-[10px] font-bold">{RELATIONS[1].peopleCount}</span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <h3 className="text-white font-extrabold text-[17px] tracking-tight leading-tight">{RELATIONS[1].label}</h3>
+                </div>
+              </motion.button>
+
+              {/* 闺蜜聚会 - horizontal short card */}
+              <motion.button
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.12 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setFlowMode('online');
+                  handleOnlineSelectRelation(RELATIONS[2]);
+                }}
+                className="relative rounded-[16px] overflow-hidden"
+                style={{ aspectRatio: '4/3' }}
+              >
+                <img
+                  src={RELATIONS[2].image}
+                  alt={RELATIONS[2].label}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0" style={{ backgroundColor: RELATIONS[2].overlayColor }} />
+                <div className="absolute top-2.5 right-2.5 bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
+                  <Users className="w-3 h-3 text-white" />
+                  <span className="text-white text-[10px] font-bold">{RELATIONS[2].peopleCount}</span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <h3 className="text-white font-extrabold text-[17px] tracking-tight leading-tight">{RELATIONS[2].label}</h3>
+                </div>
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Mixed Layout: Row 2 - Two tall vertical cards */}
           <div className="px-4 pb-2">
             <div className="grid grid-cols-2 gap-3">
-              {RELATIONS.filter((_, i) => i !== 1).map((relation, idx) => (
-                <motion.button
-                  key={relation.id}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: idx * 0.06 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setFlowMode('online');
-                    handleOnlineSelectRelation(relation);
-                  }}
-                  className="relative rounded-2xl overflow-hidden shadow-sm"
-                  style={{ aspectRatio: '4/5' }}
-                >
-                  <img
-                    src={relation.image}
-                    alt={relation.label}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <div
-                    className="absolute inset-0"
-                    style={{ backgroundColor: relation.overlayColor }}
-                  />
-                  {/* People count badge */}
-                  <div className="absolute top-2.5 right-2.5 bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
-                    <Users className="w-3 h-3 text-white" />
-                    <span className="text-white text-[10px] font-bold">{relation.peopleCount}</span>
-                  </div>
-                  {/* Bottom text */}
-                  <div className="absolute bottom-0 left-0 right-0 p-3.5">
-                    <h3 className="text-white font-extrabold text-lg tracking-tight leading-tight">{relation.label}</h3>
-                  </div>
-                </motion.button>
-              ))}
+              {/* 兄弟小聚 - tall vertical card */}
+              <motion.button
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.18 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setFlowMode('online');
+                  handleOnlineSelectRelation(RELATIONS[3]);
+                }}
+                className="relative rounded-[16px] overflow-hidden"
+                style={{ aspectRatio: '3/4' }}
+              >
+                <img
+                  src={RELATIONS[3].image}
+                  alt={RELATIONS[3].label}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0" style={{ backgroundColor: RELATIONS[3].overlayColor }} />
+                <div className="absolute top-2.5 right-2.5 bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
+                  <Users className="w-3 h-3 text-white" />
+                  <span className="text-white text-[10px] font-bold">{RELATIONS[3].peopleCount}</span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                  <h3 className="text-white font-extrabold text-[17px] tracking-tight leading-tight">{RELATIONS[3].label}</h3>
+                </div>
+              </motion.button>
+
+              {/* 独处时光 - tall vertical card */}
+              <motion.button
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.24 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setFlowMode('online');
+                  handleOnlineSelectRelation(RELATIONS[4]);
+                }}
+                className="relative rounded-[16px] overflow-hidden"
+                style={{ aspectRatio: '3/4' }}
+              >
+                <img
+                  src={RELATIONS[4].image}
+                  alt={RELATIONS[4].label}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <div className="absolute inset-0" style={{ backgroundColor: RELATIONS[4].overlayColor }} />
+                <div className="absolute top-2.5 right-2.5 bg-black/40 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
+                  <Users className="w-3 h-3 text-white" />
+                  <span className="text-white text-[10px] font-bold">{RELATIONS[4].peopleCount}</span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                  <h3 className="text-white font-extrabold text-[17px] tracking-tight leading-tight">{RELATIONS[4].label}</h3>
+                </div>
+              </motion.button>
             </div>
           </div>
 
@@ -1123,7 +1177,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               transition={{ delay: 0.5 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleOnlineSkipRelation}
-              className="w-full bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between shadow-sm active:bg-slate-50 transition-colors"
+              className="w-full bg-white border border-slate-200 rounded-[16px] p-4 flex items-center justify-between active:bg-slate-50 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
