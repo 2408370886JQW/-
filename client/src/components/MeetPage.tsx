@@ -880,19 +880,20 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     <AnimatePresence mode="wait">
       {/* ===== ONLINE FLOW ===== */}
       {flowMode === 'online' && onlineStep >= 2 && (
-        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col overflow-hidden">
+        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col">
           {/* Online Step 2: Multi-Restaurant List */}
           {onlineStep === 2 && (
-            <motion.div ref={scrollContainerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
-              <div
-                className="sticky top-0 z-20 bg-white px-4 pt-14 pb-4 flex items-center gap-4"
-              >
+            <>
+              {/* Fixed Header - always visible at top */}
+              <div className="bg-white px-4 pt-14 pb-4 flex items-center gap-4 flex-shrink-0 shadow-sm">
                 <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
                 <div>
                   <h1 className="text-xl font-bold text-slate-900">帮你挑好的</h1>
                   <p className="text-xs text-slate-400">{RELATIONS.find(r => r.id === selectedRelation)?.label} · 省时省心</p>
                 </div>
               </div>
+              {/* Scrollable Content Area */}
+              <div ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-8">
               {/* Smart Recommendation Banner */}
               <AnimatePresence>
                 {!bannerDismissed && (
@@ -1035,7 +1036,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   );
                 })}
               </div>
-            </motion.div>
+              </div>
+            </>
           )}
           {/* Online Step 3: Restaurant Detail + Relation Package List */}
           {onlineStep === 3 && selectedRestaurant && renderRestaurantWithRelationPackages(
