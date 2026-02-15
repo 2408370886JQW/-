@@ -408,6 +408,34 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [selectedPackage, setSelectedPackage] = useState<PackageType | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
   const [isPaying, setIsPaying] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  // Scene-to-gradient color mapping
+  const sceneGradients: Record<string, string> = {
+    first_meet: 'linear-gradient(135deg, #f97316 0%, #f59e0b 50%, #f97316 100%)',
+    couple: 'linear-gradient(135deg, #ec4899 0%, #f43f5e 50%, #ec4899 100%)',
+    bestie: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 50%, #a855f7 100%)',
+    bro: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #3b82f6 100%)',
+    alone: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #10b981 100%)',
+  };
+
+  // Compute scene match level for a restaurant
+  const getMatchLevel = (restaurant: RestaurantType): { label: string; color: string; bg: string } | null => {
+    if (!selectedRelation || !relationTag) return null;
+    const relation = RELATIONS.find(r => r.id === selectedRelation);
+    if (!relation) return null;
+    // Check how many relation packages match the current tag
+    const matchingPackages = restaurant.relationPackages.filter(p => p.relationTags.includes(relationTag));
+    const hasDirectTag = restaurant.relationTags.includes(relationTag);
+    if (hasDirectTag && matchingPackages.length >= 2) {
+      return { label: '高度匹配', color: 'text-white', bg: 'bg-gradient-to-r from-orange-500 to-amber-500' };
+    } else if (hasDirectTag && matchingPackages.length >= 1) {
+      return { label: '推荐', color: 'text-orange-600', bg: 'bg-orange-100' };
+    } else if (hasDirectTag) {
+      return { label: '相关', color: 'text-slate-500', bg: 'bg-slate-100' };
+    }
+    return null;
+  };
 
   // Filtered restaurants for online flow
   const filteredRestaurants = relationTag
@@ -432,6 +460,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const handleOnlineSelectRelation = (relation: typeof RELATIONS[0]) => {
     setSelectedRelation(relation.id);
     setRelationTag(relation.tag);
+    setBannerDismissed(false);
     setOnlineStep(2);
   };
 
@@ -822,27 +851,37 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 </div>
               </div>
               {/* Smart Recommendation Banner */}
-              <div
-                className="mx-4 mt-4 rounded-2xl"
-                style={{ background: 'linear-gradient(135deg, #f97316 0%, #f59e0b 50%, #f97316 100%)' }}
-              >
-                <div className="px-4 py-3 flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-bold text-sm leading-snug">
-                      基于你选择的场景智能推荐
-                    </p>
-                    <p className="text-white/80 text-xs mt-0.5">
-                      已为「{RELATIONS.find(r => r.id === selectedRelation)?.label}」匹配最合适的商家与套餐
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-white" />
-                  </div>
-                </div>
-              </div>
+              <AnimatePresence>
+                {!bannerDismissed && (
+                  <motion.div
+                    initial={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className="mx-4 mt-4 rounded-2xl relative overflow-hidden"
+                    style={{ background: (selectedRelation && sceneGradients[selectedRelation]) || sceneGradients.first_meet }}
+                  >
+                    <div className="px-4 py-3 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-bold text-sm leading-snug">
+                          基于你选择的场景智能推荐
+                        </p>
+                        <p className="text-white/80 text-xs mt-0.5">
+                          已为「{RELATIONS.find(r => r.id === selectedRelation)?.label}」匹配最合适的商家与套餐
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setBannerDismissed(true); }}
+                        className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5 text-white" />
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               {/* Relation Advice Card */}
               {selectedRelation && RELATION_ADVICE[selectedRelation] && (() => {
                 const advice = RELATION_ADVICE[selectedRelation];
@@ -892,7 +931,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 );
               })()}
               <div className="px-4 pb-4 space-y-4">
-                {filteredRestaurants.map(restaurant => (
+                {filteredRestaurants.map(restaurant => {
+                  const matchLevel = getMatchLevel(restaurant);
+                  return (
                   <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
                     <div className="relative h-40">
                       <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
@@ -901,7 +942,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         <h3 className="font-bold text-lg">{restaurant.name}</h3>
                         <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
                       </div>
+                      {/* Rating badge */}
                       <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+                      {/* Scene match level badge */}
+                      {matchLevel && (
+                        <div className={`absolute top-3 left-3 ${matchLevel.bg} backdrop-blur px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs font-bold ${matchLevel.color} shadow-sm`}>
+                          <Sparkles className="w-3 h-3" />
+                          {matchLevel.label}
+                        </div>
+                      )}
                     </div>
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-2">
@@ -913,7 +962,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           )}
