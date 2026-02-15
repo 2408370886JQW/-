@@ -1092,7 +1092,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {/* Section Header */}
           <div className="px-5 pt-4 pb-2">
             <h2 className="text-[15px] font-extrabold text-slate-900">今天线下见面  选个场景就好</h2>
-            <p className="text-xs text-slate-400 mt-1 leading-relaxed">不用纠结去哪  吃什么<br />我们已经帮你搭配好了</p>
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">你只需选场景  剩下的交给我们<br />去哪儿吃什么由你们决定  我们只是让选择变得更简单</p>
           </div>
 
           {/* Mixed Layout: Row 1 - Two horizontal short cards (情侣约会 + 闺蜜聚会) */}
