@@ -11,19 +11,19 @@ import {
 // ========== DATA ==========
 
 const RELATIONS = [
-  { id: 'first_meet', icon: Heart, label: '初次见面', desc: '初次约会不紧张', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic',
+  { id: 'first_meet', icon: Heart, label: '初次见面', subtitle: '让第一次不再紧张', desc: '初次约会不紧张', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/KKMPAFsBgZZTRxVP.jpg',
     overlayColor: 'rgba(180, 80, 40, 0.65)', peopleCount: 23 },
-  { id: 'couple', icon: Heart, label: '情侣约会', desc: '浪漫二人世界', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic',
+  { id: 'couple', icon: Heart, label: '情侣约会', subtitle: '用心安排每一次浪漫', desc: '浪漫二人世界', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/nErbHJcgzurNYPeo.jpg',
     overlayColor: 'rgba(140, 30, 30, 0.65)', peopleCount: 18 },
-  { id: 'bestie', icon: Camera, label: '闺蜜聚会', desc: '拍照打卡必去', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends',
+  { id: 'bestie', icon: Camera, label: '闺蜜聚会', subtitle: '好看好吃好拍 缺一不可', desc: '拍照打卡必去', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/YHPJLTEOSeuFPrtB.jpg',
     overlayColor: 'rgba(139, 139, 0, 0.60)', peopleCount: 12 },
-  { id: 'bro', icon: Beer, label: '兄弟小聚', desc: '放松畅聊解压', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends',
+  { id: 'bro', icon: Beer, label: '兄弟小聚', subtitle: '不用讲究 放松就好', desc: '放松畅聊解压', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/pxhrlUHwirgctNxR.jpeg',
     overlayColor: 'rgba(27, 94, 32, 0.65)', peopleCount: 16 },
-  { id: 'alone', icon: Coffee, label: '独处时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo',
+  { id: 'alone', icon: Coffee, label: '独处时光', subtitle: '给自己一段安静的好时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/vnlKbnnVBXsVPIXG.jpg',
     overlayColor: 'rgba(0, 77, 64, 0.60)', peopleCount: 5 },
 ];
@@ -1034,9 +1034,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 <Users className="w-3.5 h-3.5 text-white" />
                 <span className="text-white text-xs font-bold">{RELATIONS[0].peopleCount}</span>
               </div>
-              {/* Bottom text */}
+              {/* Bottom left text with title + subtitle */}
               <div className="absolute bottom-0 left-0 right-0 p-5">
                 <h3 className="text-white font-extrabold text-[22px] tracking-tight">{RELATIONS[0].label}</h3>
+                <p className="text-white/80 text-[13px] mt-0.5 font-medium">{RELATIONS[0].subtitle}</p>
               </div>
             </motion.button>
           </div>
@@ -1047,10 +1048,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             <p className="text-xs text-slate-400 mt-0.5">找到适合你们的见面流程</p>
           </div>
 
-          {/* Mixed Layout: Row 1 - Two horizontal short cards */}
+          {/* Mixed Layout: Row 1 - Two horizontal short cards (情侣约会 + 闺蜜聚会) */}
           <div className="px-4 pb-3">
             <div className="grid grid-cols-2 gap-3">
-              {/* 情侣约会 - horizontal short card */}
+              {/* 情侣约会 - horizontal short card, LEFT-aligned title */}
               <motion.button
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -1073,12 +1074,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <Users className="w-3 h-3 text-white" />
                   <span className="text-white text-[10px] font-bold">{RELATIONS[1].peopleCount}</span>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <h3 className="text-white font-extrabold text-[17px] tracking-tight leading-tight">{RELATIONS[1].label}</h3>
+                <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
+                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight">{RELATIONS[1].label}</h3>
+                  <p className="text-white/75 text-[11px] mt-0.5 font-medium leading-tight">{RELATIONS[1].subtitle}</p>
                 </div>
               </motion.button>
 
-              {/* 闺蜜聚会 - horizontal short card */}
+              {/* 闺蜜聚会 - horizontal short card, LEFT-aligned title */}
               <motion.button
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -1101,17 +1103,18 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <Users className="w-3 h-3 text-white" />
                   <span className="text-white text-[10px] font-bold">{RELATIONS[2].peopleCount}</span>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <h3 className="text-white font-extrabold text-[17px] tracking-tight leading-tight">{RELATIONS[2].label}</h3>
+                <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
+                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight">{RELATIONS[2].label}</h3>
+                  <p className="text-white/75 text-[11px] mt-0.5 font-medium leading-tight">{RELATIONS[2].subtitle}</p>
                 </div>
               </motion.button>
             </div>
           </div>
 
-          {/* Mixed Layout: Row 2 - Two tall vertical cards */}
+          {/* Mixed Layout: Row 2 - Two tall vertical cards (兄弟小聚 + 独处时光) */}
           <div className="px-4 pb-2">
             <div className="grid grid-cols-2 gap-3">
-              {/* 兄弟小聚 - tall vertical card */}
+              {/* 兄弟小聚 - tall vertical card, LEFT-aligned title */}
               <motion.button
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -1134,12 +1137,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <Users className="w-3 h-3 text-white" />
                   <span className="text-white text-[10px] font-bold">{RELATIONS[3].peopleCount}</span>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-3.5">
-                  <h3 className="text-white font-extrabold text-[17px] tracking-tight leading-tight">{RELATIONS[3].label}</h3>
+                <div className="absolute bottom-0 left-0 right-0 p-3.5 text-left">
+                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight">{RELATIONS[3].label}</h3>
+                  <p className="text-white/75 text-[11px] mt-0.5 font-medium leading-tight">{RELATIONS[3].subtitle}</p>
                 </div>
               </motion.button>
 
-              {/* 独处时光 - tall vertical card */}
+              {/* 独处时光 - tall vertical card, CENTER-aligned title (unchanged) */}
               <motion.button
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -1162,33 +1166,39 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <Users className="w-3 h-3 text-white" />
                   <span className="text-white text-[10px] font-bold">{RELATIONS[4].peopleCount}</span>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-3.5">
-                  <h3 className="text-white font-extrabold text-[17px] tracking-tight leading-tight">{RELATIONS[4].label}</h3>
+                <div className="absolute bottom-0 left-0 right-0 p-3.5 text-center">
+                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight">{RELATIONS[4].label}</h3>
+                  <p className="text-white/75 text-[11px] mt-0.5 font-medium leading-tight">{RELATIONS[4].subtitle}</p>
                 </div>
               </motion.button>
             </div>
           </div>
 
-          {/* Skip Relation - Subtle bottom link */}
-          <div className="px-5 pt-4 pb-8">
+          {/* Skip Relation - Photo card style matching relation cards */}
+          <div className="px-4 pt-3 pb-8">
             <motion.button
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleOnlineSkipRelation}
-              className="w-full bg-white border border-slate-200 rounded-[16px] p-4 flex items-center justify-between active:bg-slate-50 transition-colors"
+              className="relative w-full rounded-[16px] overflow-hidden"
+              style={{ aspectRatio: '16/6' }}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-                  <ShoppingBag className="w-5 h-5 text-slate-500" />
-                </div>
+              <img
+                src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/XNVgUgHBMzervbvS.jpg"
+                alt="直接看团购套餐"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0" style={{ backgroundColor: 'rgba(30, 41, 59, 0.65)' }} />
+              {/* Left-aligned text */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between">
                 <div className="text-left">
-                  <div className="font-bold text-slate-900 text-sm">直接看团购套餐</div>
-                  <div className="text-[11px] text-slate-400">暂不选择关系，浏览全部商家</div>
+                  <h3 className="text-white font-extrabold text-[17px] tracking-tight">直接看团购套餐</h3>
+                  <p className="text-white/70 text-[11px] mt-0.5 font-medium">暂不选择关系，浏览全部商家优惠</p>
                 </div>
+                <ChevronRight className="w-5 h-5 text-white/60" />
               </div>
-              <ChevronRight className="w-5 h-5 text-slate-300" />
             </motion.button>
           </div>
         </div>
