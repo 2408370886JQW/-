@@ -5,25 +5,25 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen
 } from 'lucide-react';
 
 // ========== DATA ==========
 
 const RELATIONS = [
-  { id: 'first_meet', icon: Heart, label: '初次见面', subtitle: '让第一次不再紧张', desc: '初次约会不紧张', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic',
+  { id: 'first_meet', icon: Handshake, label: '初次见面', sceneIcon: '🤝', subtitle: '让第一次不再紧张', desc: '初次约会不紧张', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/KKMPAFsBgZZTRxVP.jpg',
     overlayColor: 'rgba(180, 80, 40, 0.65)', peopleCount: 23 },
-  { id: 'couple', icon: Heart, label: '情侣约会', subtitle: '用心安排每一次浪漫', desc: '浪漫二人世界', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic',
+  { id: 'couple', icon: Heart, label: '情侣约会', sceneIcon: '💕', subtitle: '用心安排每一次浪漫', desc: '浪漫二人世界', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/nErbHJcgzurNYPeo.jpg',
     overlayColor: 'rgba(140, 30, 30, 0.65)', peopleCount: 18 },
-  { id: 'bestie', icon: Camera, label: '闺蜜聚会', subtitle: '好看好吃好拍 缺一不可', desc: '拍照打卡必去', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends',
+  { id: 'bestie', icon: Camera, label: '闺蜜聚会', sceneIcon: '📸', subtitle: '好看好吃好拍 缺一不可', desc: '拍照打卡必去', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/YHPJLTEOSeuFPrtB.jpg',
     overlayColor: 'rgba(139, 139, 0, 0.60)', peopleCount: 12 },
-  { id: 'bro', icon: Beer, label: '兄弟小聚', subtitle: '不用讲究 放松就好', desc: '放松畅聊解压', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends',
+  { id: 'bro', icon: Beer, label: '兄弟小聚', sceneIcon: '🍻', subtitle: '不用讲究 放松就好', desc: '放松畅聊解压', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/pxhrlUHwirgctNxR.jpeg',
     overlayColor: 'rgba(27, 94, 32, 0.65)', peopleCount: 16 },
-  { id: 'alone', icon: Coffee, label: '独处时光', subtitle: '给自己一段安静的好时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo',
+  { id: 'alone', icon: Coffee, label: '独处时光', sceneIcon: '☕', subtitle: '给自己一段安静的好时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/vnlKbnnVBXsVPIXG.jpg',
     overlayColor: 'rgba(0, 77, 64, 0.60)', peopleCount: 5 },
 ];
@@ -778,7 +778,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
           )}
           <div className="space-y-4">
-            <h3 className="font-bold text-lg text-slate-900 px-1">关系专属套餐</h3>
+            <h3 className="font-bold text-lg text-slate-900 px-1">场景专属套餐</h3>
             {pkgs.length === 0 ? (
               <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">暂无匹配套餐</div>
             ) : pkgs.map(pkg => (
@@ -1016,7 +1016,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {/* Header + Subtitle */}
           <div className="px-5 pt-24 pb-1">
             <h1 className="text-[28px] font-extrabold text-slate-900 tracking-tight">相见</h1>
-            <p className="text-[13px] text-slate-400 mt-1">选择一种适合你们关系的见面方式</p>
+            <p className="text-[13px] text-slate-400 mt-1">选一个场景，剩下的我们帮你搞定</p>
           </div>
 
           {/* Hero Card - 初次见面 (index 0) as featured full-width horizontal with shimmer + badge */}
@@ -1066,7 +1066,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               </div>
               {/* Bottom left text with title + subtitle + social proof */}
               <div className="absolute bottom-0 left-0 right-0 p-5 z-[1]">
-                <h3 className="text-white font-extrabold text-[22px] tracking-tight">{RELATIONS[0].label}</h3>
+                <h3 className="text-white font-extrabold text-[22px] tracking-tight flex items-center gap-2">
+                  <span className="text-[24px] drop-shadow-md">{RELATIONS[0].sceneIcon}</span>
+                  {RELATIONS[0].label}
+                </h3>
                 <p className="text-white/80 text-[13px] mt-0.5 font-medium">{RELATIONS[0].subtitle}</p>
                 <div className="flex items-center gap-1.5 mt-2">
                   <div className="flex -space-x-1.5">
@@ -1082,8 +1085,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
           {/* Section Header */}
           <div className="px-5 pt-4 pb-2">
-            <h2 className="text-[15px] font-extrabold text-slate-900">选择一种今天见面的场景</h2>
-            <p className="text-xs text-slate-400 mt-0.5">找到适合你们的见面流程</p>
+            <h2 className="text-[15px] font-extrabold text-slate-900">今天线下见面，选个场景就好</h2>
+            <p className="text-xs text-slate-400 mt-0.5">不用纠结去哪、吃什么，我们已经帮你搭配好了</p>
           </div>
 
           {/* Mixed Layout: Row 1 - Two horizontal short cards (情侣约会 + 闺蜜聚会) */}
@@ -1113,7 +1116,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <span className="text-white text-[10px] font-bold">{RELATIONS[1].peopleCount}</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
-                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight">{RELATIONS[1].label}</h3>
+                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight flex items-center gap-1.5">
+                    <span className="text-[18px] drop-shadow-sm">{RELATIONS[1].sceneIcon}</span>
+                    {RELATIONS[1].label}
+                  </h3>
                   <p className="text-white/75 text-[11px] mt-0.5 font-medium leading-tight">{RELATIONS[1].subtitle}</p>
                 </div>
               </motion.button>
@@ -1142,7 +1148,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <span className="text-white text-[10px] font-bold">{RELATIONS[2].peopleCount}</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
-                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight">{RELATIONS[2].label}</h3>
+                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight flex items-center gap-1.5">
+                    <span className="text-[18px] drop-shadow-sm">{RELATIONS[2].sceneIcon}</span>
+                    {RELATIONS[2].label}
+                  </h3>
                   <p className="text-white/75 text-[11px] mt-0.5 font-medium leading-tight">{RELATIONS[2].subtitle}</p>
                 </div>
               </motion.button>
@@ -1176,7 +1185,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <span className="text-white text-[10px] font-bold">{RELATIONS[3].peopleCount}</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3.5 text-left">
-                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight">{RELATIONS[3].label}</h3>
+                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight flex items-center gap-1.5">
+                    <span className="text-[18px] drop-shadow-sm">{RELATIONS[3].sceneIcon}</span>
+                    {RELATIONS[3].label}
+                  </h3>
                   <p className="text-white/75 text-[11px] mt-0.5 font-medium leading-tight">{RELATIONS[3].subtitle}</p>
                 </div>
               </motion.button>
@@ -1205,7 +1217,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <span className="text-white text-[10px] font-bold">{RELATIONS[4].peopleCount}</span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3.5 text-center">
-                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight">{RELATIONS[4].label}</h3>
+                  <h3 className="text-white font-extrabold text-[16px] tracking-tight leading-tight flex items-center justify-center gap-1.5">
+                    <span className="text-[18px] drop-shadow-sm">{RELATIONS[4].sceneIcon}</span>
+                    {RELATIONS[4].label}
+                  </h3>
                   <p className="text-white/75 text-[11px] mt-0.5 font-medium leading-tight">{RELATIONS[4].subtitle}</p>
                 </div>
               </motion.button>
@@ -1232,8 +1247,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               {/* Left-aligned text */}
               <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between">
                 <div className="text-left">
-                  <h3 className="text-white font-extrabold text-[17px] tracking-tight">直接看团购套餐</h3>
-                  <p className="text-white/70 text-[11px] mt-0.5 font-medium">暂不选择关系，浏览全部商家优惠</p>
+                  <h3 className="text-white font-extrabold text-[17px] tracking-tight flex items-center gap-1.5">
+                    <span className="text-[20px] drop-shadow-sm">🍽️</span>
+                    直接看团购套餐
+                  </h3>
+                  <p className="text-white/70 text-[11px] mt-0.5 font-medium">不选场景，直接浏览全部商家优惠</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/60" />
               </div>
