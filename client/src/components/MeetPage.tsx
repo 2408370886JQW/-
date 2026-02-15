@@ -885,11 +885,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {onlineStep === 2 && (
             <motion.div ref={scrollContainerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
               <div
-                className="sticky top-0 z-10 bg-white/90 backdrop-blur-md px-4 pt-10 pb-3 flex items-center gap-4 transition-all duration-300 ease-in-out"
+                className="sticky top-0 z-20 bg-white px-4 pt-10 pb-3 flex items-center gap-4"
                 style={{
-                  transform: headerHidden ? 'translateY(-100%)' : 'translateY(0)',
-                  opacity: headerHidden ? 0 : 1,
-                  boxShadow: headerHidden ? 'none' : '0 1px 3px rgba(0,0,0,0.04)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                 }}
               >
                 <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
@@ -970,12 +968,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setOnlineStep(1);
-                            setFlowMode(null);
-                            setSelectedRelation('');
-                            setRelationTag('');
+                            // Cycle to the next scene instead of closing
+                            const currentIdx = RELATIONS.findIndex(r => r.id === selectedRelation);
+                            const nextIdx = (currentIdx + 1) % RELATIONS.length;
+                            const nextRelation = RELATIONS[nextIdx];
+                            setSelectedRelation(nextRelation.id);
+                            setRelationTag(nextRelation.tag);
                             setBannerDismissed(false);
-                            setHeaderHidden(false);
+                            // Scroll back to top
+                            scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
                           }}
                           className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${relation?.color || 'text-slate-600'} bg-white/60 hover:bg-white/80`}
                         >
