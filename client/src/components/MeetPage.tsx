@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -413,6 +413,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [paymentMethod, setPaymentMethod] = useState<'wechat' | 'alipay'>('wechat');
   const [isPaying, setIsPaying] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [headerHidden, setHeaderHidden] = useState(false);
+  const lastScrollY = useRef(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Scene-to-gradient color mapping
   const sceneGradients: Record<string, string> = {
@@ -513,6 +516,29 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       return () => clearTimeout(timer);
     }
   }, [isPaying]);
+
+  // Scroll-based header auto-hide for onlineStep 2
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || onlineStep !== 2) return;
+    const handleScroll = () => {
+      const currentY = container.scrollTop;
+      if (currentY > lastScrollY.current && currentY > 60) {
+        setHeaderHidden(true);
+      } else {
+        setHeaderHidden(false);
+      }
+      lastScrollY.current = currentY;
+    };
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [onlineStep]);
+
+  // Reset header visibility when step changes
+  useEffect(() => {
+    setHeaderHidden(false);
+    lastScrollY.current = 0;
+  }, [onlineStep]);
 
   // Reset all state
   const resetAll = () => {
@@ -858,8 +884,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
         <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col overflow-hidden">
           {/* Online Step 2: Multi-Restaurant List */}
           {onlineStep === 2 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
-              <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-4 pt-12 pb-4 border-b border-slate-100 flex items-center gap-4">
+            <motion.div ref={scrollContainerRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
+              <div
+                className="sticky top-0 z-10 bg-white/90 backdrop-blur-md px-4 pt-10 pb-3 flex items-center gap-4 transition-all duration-300 ease-in-out"
+                style={{
+                  transform: headerHidden ? 'translateY(-100%)' : 'translateY(0)',
+                  opacity: headerHidden ? 0 : 1,
+                  boxShadow: headerHidden ? 'none' : '0 1px 3px rgba(0,0,0,0.04)',
+                }}
+              >
                 <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
                 <div>
                   <h1 className="text-xl font-bold text-slate-900">推荐商家</h1>
@@ -873,12 +906,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     initial={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0, marginTop: 0, paddingTop: 0, paddingBottom: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className="mx-4 mt-4 rounded-2xl relative overflow-hidden"
+                    className="mx-4 mt-3 rounded-2xl relative overflow-hidden"
                     style={{ background: (selectedRelation && sceneGradients[selectedRelation]) || sceneGradients.first_meet }}
                   >
-                    <div className="px-4 py-3 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="w-5 h-5 text-white" />
+                    <div className="px-4 py-2.5 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white font-bold text-sm leading-snug">
@@ -903,7 +936,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 const advice = RELATION_ADVICE[selectedRelation];
                 const relation = RELATIONS.find(r => r.id === selectedRelation);
                 return (
-                  <div className="px-4 pt-4">
+                  <div className="px-4 pt-3">
                     <motion.div
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
@@ -950,12 +983,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         </button>
                       </div>
                     </motion.div>
-                    {/* Transition text */}
-                    <div className="flex items-center gap-3 py-4">
-                      <div className="flex-1 h-px bg-slate-200" />
-                      <span className="text-xs text-slate-400 flex-shrink-0">因为你选了「{relation?.label}」，为你推荐以下商家</span>
-                      <div className="flex-1 h-px bg-slate-200" />
-                    </div>
+                    {/* Simple divider */}
+                    <div className="pt-2" />
                   </div>
                 );
               })()}
