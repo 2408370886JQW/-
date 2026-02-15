@@ -11,19 +11,19 @@ import {
 // ========== DATA ==========
 
 const RELATIONS = [
-  { id: 'first_meet', icon: Handshake, label: '初次见面', sceneIcon: '', subtitle: '让第一次不再紧张', desc: '初次约会不紧张', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic',
+  { id: 'first_meet', icon: Handshake, label: '初次见面', sceneIcon: '', subtitle: '选对地方 聊天不冷场', desc: '帮你挑好地方', bg: 'bg-pink-50', color: 'text-pink-500', border: 'border-pink-200', tag: 'romantic',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/KKMPAFsBgZZTRxVP.jpg',
     overlayColor: 'rgba(180, 80, 40, 0.65)', peopleCount: 23 },
-  { id: 'couple', icon: Heart, label: '情侣约会', sceneIcon: '💕', subtitle: '用心安排每一次浪漫', desc: '浪漫二人世界', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic',
+  { id: 'couple', icon: Heart, label: '情侣约会', sceneIcon: '💕', subtitle: '浪漫的事 我们帮你想', desc: '氛围到位不踩雷', bg: 'bg-red-50', color: 'text-red-500', border: 'border-red-200', tag: 'romantic',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/nErbHJcgzurNYPeo.jpg',
     overlayColor: 'rgba(140, 30, 30, 0.65)', peopleCount: 18 },
-  { id: 'bestie', icon: Camera, label: '闺蜜聚会', sceneIcon: '', subtitle: '好看好吃好拍 缺一不可', desc: '拍照打卡必去', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends',
+  { id: 'bestie', icon: Camera, label: '闺蜜聚会', sceneIcon: '', subtitle: '好吃好拍还不贵', desc: '随手出片不踩雷', bg: 'bg-purple-50', color: 'text-purple-500', border: 'border-purple-200', tag: 'friends',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/YHPJLTEOSeuFPrtB.jpg',
     overlayColor: 'rgba(139, 139, 0, 0.60)', peopleCount: 12 },
-  { id: 'bro', icon: Beer, label: '兄弟小聚', sceneIcon: '🍻', subtitle: '不用讲究 放松就好', desc: '放松畅聊解压', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends',
+  { id: 'bro', icon: Beer, label: '兄弟小聚', sceneIcon: '🍻', subtitle: '吃好喝好 就这么简单', desc: '肉管够酒管够', bg: 'bg-blue-50', color: 'text-blue-500', border: 'border-blue-200', tag: 'friends',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/pxhrlUHwirgctNxR.jpeg',
     overlayColor: 'rgba(27, 94, 32, 0.65)', peopleCount: 16 },
-  { id: 'alone', icon: Coffee, label: '独处时光', sceneIcon: '☕', subtitle: '给自己一段安静的好时光', desc: '享受一个人的安静', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo',
+  { id: 'alone', icon: Coffee, label: '独处时光', sceneIcon: '☕', subtitle: '不将就 给自己充个电', desc: '安静角落治愈一下', bg: 'bg-emerald-50', color: 'text-emerald-500', border: 'border-emerald-200', tag: 'solo',
     image: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/vnlKbnnVBXsVPIXG.jpg',
     overlayColor: 'rgba(0, 77, 64, 0.60)', peopleCount: 5 },
 ];
@@ -32,39 +32,39 @@ const RELATIONS = [
 const RELATION_ADVICE: Record<string, { emoji: string; title: string; subtitle: string; tips: string[]; atmosphere: string }> = {
   first_meet: {
     emoji: '💫',
-    title: '初次见面小贴士',
-    subtitle: '第一印象很重要，选对地方成功一半',
-    tips: ['选择安静、不拥挤的环境，方便交流', '避免太正式或太随意的场所', '预留"散步聊天"的空间，缓解紧张感'],
-    atmosphere: '轻松自然 · 不尴尬 · 有话题'
+    title: '帮你把第一次搞定',
+    subtitle: '选对地方，聊天不冷场',
+    tips: ['环境安静不吵，聊得上话', '不太正式也不太随便，刚刚好', '吃完还能散散步，自然不尴尬'],
+    atmosphere: '不紧张 · 聊得开 · 有氛围'
   },
   couple: {
     emoji: '💕',
-    title: '约会氛围指南',
-    subtitle: '用心安排，让每次约会都有仪式感',
-    tips: ['烛光、花艺、音乐是浪漫三要素', '选择有窗景或露台的位置更加分', '甜点和饮品是约会的"甜蜜收尾"'],
-    atmosphere: '浪漫温馨 · 仪式感 · 私密空间'
+    title: '约会不用自己想',
+    subtitle: '帮你把浪漫安排明白',
+    tips: ['灯光氛围到位，拍照也好看', '靠窗或露台位，自带仪式感', '饭后来杯甜的，完美收尾'],
+    atmosphere: '有情调 · 拍得美 · 不踩雷'
   },
   bestie: {
     emoji: '📸',
-    title: '闺蜜出行攻略',
-    subtitle: '好看、好吃、好拍，一个都不能少',
-    tips: ['选择高颜值、出片率高的店铺', '下午茶+拍照是闺蜜聚会经典组合', '甜品和饮品的摆盘要"上镜"'],
-    atmosphere: '精致好拍 · 甜蜜分享 · 畅聊时光'
+    title: '姐妹局一键搞定',
+    subtitle: '好吃好拍还不贵',
+    tips: ['颜值高的店，随手出大片', '下午茶+拍照，经典不出错', '甜品摆盘好看，朋友圈素材管够'],
+    atmosphere: '出片率高 · 甜甜的 · 聊不停'
   },
   bro: {
     emoji: '🍻',
-    title: '兄弟聚会须知',
-    subtitle: '不用太讲究，放松就是最好的安排',
-    tips: ['大口吃肉、大口喝酒是核心需求', '选择不限时、氛围轻松的场所', '有台球、飞镖等娱乐设施更佳'],
-    atmosphere: '豪爽畅快 · 无拘无束 · 解压放松'
+    title: '兄弟局不用纠结',
+    subtitle: '吃好喝好，别的不重要',
+    tips: ['肉管够、酒管够，核心需求', '不限时不催场，放松待着', '有台球飞镖更好，边玩边聊'],
+    atmosphere: '放松 · 畅快 · 不装'
   },
 
   alone: {
     emoji: '☕',
-    title: '独处时光指南',
-    subtitle: '给自己一段安静的好时光',
-    tips: ['选择有自然光、安静的角落位', '一杯好咖啡+一本书是最佳搭配', '不赶时间，享受慢下来的感觉'],
-    atmosphere: '安静惬意 · 放空自我 · 充电时刻'
+    title: '一个人也要好好吃',
+    subtitle: '不将就，给自己充个电',
+    tips: ['找个有自然光的安静角落', '一杯好咖啡配本书，治愈一下', '不赶时间，慢慢来就对了'],
+    atmosphere: '安静 · 舒服 · 不被打扰'
   },
 };
 
@@ -435,11 +435,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     const matchingPackages = restaurant.relationPackages.filter(p => p.relationTags.includes(relationTag));
     const hasDirectTag = restaurant.relationTags.includes(relationTag);
     if (hasDirectTag && matchingPackages.length >= 2) {
-      return { label: '高度匹配', color: 'text-white', bg: 'bg-gradient-to-r from-orange-500 to-amber-500' };
+      return { label: '超合适', color: 'text-white', bg: 'bg-gradient-to-r from-orange-500 to-amber-500' };
     } else if (hasDirectTag && matchingPackages.length >= 1) {
-      return { label: '推荐', color: 'text-orange-600', bg: 'bg-orange-100' };
-    } else if (hasDirectTag) {
-      return { label: '相关', color: 'text-slate-500', bg: 'bg-slate-100' };
+      return { label: '很不错', color: 'text-orange-500', bg: 'bg-orange-50/80' };  } else if (hasDirectTag) {
+      return { label: '也合适', color: 'text-slate-500', bg: 'bg-slate-100' };
     }
     return null;
   };
@@ -577,7 +576,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
         </div>
         {pkg.gallery && pkg.gallery.length > 0 && (
           <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-900 mb-3">环境展示</h3>
+            <h3 className="font-bold text-slate-900 mb-3">店内实拍</h3>
             <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2">
               {pkg.gallery.map((img: string, idx: number) => (
                 <img key={idx} src={img} alt={`环境 ${idx + 1}`} className="w-40 h-28 rounded-xl object-cover shrink-0" />
@@ -586,7 +585,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           </section>
         )}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-900 mb-3">套餐内容</h3>
+          <h3 className="font-bold text-slate-900 mb-3">套餐里有什么</h3>
           <div className="space-y-3 text-sm text-slate-600">
             {pkg.items.map((item, idx) => (
               <div key={idx} className="flex justify-between"><span>{item.name}</span><span>x{item.qty}</span></div>
@@ -594,13 +593,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           </div>
         </section>
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-900 mb-3">购买须知</h3>
+          <h3 className="font-bold text-slate-900 mb-3">买前看一眼</h3>
           <ul className="space-y-2 text-sm text-slate-500 list-disc pl-4">
             {pkg.notes.map((note, idx) => (<li key={idx}>{note}</li>))}
           </ul>
         </section>
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-900 mb-3">商家信息</h3>
+          <h3 className="font-bold text-slate-900 mb-3">关于这家店</h3>
           <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl">
             <img src={restaurant.image} alt={restaurant.name} className="w-14 h-14 rounded-xl object-cover" />
             <div>
@@ -612,7 +611,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       </div>
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
         <motion.button whileTap={{ scale: 0.95 }} onClick={onSelect} className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200">
-          选择此套餐 ¥{pkg.price}
+          就这个了 ¥{pkg.price}
         </motion.button>
       </div>
     </motion.div>
@@ -641,12 +640,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           </div>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-900 mb-4">选择支付方式</h3>
+          <h3 className="font-bold text-slate-900 mb-4">怎么付款</h3>
           <div className="space-y-3">
             <div onClick={() => setPaymentMethod('wechat')} className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'wechat' ? 'border-green-500 bg-green-50' : 'border-slate-100'}`}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center text-white"><span className="font-bold text-sm">微</span></div>
-                <div><span className="font-bold text-slate-900 block">微信支付</span><span className="text-xs text-slate-400">推荐使用</span></div>
+                <div><span className="font-bold text-slate-900 block">微信支付</span><span className="text-xs text-slate-400">常用</span></div>
               </div>
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === 'wechat' ? 'border-green-500 bg-green-500' : 'border-slate-300'}`}>
                 {paymentMethod === 'wechat' && <Check className="w-4 h-4 text-white" />}
@@ -655,7 +654,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             <div onClick={() => setPaymentMethod('alipay')} className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'alipay' ? 'border-blue-500 bg-blue-50' : 'border-slate-100'}`}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center text-white"><span className="font-bold text-sm">支</span></div>
-                <div><span className="font-bold text-slate-900 block">支付宝</span><span className="text-xs text-slate-400">花呗可用</span></div>
+                <div><span className="font-bold text-slate-900 block">支付宝</span><span className="text-xs text-slate-400">支持花呗</span></div>
               </div>
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === 'alipay' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`}>
                 {paymentMethod === 'alipay' && <Check className="w-4 h-4 text-white" />}
@@ -678,7 +677,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden">
         <div className="relative border-b border-slate-100 p-4 text-center">
           <button onClick={() => setIsPaying(false)} className="absolute left-4 top-1/2 -translate-y-1/2 p-1"><X className="w-5 h-5 text-slate-900" /></button>
-          <h3 className="font-bold text-slate-900 text-lg">请输入支付密码</h3>
+          <h3 className="font-bold text-slate-900 text-lg">输入密码完成支付</h3>
         </div>
         <div className="p-8 flex flex-col items-center">
           <div className="text-sm text-slate-500 mb-2">FIND ME 发现我</div>
@@ -713,7 +712,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
         <Check className="w-12 h-12 text-green-600" />
       </motion.div>
       <h2 className="text-3xl font-bold text-slate-900 mb-2">支付成功</h2>
-      <p className="text-slate-500 mb-12">订单已确认，请前往门店使用</p>
+      <p className="text-slate-500 mb-12">拿着核销码去店里就行</p>
       <div className="w-full space-y-4">
         <motion.button whileTap={{ scale: 0.95 }} onClick={onViewOrder} className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg">查看订单</motion.button>
         <div className="grid grid-cols-2 gap-4">
@@ -723,8 +722,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
             <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform relative z-10"><MapPin className="w-6 h-6 text-blue-500" /></div>
             <div className="text-center relative z-10">
-              <div className="font-bold text-slate-900">开启偶遇雷达</div>
-              <div className="text-[10px] text-blue-500 font-medium mt-0.5">附近有28人正在等你</div>
+              <div className="font-bold text-slate-900">看看附近的人</div>
+              <div className="text-[10px] text-blue-500 font-medium mt-0.5">说不定能遇到有缘人</div>
             </div>
           </motion.button>
           <motion.button whileTap={{ scale: 0.95 }} onClick={() => { resetAll(); onNavigate('moments'); }} className="w-full bg-white border border-slate-100 rounded-2xl p-4 flex flex-col items-center gap-2 shadow-sm hover:shadow-md transition-all group relative">
@@ -733,8 +732,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.div>
             <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform relative z-10"><Camera className="w-6 h-6 text-purple-500" /></div>
             <div className="text-center relative z-10">
-              <div className="font-bold text-slate-900">探索周边新鲜事</div>
-              <div className="text-[10px] text-purple-500 font-medium mt-0.5">发现有趣灵魂</div>
+              <div className="font-bold text-slate-900">看看周边动态</div>
+              <div className="text-[10px] text-purple-500 font-medium mt-0.5">看看大家都在玩什么</div>
             </div>
           </motion.button>
         </div>
@@ -759,7 +758,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             <span className="text-slate-400 text-xs block mb-1">核销码</span>
             <span className="text-xl font-mono font-bold text-slate-900 tracking-widest">8829 1034</span>
           </div>
-          <p className="text-xs text-slate-400">请向店员出示此码核销</p>
+          <p className="text-xs text-slate-400">到店给店员看这个码就行</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-4">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-50">
@@ -795,7 +794,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       </div>
       <div className="p-4 space-y-4">
         {packages.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">暂无匹配套餐</div>
+          <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">还没有合适的套餐</div>
         ) : packages.map(pkg => (
           <motion.div key={pkg.id} whileTap={{ scale: 0.98 }} onClick={() => onSelectPkg(pkg)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
             <div className="flex">
@@ -845,13 +844,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {selectedRelation && (
             <div className="flex items-center gap-2 px-1">
               <Sparkles className="w-4 h-4 text-orange-400" />
-              <span className="text-sm text-slate-500">已为你筛选「{RELATIONS.find(r => r.id === selectedRelation)?.label}」专属套餐</span>
+              <span className="text-sm text-slate-500">下面是「{RELATIONS.find(r => r.id === selectedRelation)?.label}」专属套餐</span>
             </div>
           )}
           <div className="space-y-4">
-            <h3 className="font-bold text-lg text-slate-900 px-1">场景专属套餐</h3>
+            <h3 className="font-bold text-lg text-slate-900 px-1">适合这个场景的套餐</h3>
             {pkgs.length === 0 ? (
-              <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">暂无匹配套餐</div>
+              <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">还没有合适的套餐</div>
             ) : pkgs.map(pkg => (
               <motion.div key={pkg.id} whileTap={{ scale: 0.98 }} onClick={() => onSelectPkg(pkg)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
                 <div className="flex">
@@ -895,8 +894,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               >
                 <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
                 <div>
-                  <h1 className="text-xl font-bold text-slate-900">推荐商家</h1>
-                  <p className="text-xs text-slate-400">{RELATIONS.find(r => r.id === selectedRelation)?.label} · 为你精选</p>
+                  <h1 className="text-xl font-bold text-slate-900">帮你挑好的</h1>
+                  <p className="text-xs text-slate-400">{RELATIONS.find(r => r.id === selectedRelation)?.label} · 省时省心</p>
                 </div>
               </div>
               {/* Smart Recommendation Banner */}
@@ -915,10 +914,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-white font-bold text-sm leading-snug">
-                          基于你选择的场景智能推荐
+                          已按你的场景帮你筛好了
                         </p>
                         <p className="text-white/80 text-xs mt-0.5">
-                          已为「{RELATIONS.find(r => r.id === selectedRelation)?.label}」匹配最合适的商家与套餐
+                          下面这些店和「{RELATIONS.find(r => r.id === selectedRelation)?.label}」最配
                         </p>
                       </div>
                       <button
@@ -965,16 +964,18 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       {/* Atmosphere Tag + Switch Scene */}
                       <div className="px-5 pb-4 flex items-center gap-2">
                         <div className="bg-white/60 rounded-xl px-4 py-2.5 flex items-center gap-2 flex-1">
-                          <span className="text-xs text-slate-400">推荐氛围</span>
+                          <span className="text-xs text-slate-400">这个场景适合</span>
                           <span className={`text-xs font-bold ${relation?.color || 'text-slate-600'}`}>{advice.atmosphere}</span>
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setOnlineStep(1);
+                            setFlowMode(null);
                             setSelectedRelation('');
                             setRelationTag('');
                             setBannerDismissed(false);
+                            setHeaderHidden(false);
                           }}
                           className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${relation?.color || 'text-slate-600'} bg-white/60 hover:bg-white/80`}
                         >
@@ -991,15 +992,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               <div className="px-4 pb-4 space-y-4">
                 {filteredRestaurants.map((restaurant, index) => {
                   const matchLevel = getMatchLevel(restaurant);
-                  const isBestMatch = index === 0 && matchLevel && matchLevel.label === '高度匹配';
+                  const isBestMatch = index === 0 && matchLevel && matchLevel.label === '超合适';
                   return (
                   <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className={`bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow ${isBestMatch ? 'border-2 border-orange-300 ring-2 ring-orange-100' : 'border border-slate-100'}`}>
                     {/* Best Match Top Banner */}
                     {isBestMatch && (
                       <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-1.5 flex items-center gap-1.5">
                         <Award className="w-3.5 h-3.5 text-white" />
-                        <span className="text-xs font-bold text-white">最佳推荐</span>
-                        <span className="text-xs text-white/80 ml-1">与你的场景最匹配</span>
+                        <span className="text-xs font-bold text-white">最合适</span>
+                        <span className="text-xs text-white/80 ml-1">和你的场景最搭</span>
                       </div>
                     )}
                     <div className="relative h-40">
@@ -1028,7 +1029,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         {restaurant.tags.map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">{restaurant.relationPackages.length}个套餐可选</span>
+                        <span className="text-slate-500">{restaurant.relationPackages.length}个套餐 省得你挑</span>
                         <div className="flex items-center gap-1 text-slate-900 font-bold">{restaurant.price}<ChevronRight className="w-4 h-4" /></div>
                       </div>
                     </div>
@@ -1071,8 +1072,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 <div className="px-4 pt-12 pb-3 flex items-center gap-4">
                   <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
                   <div>
-                    <h1 className="text-xl font-bold text-slate-900">团购商家</h1>
-                    <p className="text-xs text-slate-400">吃 / 喝 / 玩 · 热门套餐</p>
+                    <h1 className="text-xl font-bold text-slate-900">全部商家</h1>
+                    <p className="text-xs text-slate-400">吃喝玩乐 · 好价套餐都在这</p>
                   </div>
                 </div>
                 {/* Category Filter Tabs */}
@@ -1098,8 +1099,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 {categoryFilteredRestaurants.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                     <ShoppingBag className="w-12 h-12 mb-3 opacity-40" />
-                    <p className="text-sm">暂无「{selectedCategory}」类商家</p>
-                    <button onClick={() => setSelectedCategory('全部')} className="mt-3 text-sm text-blue-500 font-medium">查看全部商家</button>
+                    <p className="text-sm">还没有「{selectedCategory}」类的店</p>
+                    <button onClick={() => setSelectedCategory('全部')} className="mt-3 text-sm text-blue-500 font-medium">看看全部</button>
                   </div>
                 ) : categoryFilteredRestaurants.map(restaurant => (
                   <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurantNormal(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
@@ -1118,7 +1119,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         {restaurant.tags.slice(0, 2).map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">{restaurant.normalPackages.length}个团购套餐可选</span>
+                        <span className="text-slate-500">{restaurant.normalPackages.length}个好价套餐</span>
                         <div className="flex items-center gap-1 text-slate-900 font-bold">{restaurant.price}<ChevronRight className="w-4 h-4" /></div>
                       </div>
                     </div>
@@ -1161,7 +1162,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-[28px] font-extrabold text-slate-900 tracking-tight">相见</h1>
-                <p className="text-[13px] text-slate-400 mt-1 leading-relaxed">选一个场景<br />剩下的我们帮你搞定</p>
+                <p className="text-[13px] text-slate-400 mt-1 leading-relaxed">告诉我你和谁见<br />剩下的交给我</p>
               </div>
               <div className="text-right mt-1.5">
                 <div className="flex items-center gap-1 justify-end">
@@ -1170,9 +1171,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     <div className="w-4 h-4 rounded-full bg-pink-300 border border-white/80" />
                     <div className="w-4 h-4 rounded-full bg-amber-300 border border-white/80" />
                   </div>
-                  <span className="text-[12px] font-bold text-slate-700">{RELATIONS.reduce((sum, r) => sum + r.peopleCount, 0)} 人在用</span>
+                  <span className="text-[12px] font-bold text-slate-700">{RELATIONS.reduce((sum, r) => sum + r.peopleCount, 0)} 人正在用</span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-0.5">卡片上的数字为当前<br />正在使用该场景的人数</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">数字是正在用的人数</p>
               </div>
             </div>
           </div>
@@ -1389,7 +1390,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             >
               <img
                 src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663130971121/XNVgUgHBMzervbvS.jpg"
-                alt="直接看团购套餐"
+                alt="不选场景 直接看优惠"
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0" style={{ backgroundColor: 'rgba(30, 41, 59, 0.65)' }} />
@@ -1398,9 +1399,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 <div className="text-left">
                   <h3 className="text-white font-extrabold text-[17px] tracking-tight flex items-center gap-1.5">
                     <span className="text-[20px] drop-shadow-sm">🍽️</span>
-                    直接看团购套餐
+                    不选场景 直接看优惠
                   </h3>
-                  <p className="text-white/70 text-[11px] mt-0.5 font-medium">不选场景  直接浏览全部商家优惠</p>
+                  <p className="text-white/70 text-[11px] mt-0.5 font-medium">全部商家套餐都在这，慢慢挑</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/60" />
               </div>
