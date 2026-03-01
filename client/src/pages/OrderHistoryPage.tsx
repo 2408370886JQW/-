@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
-import { ArrowLeft, Clock, Check, X, MapPin, ChevronRight, ScanLine, AlertCircle, ShoppingBag, Filter, Star, MessageSquare, Send, ThumbsUp } from "lucide-react";
+import { ArrowLeft, Clock, Check, X, MapPin, ChevronRight, ScanLine, AlertCircle, ShoppingBag, Filter, Star, MessageSquare, Send, ThumbsUp, Store, Reply, BadgeCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -9,11 +9,18 @@ import { Link } from "wouter";
 type OrderStatus = "unused" | "used" | "expired";
 type FilterType = "all" | "unused" | "used" | "expired";
 
+interface MerchantReply {
+  content: string;
+  time: string; // ISO string
+  merchantName: string;
+}
+
 interface ReviewData {
   rating: number; // 1-5
   text: string;
   tags: string[];
   time: string; // ISO string
+  merchantReply?: MerchantReply;
 }
 
 interface OrderItem {
@@ -89,7 +96,18 @@ const INITIAL_ORDERS: OrderItem[] = [
     verifyCode: "3341 8872",
     paymentMethod: "wechat",
     packageContent: ["烤肉拼盘×1", "啤酒6瓶", "小食拼盘×1", "主食×2"],
-    scenarioTag: "兄弟小聚"
+    scenarioTag: "兄弟小聚",
+    review: {
+      rating: 5,
+      text: "烤肉很好吃，啤酒也很畅快！和兄弟们聚在一起很开心，下次还来！",
+      tags: ["味道很好", "性价比高", "氛围感强"],
+      time: "2026-02-26T20:30:00",
+      merchantReply: {
+        content: "感谢您的好评！很高兴您和朋友们度过了愉快的时光。下次来店里记得找前台领取一份小食拼盘，算是我们的一点心意～期待再次见到您！",
+        time: "2026-02-27T10:15:00",
+        merchantName: "炭火青春·烤肉酒馆"
+      }
+    }
   },
   {
     id: "ORD20260210004",
@@ -278,6 +296,39 @@ export default function OrderHistoryPage() {
         setShowReviewModal(false);
         setReviewSuccess(false);
       }, 1500);
+
+      // Simulate merchant auto-reply after 3 seconds
+      const targetOrder = orders.find(o => o.id === reviewOrderId);
+      if (targetOrder) {
+        const merchantReplies = [
+          `感谢您的评价！您的支持是我们最大的动力，欢迎下次再来${targetOrder.restaurantName}，我们会继续努力做得更好！`,
+          `非常感谢您的认可！每一位顾客的反馈我们都很重视，希望下次能给您带来更好的体验～`,
+          `谢谢您抽时间写下评价！您的满意就是我们的追求，下次来店记得找前台领取小礼物哦！`,
+        ];
+        const randomReply = merchantReplies[Math.floor(Math.random() * merchantReplies.length)];
+        
+        setTimeout(() => {
+          const merchantReply: MerchantReply = {
+            content: randomReply,
+            time: new Date().toISOString(),
+            merchantName: targetOrder.restaurantName,
+          };
+
+          setOrders(prev => prev.map(o =>
+            o.id === reviewOrderId && o.review
+              ? { ...o, review: { ...o.review, merchantReply } }
+              : o
+          ));
+
+          // Also update selectedOrder if viewing detail
+          if (selectedOrder?.id === reviewOrderId) {
+            setSelectedOrder(prev => {
+              if (!prev || !prev.review) return prev;
+              return { ...prev, review: { ...prev.review, merchantReply } };
+            });
+          }
+        }, 3000);
+      }
     }, 800);
   };
 
@@ -580,6 +631,33 @@ export default function OrderHistoryPage() {
                     {selectedOrder.review.text && (
                       <p className="text-sm text-slate-600 leading-relaxed">{selectedOrder.review.text}</p>
                     )}
+
+                    {/* Merchant Reply */}
+                    {selectedOrder.review.merchantReply && (
+                      <div className="mt-4 pt-4 border-t border-slate-100">
+                        <div className="bg-blue-50/80 rounded-xl p-3.5 relative">
+                          {/* Reply arrow indicator */}
+                          <div className="absolute -top-2 left-6 w-4 h-4 bg-blue-50/80 rotate-45" />
+                          
+                          <div className="relative">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                  <Store className="w-3 h-3 text-white" />
+                                </div>
+                                <span className="text-xs font-bold text-blue-700">{selectedOrder.review.merchantReply.merchantName}</span>
+                                <span className="px-1.5 py-0.5 bg-blue-100 text-blue-600 text-[10px] font-medium rounded-full flex items-center gap-0.5">
+                                  <BadgeCheck className="w-2.5 h-2.5" />
+                                  商家
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-blue-400">{formatDate(selectedOrder.review.merchantReply.time)}</span>
+                            </div>
+                            <p className="text-sm text-blue-800 leading-relaxed">{selectedOrder.review.merchantReply.content}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   // Show review button
@@ -786,6 +864,12 @@ export default function OrderHistoryPage() {
                         <div className="flex items-center gap-1.5">
                           <StarRating rating={order.review.rating} size="sm" />
                           <span className="text-xs text-amber-600 font-medium">已评价</span>
+                          {order.review.merchantReply && (
+                            <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium rounded-full">
+                              <Reply className="w-2.5 h-2.5" />
+                              商家已回复
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 text-xs text-slate-400">
