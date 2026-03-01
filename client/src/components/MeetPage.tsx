@@ -74,6 +74,7 @@ const ALL_RESTAURANTS = [
     id: 1,
     name: '花田错·西餐厅',
     category: '美食' as const,
+    promoTag: { text: '限时特惠', color: 'from-red-500 to-orange-500' },
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
     location: '三里屯太古里北区 N4-30',
     distance: '1.2km',
@@ -206,6 +207,7 @@ const ALL_RESTAURANTS = [
     id: 2,
     name: '丝路有约·中东融合餐厅',
     category: '美食' as const,
+    promoTag: { text: '口碑好店', color: 'from-blue-500 to-indigo-500' },
     image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800&q=80',
     location: '国贸CBD 银泰中心B1',
     distance: '3.5km',
@@ -276,6 +278,7 @@ const ALL_RESTAURANTS = [
     id: 3,
     name: '炭火青春·日式烤肉',
     category: '美食' as const,
+    promoTag: { text: '新店开业', color: 'from-emerald-500 to-teal-500' },
     image: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&q=80',
     location: '望京SOHO T2-B1',
     distance: '2.8km',
@@ -347,6 +350,7 @@ const ALL_RESTAURANTS = [
     id: 4,
     name: '云端·Sky Lounge',
     category: '饮品' as const,
+    promoTag: { text: '人气爆棚', color: 'from-purple-500 to-pink-500' },
     image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80',
     location: '朝阳门外大街 凯恒中心顶层',
     distance: '4.1km',
@@ -997,6 +1001,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
           </div>
           <div className="absolute top-12 right-6 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+          {/* Promo tag on detail page */}
+          {restaurant.promoTag && (
+            <div className={`absolute top-24 right-6 bg-gradient-to-r ${restaurant.promoTag.color} px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-md`}>
+              {restaurant.promoTag.text}
+            </div>
+          )}
         </div>
         <div className="p-4 space-y-4 -mt-6 relative z-10">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
@@ -1211,9 +1221,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       </div>
                       {/* Rating badge */}
                       <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
-                      {/* Scene match level badge */}
+                      {/* Promo tag */}
+                      {restaurant.promoTag && (
+                        <div className={`absolute top-3 left-3 bg-gradient-to-r ${restaurant.promoTag.color} px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-md`}>
+                          {restaurant.promoTag.text}
+                        </div>
+                      )}
+                      {/* Scene match level badge - shift down if promo tag exists */}
                       {matchLevel && !isBestMatch && (
-                        <div className={`absolute top-3 left-3 ${matchLevel.bg} backdrop-blur px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs font-bold ${matchLevel.color} shadow-sm`}>
+                        <div className={`absolute ${restaurant.promoTag ? 'top-10' : 'top-3'} left-3 ${matchLevel.bg} backdrop-blur px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs font-bold ${matchLevel.color} shadow-sm`}>
                           <Sparkles className="w-3 h-3" />
                           {matchLevel.label}
                         </div>
@@ -1344,6 +1360,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
                       </div>
                       <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+                      {/* Promo tag */}
+                      {restaurant.promoTag && (
+                        <div className={`absolute top-3 left-3 bg-gradient-to-r ${restaurant.promoTag.color} px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-md`}>
+                          {restaurant.promoTag.text}
+                        </div>
+                      )}
                     </div>
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-2">
