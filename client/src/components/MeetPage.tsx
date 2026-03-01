@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark, ShieldCheck, AlertCircle, CalendarDays
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -107,7 +107,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['romantic', 'friends', 'solo'],
         items: [{ name: '牛油果鲜虾沙拉', qty: 1 }, { name: '黑松露奶油意面', qty: 1 }, { name: '特调气泡水', qty: 2 }, { name: '餐前面包', qty: 1 }],
         gallery: ['https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=80', 'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '需提前2小时预约']
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '需提前2小时预约'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：11:00 - 21:00', '需提前2小时电话预约', '每桌限用1张团购券', '周末及法定节假日通用', '不与其他优惠同享']
       },
       {
         id: 102, name: '心动·法式浪漫晚餐', desc: '澳洲M5和牛眼肉 + 鹅肝慕斯 + 甜点拼盘 + 红酒x2',
@@ -117,7 +119,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['romantic'],
         items: [{ name: '澳洲M5和牛眼肉', qty: 1 }, { name: '鹅肝慕斯', qty: 1 }, { name: '甜点拼盘', qty: 1 }, { name: '红酒一杯', qty: 2 }],
         gallery: ['https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80', 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80'],
-        notes: ['有效期：购买后15天内有效', '仅限晚餐时段 17:30 - 22:00', '需提前1天预约']
+        notes: ['有效期：购买后15天内有效', '仅限晚餐时段 17:30 - 22:00', '需提前1天预约'],
+        validity: '购买后15天内有效',
+        rules: ['仅限晚餐时段：17:30 - 22:00', '需提前1天电话预约', '每桌限用1张团购券', '含红酒2杯，超出部分按菜单价结算', '周末及法定节假日通用']
       },
       {
         id: 103, name: '微醺·下午茶甜蜜时光', desc: '精选甜点三层塔 + 手冲咖啡x2 + 季节限定蛋糕',
@@ -127,7 +131,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['romantic', 'friends', 'solo'],
         items: [{ name: '精选甜点三层塔', qty: 1 }, { name: '手冲咖啡', qty: 2 }, { name: '季节限定蛋糕', qty: 1 }],
         gallery: ['https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：14:00 - 17:00']
+        notes: ['有效期：购买后30天内有效', '使用时间：14:00 - 17:00'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：14:00 - 17:00', '每桌限用1张团购券', '周末及法定节假日通用', '不与其他优惠同享']
       },
       {
         id: 104, name: '兄弟·畅饮烧烤套餐', desc: '精选烤串拼盘 + 精酿啤酒x4 + 毛豆花生',
@@ -137,7 +143,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['friends'],
         items: [{ name: '精选烤串拼盘', qty: 1 }, { name: '精酿啤酒', qty: 4 }, { name: '毛豆花生', qty: 1 }],
         gallery: ['https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 22:00']
+        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 22:00'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：17:00 - 22:00', '每桌限用1张团购券', '精酿啤酒超出4杯按菜单价结算', '周末及法定节假日通用']
       },
       {
         id: 105, name: '商务·精致位上套餐', desc: '前菜拼盘 + 主厨推荐牛排 + 甜品 + 红酒2杯',
@@ -147,7 +155,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['business'],
         items: [{ name: '前菜拼盘', qty: 1 }, { name: '主厨推荐牛排', qty: 1 }, { name: '甜品', qty: 1 }, { name: '红酒', qty: 2 }],
         gallery: ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&q=80'],
-        notes: ['有效期：购买后15天内有效', '含包间费', '需提前1天预约']
+        notes: ['有效期：购买后15天内有效', '含包间费', '需提前1天预约'],
+        validity: '购买后15天内有效',
+        rules: ['含包间费，无额外收费', '需提前1天电话预约', '每桌限用1张团购券', '红酒超出2杯按菜单价结算', '周末及法定节假日通用']
       },
       {
         id: 106, name: '阖家·温馨家宴套餐', desc: '红烧肉 + 清蒸鲈鱼 + 时蔬拼盘 + 汤品 (4-6人)',
@@ -157,7 +167,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['family'],
         items: [{ name: '红烧肉', qty: 1 }, { name: '清蒸鲈鱼', qty: 1 }, { name: '时蔬拼盘', qty: 2 }, { name: '老火靓汤', qty: 1 }, { name: '米饭', qty: 6 }],
         gallery: ['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80'],
-        notes: ['有效期：购买后15天内有效', '4-6人套餐', '需提前1天预约']
+        notes: ['有效期：购买后15天内有效', '4-6人套餐', '需提前1天预约'],
+        validity: '购买后15天内有效',
+        rules: ['4-6人套餐，人数不足不予使用', '需提前1天电话预约', '每桌限用1张团购券', '周末及法定节假日通用', '米饭超出6碗按2元/碗加收']
       },
     ],
     // NORMAL group-buy packages (Meituan-style, no relation tags)
@@ -170,7 +182,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '主厨推荐主菜', qty: 2 }, { name: '每日例汤', qty: 1 }, { name: '精选甜品', qty: 2 }, { name: '鲜榨果汁', qty: 2 }],
         gallery: ['https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用']
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：11:00 - 21:00', '周末及法定节假日通用', '每桌限用1张团购券', '不与其他优惠同享']
       },
       {
         id: 902, name: '三人欢聚套餐', desc: '主菜x3 + 凉菜x2 + 汤品x1 + 饮品x3',
@@ -180,7 +194,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '主厨推荐主菜', qty: 3 }, { name: '精选凉菜', qty: 2 }, { name: '每日例汤', qty: 1 }, { name: '鲜榨果汁', qty: 3 }],
         gallery: ['https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用']
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：11:00 - 21:00', '周末及法定节假日通用', '每桌限用1张团购券', '不与其他优惠同享']
       },
       {
         id: 903, name: '四人豪华套餐', desc: '主菜x4 + 凉菜x2 + 汤品x1 + 甜品x4 + 饮品x4',
@@ -190,7 +206,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '主厨推荐主菜', qty: 4 }, { name: '精选凉菜', qty: 2 }, { name: '每日例汤', qty: 1 }, { name: '精选甜品', qty: 4 }, { name: '鲜榨果汁', qty: 4 }],
         gallery: ['https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用']
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 21:00', '周末节假日通用'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：11:00 - 21:00', '周末及法定节假日通用', '每桌限用1张团购券', '不与其他优惠同享']
       },
       {
         id: 904, name: '单人商务简餐', desc: '主菜x1 + 汤品x1 + 甜品x1 + 咖啡x1',
@@ -200,7 +218,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '主厨推荐主菜', qty: 1 }, { name: '每日例汤', qty: 1 }, { name: '精选甜品', qty: 1 }, { name: '现磨咖啡', qty: 1 }],
         gallery: ['https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 14:00', '仅限工作日']
+        notes: ['有效期：购买后30天内有效', '使用时间：11:00 - 14:00', '仅限工作日'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：11:00 - 14:00', '仅限工作日使用', '每桌限用1张团购券', '不与其他优惠同享']
       },
     ],
   },
@@ -240,7 +260,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['business', 'romantic'],
         items: [{ name: '前菜拼盘', qty: 1 }, { name: '主厨推荐牛排', qty: 1 }, { name: '甜品', qty: 1 }, { name: '红酒', qty: 2 }],
         gallery: ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&q=80'],
-        notes: ['有效期：购买后15天内有效', '含包间费', '需提前1天预约']
+        notes: ['有效期：购买后15天内有效', '含包间费', '需提前1天预约'],
+        validity: '购买后15天内有效',
+        rules: ['含包间费，无额外收费', '需提前1天电话预约', '每桌限用1张团购券', '周末及法定节假日通用']
       },
       {
         id: 202, name: '闺蜜·下午茶畅聊套餐', desc: '中东甜点拼盘 + 特调奶茶x2 + 水果拼盘',
@@ -250,7 +272,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['friends', 'romantic', 'solo'],
         items: [{ name: '中东甜点拼盘', qty: 1 }, { name: '特调奶茶', qty: 2 }, { name: '水果拼盘', qty: 1 }],
         gallery: ['https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：14:00 - 17:30']
+        notes: ['有效期：购买后30天内有效', '使用时间：14:00 - 17:30'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：14:00 - 17:30', '每桌限用1张团购券', '周末及法定节假日通用', '不与其他优惠同享']
       },
     ],
     normalPackages: [
@@ -262,7 +286,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '主厨推荐主菜', qty: 2 }, { name: '中东小食', qty: 3 }, { name: '特调饮品', qty: 2 }],
         gallery: ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：11:30 - 22:00']
+        notes: ['有效期：购买后30天内有效', '使用时间：11:30 - 22:00'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：11:30 - 22:00', '每桌限用1张团购券', '周末及法定节假日通用', '不与其他优惠同享']
       },
       {
         id: 912, name: '四人聚会套餐', desc: '主菜x4 + 中东小食x5 + 汤品x1 + 饮品x4',
@@ -272,7 +298,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '主厨推荐主菜', qty: 4 }, { name: '中东小食', qty: 5 }, { name: '每日例汤', qty: 1 }, { name: '特调饮品', qty: 4 }],
         gallery: ['https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：11:30 - 22:00']
+        notes: ['有效期：购买后30天内有效', '使用时间：11:30 - 22:00'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：11:30 - 22:00', '每桌限用1张团购券', '周末及法定节假日通用', '不与其他优惠同享']
       },
     ],
   },
@@ -313,7 +341,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['friends', 'family'],
         items: [{ name: '安格斯牛排', qty: 1 }, { name: '黑椒猪排', qty: 1 }, { name: '精酿啤酒', qty: 4 }, { name: '薯条拼盘', qty: 1 }],
         gallery: ['https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 01:00']
+        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 01:00'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：17:00 - 01:00', '每桌限用1张团购券', '精酿啤酒超出4杯按菜单价结算', '周末及法定节假日通用']
       },
       {
         id: 302, name: '阖家·团圆家宴套餐', desc: '红烧肉 + 清蒸鲈鱼 + 时蔬拼盘 + 汤品 (4-6人)',
@@ -323,7 +353,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['family'],
         items: [{ name: '红烧肉', qty: 1 }, { name: '清蒸鲈鱼', qty: 1 }, { name: '时蔬拼盘', qty: 2 }, { name: '老火靓汤', qty: 1 }, { name: '米饭', qty: 6 }],
         gallery: ['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80'],
-        notes: ['有效期：购买后15天内有效', '4-6人套餐', '需提前1天预约']
+        notes: ['有效期：购买后15天内有效', '4-6人套餐', '需提前1天预约'],
+        validity: '购买后15天内有效',
+        rules: ['4-6人套餐，人数不足不予使用', '需提前1天电话预约', '每桌限用1张团购券', '周末及法定节假日通用']
       },
     ],
     normalPackages: [
@@ -335,7 +367,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '精选肉品拼盘', qty: 1 }, { name: '蔬菜拼盘', qty: 1 }, { name: '饮品', qty: 2 }],
         gallery: ['https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 01:00']
+        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 01:00'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：17:00 - 01:00', '每桌限用1张团购券', '周末及法定节假日通用', '不与其他优惠同享']
       },
       {
         id: 922, name: '四人畅吃套餐', desc: '豪华肉品拼盘 + 海鲜拼盘 + 蔬菜拼盘 + 饮品x4',
@@ -345,7 +379,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '豪华肉品拼盘', qty: 1 }, { name: '海鲜拼盘', qty: 1 }, { name: '蔬菜拼盘', qty: 1 }, { name: '饮品', qty: 4 }],
         gallery: ['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&q=80'],
-        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 01:00']
+        notes: ['有效期：购买后30天内有效', '使用时间：17:00 - 01:00'],
+        validity: '购买后30天内有效',
+        rules: ['使用时间：17:00 - 01:00', '每桌限用1张团购券', '周末及法定节假日通用', '不与其他优惠同享']
       },
     ],
   },
@@ -384,7 +420,9 @@ const ALL_RESTAURANTS = [
         relationTags: ['romantic', 'friends'],
         items: [{ name: '招牌鸡尾酒', qty: 2 }, { name: '精选小食拼盘', qty: 1 }],
         gallery: ['https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80'],
-        notes: ['有效期：购买后15天内有效', '仅限晚间时段', '需提前预约']
+        notes: ['有效期：购买后15天内有效', '仅限晚间时段', '需提前预约'],
+        validity: '购买后15天内有效',
+        rules: ['仅限晚间时段：18:00 - 02:00', '需提前1天电话预约', '每桌限用1张团购券', '周末及法定节假日通用', '鸡尾酒超出2杯按菜单价结算']
       },
     ],
     normalPackages: [
@@ -396,7 +434,9 @@ const ALL_RESTAURANTS = [
         relationTags: [] as string[],
         items: [{ name: '鸡尾酒', qty: 2 }, { name: '小食拼盘', qty: 1 }],
         gallery: ['https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80'],
-        notes: ['有效期：购买后15天内有效', '仅限晚间时段']
+        notes: ['有效期：购买后15天内有效', '仅限晚间时段'],
+        validity: '购买后15天内有效',
+        rules: ['仅限晚间时段：18:00 - 02:00', '每桌限用1张团购券', '周末及法定节假日通用', '不与其他优惠同享']
       },
     ],
   },
@@ -796,11 +836,42 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             ))}
           </div>
         </section>
+        {/* 有效期区域 */}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-900 mb-3">买前看一眼</h3>
-          <ul className="space-y-2 text-sm text-slate-500 list-disc pl-4">
-            {pkg.notes.map((note, idx) => (<li key={idx}>{note}</li>))}
-          </ul>
+          <div className="flex items-center gap-2 mb-3">
+            <CalendarDays className="w-4.5 h-4.5 text-orange-500" />
+            <h3 className="font-bold text-slate-900">有效期</h3>
+          </div>
+          <div className="bg-orange-50 rounded-xl p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 text-orange-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-orange-700">{(pkg as any).validity || '购买后30天内有效'}</p>
+              <p className="text-xs text-orange-500 mt-0.5">过期自动退款，随时可退</p>
+            </div>
+          </div>
+        </section>
+        {/* 使用规则区域 */}
+        <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center gap-2 mb-3">
+            <ShieldCheck className="w-4.5 h-4.5 text-blue-500" />
+            <h3 className="font-bold text-slate-900">使用规则</h3>
+          </div>
+          <div className="space-y-2.5">
+            {((pkg as any).rules || pkg.notes).map((rule: string, idx: number) => (
+              <div key={idx} className="flex items-start gap-2.5 text-sm">
+                <div className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-slate-500">{idx + 1}</span>
+                </div>
+                <span className="text-slate-600 leading-relaxed">{rule}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-start gap-2">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-400 leading-relaxed">如有疑问请联系商家确认，最终解释权归商家所有</p>
+          </div>
         </section>
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <h3 className="font-bold text-slate-900 mb-3">关于这家店</h3>
