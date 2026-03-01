@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -80,6 +80,8 @@ const ALL_RESTAURANTS = [
     tags: ['轻松不尬尬', '环境安静', '适合约会'],
     rating: 4.8,
     price: '¥198/人',
+    soldCount: 2847,
+    topReview: { text: '第一次约会选这里，氛围感拉满，服务也很贴心', author: '小林同学', stars: 5 },
     phone: '010-6417-8899',
     hours: '11:00 - 22:00',
     relationTags: ['romantic', 'friends', 'solo', 'business'],
@@ -204,6 +206,8 @@ const ALL_RESTAURANTS = [
     tags: ['异域风情', '私密包间', '适合商务'],
     rating: 4.6,
     price: '¥258/人',
+    soldCount: 1563,
+    topReview: { text: '包间私密性很好，谈事请客都很有面子，菜品也很有特色', author: 'David周', stars: 5 },
     phone: '010-8529-3300',
     hours: '11:30 - 23:00',
     relationTags: ['romantic', 'business', 'friends'],
@@ -266,6 +270,8 @@ const ALL_RESTAURANTS = [
     tags: ['氛围感', '大口吃肉', '适合聚会'],
     rating: 4.7,
     price: '¥168/人',
+    soldCount: 4210,
+    topReview: { text: '和兄弟们吃的超过瘾，肉质新鲜，烤的恰到好处，必须回购', author: '烧烤爱好者', stars: 5 },
     phone: '010-8470-2200',
     hours: '17:00 - 02:00',
     relationTags: ['friends', 'family', 'romantic'],
@@ -328,6 +334,8 @@ const ALL_RESTAURANTS = [
     tags: ['高空景观', '鸡尾酒', '适合约会'],
     rating: 4.9,
     price: '¥328/人',
+    soldCount: 986,
+    topReview: { text: '夜景绝了，约会氛围感直接拉满，鸡尾酒也很专业', author: '夜猫小姐', stars: 5 },
     phone: '010-6551-8800',
     hours: '18:00 - 02:00',
     relationTags: ['romantic', 'business', 'friends'],
@@ -1105,7 +1113,20 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     </div>
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        {restaurant.tags.map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
+                        {restaurant.tags.map((tag: string, idx: number) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
+                      </div>
+                      {/* Social proof: sold count + top review */}
+                      <div className="flex items-center gap-3 mb-2.5 text-xs">
+                        <div className="flex items-center gap-1 text-orange-500 font-semibold">
+                          <Flame className="w-3 h-3" />
+                          <span>已售{restaurant.soldCount >= 1000 ? (restaurant.soldCount / 1000).toFixed(1) + 'k' : restaurant.soldCount}份</span>
+                        </div>
+                        {restaurant.topReview && (
+                          <div className="flex-1 flex items-center gap-1.5 text-slate-400 truncate">
+                            <MessageSquare className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">“{restaurant.topReview.text}”</span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-500">{restaurant.relationPackages.length}个套餐 省得你挑</span>
