@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark, ShieldCheck, AlertCircle, CalendarDays, ArrowUpDown, ThumbsUp, Route, Wallet
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark, ShieldCheck, AlertCircle, CalendarDays, ArrowUpDown, ThumbsUp, Route, Wallet, Tag
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -531,6 +531,23 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       return next;
     });
   };
+  // --- Compare feature state ---
+  const [compareList, setCompareList] = useState<Array<{ pkg: PackageType; restaurantName: string }>>([]);
+  const [showCompareSheet, setShowCompareSheet] = useState(false);
+  const MAX_COMPARE = 4;
+
+  const toggleCompare = (pkg: PackageType, restaurantName: string, e?: React.MouseEvent) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    setCompareList(prev => {
+      const exists = prev.find(item => item.pkg.id === pkg.id);
+      if (exists) return prev.filter(item => item.pkg.id !== pkg.id);
+      if (prev.length >= MAX_COMPARE) return prev;
+      return [...prev, { pkg, restaurantName }];
+    });
+  };
+
+  const isInCompare = (pkgId: number) => compareList.some(item => item.pkg.id === pkgId);
+
   const [visibleRestaurantId, setVisibleRestaurantId] = useState<number | null>(null);
   const [showStickyFav, setShowStickyFav] = useState(false);
   const restaurantCardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -1266,9 +1283,18 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
         {packages.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">还没有合适的套餐</div>
         ) : packages.map(pkg => (
-          <motion.div key={pkg.id} whileTap={{ scale: 0.98 }} onClick={() => onSelectPkg(pkg)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+          <motion.div key={pkg.id} whileTap={{ scale: 0.98 }} onClick={() => onSelectPkg(pkg)} className={`bg-white rounded-2xl overflow-hidden shadow-sm border-2 cursor-pointer hover:shadow-md transition-all ${isInCompare(pkg.id) ? 'border-orange-400 shadow-orange-100' : 'border-slate-100'}`}>
             <div className="flex">
-              <img src={pkg.image} alt={pkg.name} className="w-28 h-28 object-cover shrink-0" />
+              <div className="relative shrink-0">
+                <img src={pkg.image} alt={pkg.name} className="w-28 h-28 object-cover" />
+                {/* Compare checkbox */}
+                <button
+                  onClick={(e) => toggleCompare(pkg, restaurant.name, e)}
+                  className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center transition-all active:scale-90 ${isInCompare(pkg.id) ? 'bg-orange-500 text-white shadow-md' : 'bg-black/30 backdrop-blur-sm text-white/80 hover:bg-black/50'}`}
+                >
+                  {isInCompare(pkg.id) ? <Check className="w-3.5 h-3.5" /> : <span className="text-[10px] font-bold">VS</span>}
+                </button>
+              </div>
               <div className="flex-1 p-3 flex flex-col justify-between">
                 <div>
                   <h4 className="font-bold text-slate-900 text-sm mb-1">{pkg.name}</h4>
@@ -1283,6 +1309,42 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           </motion.div>
         ))}
       </div>
+      {/* Compare floating bar */}
+      <AnimatePresence>
+        {compareList.length >= 2 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            className="fixed bottom-20 left-4 right-4 z-50 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2 flex-1">
+                {compareList.map((item, idx) => (
+                  <div key={item.pkg.id} className="relative">
+                    <img src={item.pkg.image} alt={item.pkg.name} className="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-sm" />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); toggleCompare(item.pkg, item.restaurantName); }}
+                      className="absolute -top-1 -right-1 w-4 h-4 bg-slate-400 rounded-full flex items-center justify-center text-white active:scale-90"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="text-xs text-slate-500">已选{compareList.length}个</div>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCompareSheet(true)}
+                className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg active:bg-slate-800"
+              >
+                开始对比
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 
@@ -1331,9 +1393,18 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             {pkgs.length === 0 ? (
               <div className="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-100">还没有合适的套餐</div>
             ) : pkgs.map(pkg => (
-              <motion.div key={pkg.id} whileTap={{ scale: 0.98 }} onClick={() => onSelectPkg(pkg)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+              <motion.div key={pkg.id} whileTap={{ scale: 0.98 }} onClick={() => onSelectPkg(pkg)} className={`bg-white rounded-2xl overflow-hidden shadow-sm border-2 cursor-pointer hover:shadow-md transition-all ${isInCompare(pkg.id) ? 'border-orange-400 shadow-orange-100' : 'border-slate-100'}`}>
                 <div className="flex">
-                  <img src={pkg.image} alt={pkg.name} className="w-28 h-28 object-cover shrink-0" />
+                  <div className="relative shrink-0">
+                    <img src={pkg.image} alt={pkg.name} className="w-28 h-28 object-cover" />
+                    {/* Compare checkbox */}
+                    <button
+                      onClick={(e) => toggleCompare(pkg, restaurant.name, e)}
+                      className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center transition-all active:scale-90 ${isInCompare(pkg.id) ? 'bg-orange-500 text-white shadow-md' : 'bg-black/30 backdrop-blur-sm text-white/80 hover:bg-black/50'}`}
+                    >
+                      {isInCompare(pkg.id) ? <Check className="w-3.5 h-3.5" /> : <span className="text-[10px] font-bold">VS</span>}
+                    </button>
+                  </div>
                   <div className="flex-1 p-3 flex flex-col justify-between">
                     <div>
                       <h4 className="font-bold text-slate-900 text-sm mb-1">{pkg.name}</h4>
@@ -1349,6 +1420,42 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             ))}
           </div>
         </div>
+        {/* Compare floating bar for restaurant detail */}
+        <AnimatePresence>
+          {compareList.length >= 2 && (
+            <motion.div
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 80, opacity: 0 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              className="fixed bottom-20 left-4 right-4 z-50 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2 flex-1">
+                  {compareList.map((item, idx) => (
+                    <div key={item.pkg.id} className="relative">
+                      <img src={item.pkg.image} alt={item.pkg.name} className="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-sm" />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleCompare(item.pkg, item.restaurantName); }}
+                        className="absolute -top-1 -right-1 w-4 h-4 bg-slate-400 rounded-full flex items-center justify-center text-white active:scale-90"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-xs text-slate-500">已选{compareList.length}个</div>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowCompareSheet(true)}
+                  className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg active:bg-slate-800"
+                >
+                  开始对比
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     );
   };
@@ -2143,6 +2250,148 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </motion.button>
           </div>
         </div>
+      )}
+      {/* === Compare Detail Sheet (Portal) === */}
+      {showCompareSheet && compareList.length >= 2 && createPortal(
+        <AnimatePresence>
+          <motion.div
+            key="compare-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[99999] bg-black/50 backdrop-blur-sm flex items-end justify-center"
+            onClick={() => setShowCompareSheet(false)}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-h-[90vh] bg-white rounded-t-3xl overflow-hidden flex flex-col"
+            >
+              {/* Header */}
+              <div className="sticky top-0 z-10 bg-white px-5 pt-5 pb-3 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-extrabold text-slate-900">套餐对比</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">已选{compareList.length}个套餐进行对比</p>
+                </div>
+                <button onClick={() => setShowCompareSheet(false)} className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center active:scale-90 transition-transform">
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+              </div>
+
+              {/* Scrollable compare table */}
+              <div className="flex-1 overflow-auto">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[600px]">
+                    {/* Package images + names header */}
+                    <thead>
+                      <tr className="bg-slate-50">
+                        <th className="sticky left-0 bg-slate-50 z-10 text-left text-xs font-bold text-slate-500 px-4 py-3 w-28 min-w-[112px]">对比项</th>
+                        {compareList.map(item => (
+                          <th key={item.pkg.id} className="text-center px-3 py-3 min-w-[140px]">
+                            <div className="flex flex-col items-center gap-2">
+                              <img src={item.pkg.image} alt={item.pkg.name} className="w-16 h-16 rounded-xl object-cover shadow-sm" />
+                              <div>
+                                <p className="text-xs font-bold text-slate-900 line-clamp-1">{item.pkg.name}</p>
+                                <p className="text-[10px] text-slate-400 mt-0.5">{item.restaurantName}</p>
+                              </div>
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Price row */}
+                      <tr className="border-t border-slate-100">
+                        <td className="sticky left-0 bg-white z-10 px-4 py-3 text-xs font-bold text-slate-600"><div className="flex items-center gap-1.5"><Wallet className="w-3.5 h-3.5 text-orange-500" />团购价</div></td>
+                        {compareList.map(item => (
+                          <td key={item.pkg.id} className="text-center px-3 py-3">
+                            <span className="text-orange-500 font-extrabold text-lg">¥{item.pkg.price}</span>
+                            <span className="text-slate-400 line-through text-xs ml-1">¥{item.pkg.originalPrice}</span>
+                          </td>
+                        ))}
+                      </tr>
+                      {/* Discount row */}
+                      <tr className="border-t border-slate-50 bg-orange-50/30">
+                        <td className="sticky left-0 bg-orange-50/30 z-10 px-4 py-3 text-xs font-bold text-slate-600"><div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-red-500" />折扣力度</div></td>
+                        {compareList.map(item => {
+                          const discount = Math.round((item.pkg.price / item.pkg.originalPrice) * 100) / 10;
+                          const savings = item.pkg.originalPrice - item.pkg.price;
+                          return (
+                            <td key={item.pkg.id} className="text-center px-3 py-3">
+                              <span className="text-red-500 font-bold text-sm">{discount.toFixed(1)}折</span>
+                              <p className="text-[10px] text-slate-400 mt-0.5">省¥{savings}</p>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {/* Package contents row */}
+                      <tr className="border-t border-slate-100">
+                        <td className="sticky left-0 bg-white z-10 px-4 py-3 text-xs font-bold text-slate-600 align-top"><div className="flex items-center gap-1.5"><Receipt className="w-3.5 h-3.5 text-blue-500" />套餐内容</div></td>
+                        {compareList.map(item => (
+                          <td key={item.pkg.id} className="px-3 py-3 align-top">
+                            <ul className="space-y-1">
+                              {item.pkg.items.map((it, idx) => (
+                                <li key={idx} className="text-xs text-slate-600 flex items-center gap-1">
+                                  <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0" />
+                                  {it.name} x{it.qty}
+                                </li>
+                              ))}
+                            </ul>
+                          </td>
+                        ))}
+                      </tr>
+                      {/* Validity row */}
+                      <tr className="border-t border-slate-100 bg-slate-50/50">
+                        <td className="sticky left-0 bg-slate-50/50 z-10 px-4 py-3 text-xs font-bold text-slate-600"><div className="flex items-center gap-1.5"><CalendarDays className="w-3.5 h-3.5 text-green-500" />有效期</div></td>
+                        {compareList.map(item => (
+                          <td key={item.pkg.id} className="text-center px-3 py-3">
+                            <span className="text-xs text-slate-700">{item.pkg.validity || '购买后30天内有效'}</span>
+                          </td>
+                        ))}
+                      </tr>
+                      {/* Rules row */}
+                      <tr className="border-t border-slate-100">
+                        <td className="sticky left-0 bg-white z-10 px-4 py-3 text-xs font-bold text-slate-600 align-top"><div className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-purple-500" />使用规则</div></td>
+                        {compareList.map(item => (
+                          <td key={item.pkg.id} className="px-3 py-3 align-top">
+                            <ul className="space-y-1">
+                              {(item.pkg.rules || item.pkg.notes || []).map((rule, idx) => (
+                                <li key={idx} className="text-[11px] text-slate-500 flex items-start gap-1">
+                                  <span className="w-1 h-1 rounded-full bg-slate-300 shrink-0 mt-1.5" />
+                                  {rule}
+                                </li>
+                              ))}
+                            </ul>
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Bottom action */}
+              <div className="sticky bottom-0 bg-white border-t border-slate-100 px-5 py-4 flex items-center gap-3">
+                <button
+                  onClick={() => { setCompareList([]); setShowCompareSheet(false); }}
+                  className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm active:bg-slate-50 transition-colors"
+                >
+                  清空对比
+                </button>
+                <button
+                  onClick={() => setShowCompareSheet(false)}
+                  className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-bold text-sm active:bg-slate-800 transition-colors shadow-lg"
+                >
+                  继续选购
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>,
+        document.body
       )}
     </div>
   );
