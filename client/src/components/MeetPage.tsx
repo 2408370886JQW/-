@@ -80,6 +80,7 @@ const ALL_RESTAURANTS = [
     distance: '1.2km',
     tags: ['轻松不尬尬', '环境安静', '适合约会'],
     rating: 4.8,
+    positiveRate: 96,
     price: '¥198/人',
     soldCount: 2847,
     topReview: { text: '第一次约会选这里，氛围感拉满，服务也很贴心', author: '小林同学', stars: 5 },
@@ -213,6 +214,7 @@ const ALL_RESTAURANTS = [
     distance: '3.5km',
     tags: ['异域风情', '私密包间', '适合商务'],
     rating: 4.6,
+    positiveRate: 91,
     price: '¥258/人',
     soldCount: 1563,
     topReview: { text: '包间私密性很好，谈事请客都很有面子，菜品也很有特色', author: 'David周', stars: 5 },
@@ -284,6 +286,7 @@ const ALL_RESTAURANTS = [
     distance: '2.8km',
     tags: ['氛围感', '大口吃肉', '适合聚会'],
     rating: 4.7,
+    positiveRate: 94,
     price: '¥168/人',
     soldCount: 4210,
     topReview: { text: '和兄弟们吃的超过瘾，肉质新鲜，烤的恰到好处，必须回购', author: '烧烤爱好者', stars: 5 },
@@ -356,6 +359,7 @@ const ALL_RESTAURANTS = [
     distance: '4.1km',
     tags: ['高空景观', '鸡尾酒', '适合约会'],
     rating: 4.9,
+    positiveRate: 98,
     price: '¥328/人',
     soldCount: 986,
     topReview: { text: '夜景绝了，约会氛围感直接拉满，鸡尾酒也很专业', author: '夜猫小姐', stars: 5 },
@@ -752,9 +756,20 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 <h3 className="font-bold text-slate-900">大家怎么说</h3>
                 <span className="text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{restaurant.reviews.length}条评价</span>
               </div>
-              <div className="flex items-center gap-1 text-orange-500 text-sm font-semibold">
-                <Star className="w-3.5 h-3.5 fill-current" />
-                <span>{restaurant.rating}</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 text-orange-500 text-sm font-semibold">
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  <span>{restaurant.rating}</span>
+                </div>
+                {restaurant.positiveRate && (
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                    restaurant.positiveRate >= 95 ? 'bg-green-50 text-green-600' :
+                    restaurant.positiveRate >= 90 ? 'bg-blue-50 text-blue-600' :
+                    'bg-slate-50 text-slate-500'
+                  }`}>
+                    {restaurant.positiveRate}%好评
+                  </span>
+                )}
               </div>
             </div>
             <div className="space-y-4">
