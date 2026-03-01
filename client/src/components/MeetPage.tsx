@@ -534,7 +534,38 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   // --- Compare feature state ---
   const [compareList, setCompareList] = useState<Array<{ pkg: PackageType; restaurantName: string }>>([]);
   const [showCompareSheet, setShowCompareSheet] = useState(false);
+  const [showCompareShareModal, setShowCompareShareModal] = useState(false);
+  const [compareShareCopied, setCompareShareCopied] = useState(false);
   const MAX_COMPARE = 4;
+
+  // Generate compare result text for sharing
+  const generateCompareShareText = () => {
+    if (compareList.length < 2) return '';
+    let text = '\u{1F50D} 套餐对比结果\n\n';
+    compareList.forEach((item, idx) => {
+      const discount = Math.round((item.pkg.price / item.pkg.originalPrice) * 100) / 10;
+      const savings = item.pkg.originalPrice - item.pkg.price;
+      text += `━━ 套餐${idx + 1}: ${item.pkg.name} ━━\n`;
+      text += `\u{1F3EA} ${item.restaurantName}\n`;
+      text += `\u{1F4B0} 团购价 \u00a5${item.pkg.price}（原价\u00a5${item.pkg.originalPrice}）\n`;
+      text += `\u{1F525} ${discount.toFixed(1)}折，省\u00a5${savings}\n`;
+      text += `\u{1F4CB} 套餐内容: ${item.pkg.items.map(i => i.name).join(' + ')}\n`;
+      text += `\u{1F4C5} 有效期: ${item.pkg.validity || '购买后30天内有效'}\n`;
+      if (idx < compareList.length - 1) text += '\n';
+    });
+    // Find best value
+    const cheapest = compareList.reduce((min, item) => item.pkg.price < min.pkg.price ? item : min, compareList[0]);
+    const bestDiscount = compareList.reduce((best, item) => {
+      const d = item.pkg.price / item.pkg.originalPrice;
+      const bd = best.pkg.price / best.pkg.originalPrice;
+      return d < bd ? item : best;
+    }, compareList[0]);
+    text += '\n\u{1F3C6} 对比结论:\n';
+    text += `\u{1F4B5} 价格最低: ${cheapest.pkg.name}（\u00a5${cheapest.pkg.price}）\n`;
+    text += `\u{1F389} 折扣最大: ${bestDiscount.pkg.name}（${(Math.round((bestDiscount.pkg.price / bestDiscount.pkg.originalPrice) * 100) / 10).toFixed(1)}折）\n`;
+    text += '\n来自 FIND ME 发现我 · 帮你找到最合适的套餐';
+    return text;
+  };
 
   const toggleCompare = (pkg: PackageType, restaurantName: string, e?: React.MouseEvent) => {
     if (e) { e.stopPropagation(); e.preventDefault(); }
@@ -2374,18 +2405,172 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               </div>
 
               {/* Bottom action */}
-              <div className="sticky bottom-0 bg-white border-t border-slate-100 px-5 py-4 flex items-center gap-3">
+              <div className="sticky bottom-0 bg-white border-t border-slate-100 px-5 py-4 flex flex-col gap-3">
                 <button
-                  onClick={() => { setCompareList([]); setShowCompareSheet(false); }}
-                  className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm active:bg-slate-50 transition-colors"
+                  onClick={() => { setCompareShareCopied(false); setShowCompareShareModal(true); }}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold text-sm active:from-blue-600 active:to-indigo-600 transition-all shadow-lg flex items-center justify-center gap-2"
                 >
-                  清空对比
+                  <Share2 className="w-4 h-4" />
+                  分享对比结果给朋友
                 </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => { setCompareList([]); setShowCompareSheet(false); }}
+                    className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm active:bg-slate-50 transition-colors"
+                  >
+                    清空对比
+                  </button>
+                  <button
+                    onClick={() => setShowCompareSheet(false)}
+                    className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-bold text-sm active:bg-slate-800 transition-colors shadow-lg"
+                  >
+                    继续选购
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Compare Share Modal */}
+      {showCompareShareModal && createPortal(
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100000] bg-black/50 backdrop-blur-sm flex items-end justify-center"
+            onClick={() => setShowCompareShareModal(false)}
+          >
+            <motion.div
+              initial={{ y: 400 }}
+              animate={{ y: 0 }}
+              exit={{ y: 400 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-md bg-white rounded-t-3xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 pb-2">
+                <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-5" />
+                <h3 className="font-bold text-lg text-slate-900 text-center mb-1">分享对比结果</h3>
+                <p className="text-sm text-slate-400 text-center mb-5">发给朋友一起看看哪个套餐更划算</p>
+              </div>
+
+              {/* Compare summary card */}
+              <div className="px-6 mb-5">
+                <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-4 border border-slate-100">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Sparkles className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <span className="text-sm font-bold text-slate-900">套餐对比摘要</span>
+                  </div>
+                  <div className="space-y-2">
+                    {compareList.map((item, idx) => {
+                      const discount = Math.round((item.pkg.price / item.pkg.originalPrice) * 100) / 10;
+                      return (
+                        <div key={item.pkg.id} className="flex items-center gap-3 bg-white rounded-xl px-3 py-2">
+                          <img src={item.pkg.image} alt={item.pkg.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-slate-900 truncate">{item.pkg.name}</p>
+                            <p className="text-[10px] text-slate-400">{item.restaurantName}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-extrabold text-orange-500">¥{item.pkg.price}</p>
+                            <p className="text-[10px] text-green-600 font-bold">{discount.toFixed(1)}折</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {/* Best value highlight */}
+                  {compareList.length >= 2 && (() => {
+                    const cheapest = compareList.reduce((min, item) => item.pkg.price < min.pkg.price ? item : min, compareList[0]);
+                    return (
+                      <div className="mt-3 pt-3 border-t border-slate-200/50 flex items-center gap-2">
+                        <Award className="w-4 h-4 text-amber-500" />
+                        <span className="text-xs text-slate-600">价格最低: <span className="font-bold text-slate-900">{cheapest.pkg.name}</span>（¥{cheapest.pkg.price}）</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Share options */}
+              <div className="px-6 mb-5">
+                <p className="text-xs text-slate-400 mb-3">选择分享方式</p>
+                <div className="grid grid-cols-4 gap-4">
+                  {[
+                    { icon: '\u{1F4AC}', label: '微信', color: 'bg-green-50', action: 'wechat' },
+                    { icon: '\u{1F465}', label: '朋友圈', color: 'bg-green-50', action: 'moments' },
+                    { icon: '\u{1F4CB}', label: '复制文字', color: 'bg-blue-50', action: 'copy' },
+                    { icon: '\u{1F4AC}', label: '短信', color: 'bg-orange-50', action: 'sms' },
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        if (item.action === 'copy') {
+                          const text = generateCompareShareText();
+                          navigator.clipboard.writeText(text).then(() => {
+                            setCompareShareCopied(true);
+                            setTimeout(() => setCompareShareCopied(false), 2000);
+                          }).catch(() => {
+                            // Fallback for clipboard API not available
+                            const textarea = document.createElement('textarea');
+                            textarea.value = text;
+                            textarea.style.position = 'fixed';
+                            textarea.style.opacity = '0';
+                            document.body.appendChild(textarea);
+                            textarea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textarea);
+                            setCompareShareCopied(true);
+                            setTimeout(() => setCompareShareCopied(false), 2000);
+                          });
+                        } else {
+                          setShowCompareShareModal(false);
+                          const toast = document.createElement('div');
+                          toast.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/80 text-white px-6 py-3 rounded-xl text-sm font-medium z-[999999] backdrop-blur-sm';
+                          toast.textContent = `即将通过${item.label}分享对比结果`;
+                          document.body.appendChild(toast);
+                          setTimeout(() => toast.remove(), 1500);
+                        }
+                      }}
+                      className="flex flex-col items-center gap-2 active:scale-95 transition-transform"
+                    >
+                      <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center text-2xl`}>
+                        {item.icon}
+                      </div>
+                      <span className="text-xs text-slate-600">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Copy success feedback */}
+              <AnimatePresence>
+                {compareShareCopied && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mx-6 mb-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2"
+                  >
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-green-700 font-medium">对比结果已复制，去粘贴给朋友吧</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Cancel button */}
+              <div className="px-6 pb-8">
                 <button
-                  onClick={() => setShowCompareSheet(false)}
-                  className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-bold text-sm active:bg-slate-800 transition-colors shadow-lg"
+                  onClick={() => setShowCompareShareModal(false)}
+                  className="w-full py-3 bg-slate-100 rounded-full text-slate-600 font-medium text-sm active:bg-slate-200 transition-colors"
                 >
-                  继续选购
+                  取消
                 </button>
               </div>
             </motion.div>
