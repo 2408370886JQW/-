@@ -1240,7 +1240,20 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="bg-blue-50 text-blue-500 text-xs px-2 py-1 rounded-lg font-medium">{restaurant.category}</span>
-                        {restaurant.tags.slice(0, 2).map((tag, idx) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
+                        {restaurant.tags.slice(0, 2).map((tag: string, idx: number) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
+                      </div>
+                      {/* Social proof: sold count + top review */}
+                      <div className="flex items-center gap-3 mb-2.5 text-xs">
+                        <div className="flex items-center gap-1 text-orange-500 font-semibold">
+                          <Flame className="w-3 h-3" />
+                          <span>已售{restaurant.soldCount >= 1000 ? (restaurant.soldCount / 1000).toFixed(1) + 'k' : restaurant.soldCount}份</span>
+                        </div>
+                        {restaurant.topReview && (
+                          <div className="flex-1 flex items-center gap-1.5 text-slate-400 truncate">
+                            <MessageSquare className="w-3 h-3 flex-shrink-0" />
+                            <span className="truncate">“{restaurant.topReview.text}”</span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-500">{restaurant.normalPackages.length}个好价套餐</span>
