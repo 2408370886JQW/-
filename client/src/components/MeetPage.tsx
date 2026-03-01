@@ -460,6 +460,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     }
   });
   const [shuffleSeed, setShuffleSeed] = useState(0);
+  const [reviewsExpanded, setReviewsExpanded] = useState(false);
   const lastScrollY = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -757,7 +758,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               </div>
             </div>
             <div className="space-y-4">
-              {restaurant.reviews.map((review: any, idx: number) => (
+              {(reviewsExpanded ? restaurant.reviews : restaurant.reviews.slice(0, 2)).map((review: any, idx: number) => (
                 <div key={idx} className={`${idx > 0 ? 'border-t border-slate-50 pt-4' : ''}`}>
                   <div className="flex items-center gap-2.5 mb-2">
                     <img src={review.avatar} alt={review.author} className="w-8 h-8 rounded-full object-cover" />
@@ -777,6 +778,18 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 </div>
               ))}
             </div>
+            {restaurant.reviews.length > 2 && (
+              <button
+                onClick={() => setReviewsExpanded(!reviewsExpanded)}
+                className="w-full mt-4 py-2.5 flex items-center justify-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 bg-slate-50 rounded-xl active:scale-[0.98] transition-all"
+              >
+                {reviewsExpanded ? (
+                  <>收起评价 <ChevronUp className="w-4 h-4" /></>
+                ) : (
+                  <>查看全部{restaurant.reviews.length}条评价 <ChevronDown className="w-4 h-4" /></>
+                )}
+              </button>
+            )}
           </section>
         )}
       </div>
@@ -1291,7 +1304,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           {onlineStep === 3 && selectedRestaurant && renderRestaurantWithRelationPackages(
             selectedRestaurant,
             () => setOnlineStep(2),
-            (pkg) => { setSelectedPackage(pkg); setOnlinePackageSource('relation'); setOnlineStep(4); }
+            (pkg) => { setSelectedPackage(pkg); setOnlinePackageSource('relation'); setReviewsExpanded(false); setOnlineStep(4); }
           )}
           {/* Online Step 4: Package Detail */}
           {onlineStep === 4 && selectedPackage && selectedRestaurant && renderPackageDetail(
@@ -1403,7 +1416,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             selectedRestaurant.normalPackages,
             selectedRestaurant,
             () => setOnlineStep(8),
-            (pkg) => { setSelectedPackage(pkg); setOnlinePackageSource('normal'); setOnlineStep(4); }
+            (pkg) => { setSelectedPackage(pkg); setOnlinePackageSource('normal'); setReviewsExpanded(false); setOnlineStep(4); }
           )}
         </motion.div>
       )}
