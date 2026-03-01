@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark, ShieldCheck, AlertCircle, CalendarDays
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark, ShieldCheck, AlertCircle, CalendarDays, ArrowUpDown, ThumbsUp, Route, Wallet
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -504,6 +504,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     }
   });
   const [shuffleSeed, setShuffleSeed] = useState(0);
+  // Sort mode: 'smart' (default/match-based), 'rating' (positive rate), 'distance' (nearest), 'price' (lowest)
+  const [sortMode, setSortMode] = useState<'smart' | 'rating' | 'distance' | 'price'>('smart');
+  const [sortModeGroupBuy, setSortModeGroupBuy] = useState<'smart' | 'rating' | 'distance' | 'price'>('smart');
   const [reviewsExpanded, setReviewsExpanded] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<Set<number>>(() => {
@@ -614,12 +617,49 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     return 0;
   };
 
+  // Helper: parse distance string to numeric km value
+  const parseDistance = (d: string): number => {
+    const num = parseFloat(d.replace(/[^0-9.]/g, ''));
+    if (d.includes('m') && !d.includes('km')) return num / 1000;
+    return num;
+  };
+  // Helper: parse price string to numeric value
+  const parsePrice = (p: string): number => {
+    const num = parseFloat(p.replace(/[^0-9.]/g, ''));
+    return isNaN(num) ? 0 : num;
+  };
+
+  // Apply sort to a restaurant array
+  const applySortMode = (list: RestaurantType[], mode: 'smart' | 'rating' | 'distance' | 'price'): RestaurantType[] => {
+    const sorted = [...list];
+    switch (mode) {
+      case 'rating':
+        sorted.sort((a, b) => (b.positiveRate || 0) - (a.positiveRate || 0));
+        break;
+      case 'distance':
+        sorted.sort((a, b) => parseDistance(a.distance) - parseDistance(b.distance));
+        break;
+      case 'price':
+        sorted.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
+        break;
+      default: // 'smart' - keep original order
+        break;
+    }
+    return sorted;
+  };
+
   // Filtered restaurants for online flow — sorted by match score (best first), with shuffle support
   const filteredRestaurants = useMemo(() => {
     const base = relationTag
       ? ALL_RESTAURANTS.filter(r => r.relationTags.includes(relationTag))
       : [...ALL_RESTAURANTS];
-    // Sort by match score first
+
+    // If user selected a non-smart sort, apply it directly
+    if (sortMode !== 'smart') {
+      return applySortMode(base, sortMode);
+    }
+
+    // Default: Sort by match score first
     base.sort((a, b) => getMatchScore(b) - getMatchScore(a));
     // If shuffleSeed > 0, apply seeded shuffle within same match-score groups
     if (shuffleSeed > 0) {
@@ -649,13 +689,19 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       return result;
     }
     return base;
-  }, [relationTag, shuffleSeed]);
+  }, [relationTag, shuffleSeed, sortMode]);
 
-  // Category-filtered restaurants for pure group-buy list
+  // Category-filtered restaurants for pure group-buy list (with sort)
   const RESTAURANT_CATEGORIES = ['全部', '美食', '饮品', '娱乐'];
-  const categoryFilteredRestaurants = selectedCategory === '全部'
-    ? ALL_RESTAURANTS
-    : ALL_RESTAURANTS.filter(r => r.category === selectedCategory);
+  const categoryFilteredRestaurants = useMemo(() => {
+    const base = selectedCategory === '全部'
+      ? [...ALL_RESTAURANTS]
+      : ALL_RESTAURANTS.filter(r => r.category === selectedCategory);
+    if (sortModeGroupBuy !== 'smart') {
+      return applySortMode(base, sortModeGroupBuy);
+    }
+    return base;
+  }, [selectedCategory, sortModeGroupBuy]);
 
   // Get relation packages filtered by tag
   const getRelationPackages = (restaurant: RestaurantType) => {
@@ -1486,10 +1532,35 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   </div>
                 );
               })()}
+              {/* Sort Bar */}
+              <div className="px-4 pt-2 pb-1">
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                  {[
+                    { key: 'smart' as const, label: '智能推荐', icon: Sparkles },
+                    { key: 'rating' as const, label: '好评优先', icon: ThumbsUp },
+                    { key: 'distance' as const, label: '离我最近', icon: Route },
+                    { key: 'price' as const, label: '价格最低', icon: Wallet },
+                  ].map(item => (
+                    <motion.button
+                      key={item.key}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => { setSortMode(item.key); if (item.key !== 'smart') setShuffleSeed(0); }}
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                        sortMode === item.key
+                          ? 'bg-slate-900 text-white shadow-md'
+                          : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <item.icon className="w-3.5 h-3.5" />
+                      {item.label}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
               <div className="px-4 pb-4 space-y-4">
                 {filteredRestaurants.map((restaurant, index) => {
                   const matchLevel = getMatchLevel(restaurant);
-                  const isBestMatch = index === 0 && matchLevel && matchLevel.label === '超合适';
+                  const isBestMatch = sortMode === 'smart' && index === 0 && matchLevel && matchLevel.label === '超合适';
                   return (
                   <motion.div key={restaurant.id} ref={(el: HTMLDivElement | null) => { if (el) restaurantCardRefs.current.set(restaurant.id, el); else restaurantCardRefs.current.delete(restaurant.id); }} data-restaurant-id={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className={`bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow ${isBestMatch ? 'border-2 border-orange-300 ring-2 ring-orange-100' : 'border border-slate-100'}`}>
                     {/* Best Match Top Banner */}
@@ -1651,6 +1722,29 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     </motion.button>
                   ))}
 
+                </div>
+                {/* Sort Bar for Group Buy */}
+                <div className="px-4 pb-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                  {[
+                    { key: 'smart' as const, label: '综合推荐', icon: Sparkles },
+                    { key: 'rating' as const, label: '好评优先', icon: ThumbsUp },
+                    { key: 'distance' as const, label: '离我最近', icon: Route },
+                    { key: 'price' as const, label: '价格最低', icon: Wallet },
+                  ].map(item => (
+                    <motion.button
+                      key={item.key}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setSortModeGroupBuy(item.key)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                        sortModeGroupBuy === item.key
+                          ? 'bg-slate-800 text-white shadow-sm'
+                          : 'bg-slate-100 text-slate-400'
+                      }`}
+                    >
+                      <item.icon className="w-3 h-3" />
+                      {item.label}
+                    </motion.button>
+                  ))}
                 </div>
               </div>
               <div className="p-4 space-y-4">
