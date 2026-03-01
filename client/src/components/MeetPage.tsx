@@ -415,6 +415,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [bannerDismissed, setBannerDismissed] = useState(false);
   const [headerHidden, setHeaderHidden] = useState(false);
   const [adviceCollapsed, setAdviceCollapsed] = useState(false);
+  const [showGuideBubble, setShowGuideBubble] = useState(() => {
+    try {
+      return !localStorage.getItem('meet_guide_seen');
+    } catch {
+      return true;
+    }
+  });
   const lastScrollY = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -482,6 +489,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     setBannerDismissed(false);
     setAdviceCollapsed(false);
     setOnlineStep(2);
+    // Dismiss guide bubble on first interaction
+    if (showGuideBubble) {
+      setShowGuideBubble(false);
+      try { localStorage.setItem('meet_guide_seen', '1'); } catch {}
+    }
   };
 
   // Online: select restaurant → go to restaurant detail
@@ -497,6 +509,11 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     setRelationTag(null);
     setSelectedCategory('全部');
     setOnlineStep(8);
+    // Dismiss guide bubble on first interaction
+    if (showGuideBubble) {
+      setShowGuideBubble(false);
+      try { localStorage.setItem('meet_guide_seen', '1'); } catch {}
+    }
   };
 
   // Online: select restaurant for normal packages (no relation)
@@ -1276,6 +1293,38 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
               </div>
             </motion.button>
           </div>
+
+          {/* Guide Bubble for first-time users */}
+          <AnimatePresence>
+            {showGuideBubble && (
+              <motion.div
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="mx-4 mt-1 mb-0"
+              >
+                <div className="relative bg-slate-800 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
+                  {/* Arrow pointing up */}
+                  <div className="absolute -top-2 left-8 w-4 h-4 bg-slate-800 rotate-45 rounded-sm" />
+                  <div className="w-8 h-8 rounded-full bg-amber-400/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-base">👇</span>
+                  </div>
+                  <p className="text-white text-xs leading-relaxed flex-1">点击下方任意场景卡片  开启你的线下见面之旅</p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowGuideBubble(false);
+                      try { localStorage.setItem('meet_guide_seen', '1'); } catch {}
+                    }}
+                    className="w-6 h-6 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
+                  >
+                    <X className="w-3.5 h-3.5 text-white/70" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Section Header */}
           <div className="px-5 pt-4 pb-2">
