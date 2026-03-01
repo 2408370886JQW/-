@@ -1540,12 +1540,21 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       <div className="flex items-center gap-2 mb-2">
                         {restaurant.tags.map((tag: string, idx: number) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
                       </div>
-                      {/* Social proof: sold count + top review */}
+                      {/* Social proof: sold count + positive rate + top review */}
                       <div className="flex items-center gap-3 mb-2.5 text-xs">
                         <div className="flex items-center gap-1 text-orange-500 font-semibold">
                           <Flame className="w-3 h-3" />
                           <AnimatedSoldCount count={restaurant.soldCount} />
                         </div>
+                        {restaurant.positiveRate && (
+                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                            restaurant.positiveRate >= 95 ? 'bg-green-50 text-green-600' :
+                            restaurant.positiveRate >= 90 ? 'bg-blue-50 text-blue-600' :
+                            'bg-yellow-50 text-yellow-600'
+                          }`}>
+                            {restaurant.positiveRate}%好评
+                          </span>
+                        )}
                         {restaurant.topReview && (
                           <div className="flex-1 flex items-center gap-1.5 text-slate-400 truncate">
                             <MessageSquare className="w-3 h-3 flex-shrink-0" />
@@ -1683,12 +1692,21 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         <span className="bg-blue-50 text-blue-500 text-xs px-2 py-1 rounded-lg font-medium">{restaurant.category}</span>
                         {restaurant.tags.slice(0, 2).map((tag: string, idx: number) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
                       </div>
-                      {/* Social proof: sold count + top review */}
+                      {/* Social proof: sold count + positive rate + top review */}
                       <div className="flex items-center gap-3 mb-2.5 text-xs">
                         <div className="flex items-center gap-1 text-orange-500 font-semibold">
                           <Flame className="w-3 h-3" />
                           <AnimatedSoldCount count={restaurant.soldCount} />
                         </div>
+                        {restaurant.positiveRate && (
+                          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                            restaurant.positiveRate >= 95 ? 'bg-green-50 text-green-600' :
+                            restaurant.positiveRate >= 90 ? 'bg-blue-50 text-blue-600' :
+                            'bg-yellow-50 text-yellow-600'
+                          }`}>
+                            {restaurant.positiveRate}%好评
+                          </span>
+                        )}
                         {restaurant.topReview && (
                           <div className="flex-1 flex items-center gap-1.5 text-slate-400 truncate">
                             <MessageSquare className="w-3 h-3 flex-shrink-0" />
