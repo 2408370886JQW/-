@@ -1706,8 +1706,17 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 {filteredRestaurants.map((restaurant, index) => {
                   const matchLevel = getMatchLevel(restaurant);
                   const isBestMatch = sortMode === 'smart' && index === 0 && matchLevel && matchLevel.label === '超合适';
+                  const isDistanceSort = sortMode === 'distance';
+                  const distRatio = isDistanceSort ? index / Math.max(filteredRestaurants.length - 1, 1) : 0;
+                  const distColor = isDistanceSort ? (distRatio <= 0.33 ? 'from-emerald-400 to-emerald-500' : distRatio <= 0.66 ? 'from-amber-400 to-yellow-500' : 'from-orange-400 to-red-400') : '';
+                  const distBadgeColor = isDistanceSort ? (distRatio <= 0.33 ? 'bg-emerald-500' : distRatio <= 0.66 ? 'bg-amber-500' : 'bg-orange-500') : '';
+                  const distTextColor = isDistanceSort ? (distRatio <= 0.33 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : distRatio <= 0.66 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-orange-600 bg-orange-50 border-orange-200') : '';
                   return (
-                  <motion.div key={restaurant.id} ref={(el: HTMLDivElement | null) => { if (el) restaurantCardRefs.current.set(restaurant.id, el); else restaurantCardRefs.current.delete(restaurant.id); }} data-restaurant-id={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className={`bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow ${isBestMatch ? 'border-2 border-orange-300 ring-2 ring-orange-100' : 'border border-slate-100'}`}>
+                  <motion.div key={restaurant.id} ref={(el: HTMLDivElement | null) => { if (el) restaurantCardRefs.current.set(restaurant.id, el); else restaurantCardRefs.current.delete(restaurant.id); }} data-restaurant-id={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className={`relative bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow ${isBestMatch ? 'border-2 border-orange-300 ring-2 ring-orange-100' : isDistanceSort ? 'border border-slate-200' : 'border border-slate-100'}`}>
+                    {/* Distance sort: left gradient bar */}
+                    {isDistanceSort && (
+                      <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b ${distColor} rounded-l-2xl z-10`} />
+                    )}
                     {/* Best Match Top Banner */}
                     {isBestMatch && (
                       <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-1.5 flex items-center gap-1.5">
@@ -1726,6 +1735,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                           <span className="mx-0.5">·</span>
                           <Navigation className="w-3 h-3" /><span>{restaurant.distance}</span>
                         </div>
+                        {/* Distance sort: ranking badge on image */}
+                        {isDistanceSort && (
+                          <div className={`absolute top-3 left-3 ${distBadgeColor} text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg z-20`}>
+                            #{index + 1}
+                          </div>
+                        )}
                       </div>
                       {/* Rating badge & Favorite */}
                       <div className="absolute top-3 right-3 flex items-center gap-1.5">
@@ -1756,6 +1771,14 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       <div className="flex items-center gap-2 mb-2">
                         {restaurant.tags.map((tag: string, idx: number) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
                       </div>
+                      {/* Distance sort: highlighted distance indicator */}
+                      {isDistanceSort && (
+                        <div className={`flex items-center gap-2 mb-2.5 px-2.5 py-1.5 rounded-xl border ${distTextColor}`}>
+                          <Route className="w-4 h-4" />
+                          <span className="text-sm font-bold">{restaurant.distance}</span>
+                          <span className="text-xs opacity-70">· 距你{distRatio <= 0.33 ? '很近' : distRatio <= 0.66 ? '适中' : '较远'}</span>
+                        </div>
+                      )}
                       {/* Social proof: sold count + positive rate + top review */}
                       <div className="flex items-center gap-3 mb-2.5 text-xs">
                         <div className="flex items-center gap-1 text-orange-500 font-semibold">
@@ -1902,14 +1925,30 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     <p className="text-sm">还没有「{selectedCategory}」类的店</p>
                     <button onClick={() => setSelectedCategory('全部')} className="mt-3 text-sm text-blue-500 font-medium">看看全部</button>
                   </div>
-                ) : categoryFilteredRestaurants.map(restaurant => (
-                  <motion.div key={restaurant.id} ref={(el: HTMLDivElement | null) => { if (el) restaurantCardRefs.current.set(restaurant.id, el); else restaurantCardRefs.current.delete(restaurant.id); }} data-restaurant-id={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurantNormal(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+                ) : categoryFilteredRestaurants.map((restaurant, gbIndex) => {
+                  const isGbDistanceSort = sortModeGroupBuy === 'distance';
+                  const gbDistRatio = isGbDistanceSort ? gbIndex / Math.max(categoryFilteredRestaurants.length - 1, 1) : 0;
+                  const gbDistColor = isGbDistanceSort ? (gbDistRatio <= 0.33 ? 'from-emerald-400 to-emerald-500' : gbDistRatio <= 0.66 ? 'from-amber-400 to-yellow-500' : 'from-orange-400 to-red-400') : '';
+                  const gbDistBadgeColor = isGbDistanceSort ? (gbDistRatio <= 0.33 ? 'bg-emerald-500' : gbDistRatio <= 0.66 ? 'bg-amber-500' : 'bg-orange-500') : '';
+                  const gbDistTextColor = isGbDistanceSort ? (gbDistRatio <= 0.33 ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : gbDistRatio <= 0.66 ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-orange-600 bg-orange-50 border-orange-200') : '';
+                  return (
+                  <motion.div key={restaurant.id} ref={(el: HTMLDivElement | null) => { if (el) restaurantCardRefs.current.set(restaurant.id, el); else restaurantCardRefs.current.delete(restaurant.id); }} data-restaurant-id={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurantNormal(restaurant)} className={`relative bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow ${isGbDistanceSort ? 'border border-slate-200' : 'border border-slate-100'}`}>
+                    {/* Distance sort: left gradient bar */}
+                    {isGbDistanceSort && (
+                      <div className={`absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b ${gbDistColor} rounded-l-2xl z-10`} />
+                    )}
                     <div className="relative h-40">
                       <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                       <div className="absolute bottom-3 left-3 right-3 text-white">
                         <h3 className="font-bold text-lg">{restaurant.name}</h3>
-                        <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
+                        <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span><span className="mx-0.5">·</span><Navigation className="w-3 h-3" /><span>{restaurant.distance}</span></div>
+                        {/* Distance sort: ranking badge on image */}
+                        {isGbDistanceSort && (
+                          <div className={`absolute top-3 left-3 ${gbDistBadgeColor} text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg z-20`}>
+                            #{gbIndex + 1}
+                          </div>
+                        )}
                       </div>
                       {/* Rating badge & Favorite */}
                       <div className="absolute top-3 right-3 flex items-center gap-1.5">
@@ -1934,6 +1973,14 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         <span className="bg-blue-50 text-blue-500 text-xs px-2 py-1 rounded-lg font-medium">{restaurant.category}</span>
                         {restaurant.tags.slice(0, 2).map((tag: string, idx: number) => (<span key={idx} className="bg-slate-50 text-slate-500 text-xs px-2 py-1 rounded-lg">{tag}</span>))}
                       </div>
+                      {/* Distance sort: highlighted distance indicator */}
+                      {isGbDistanceSort && (
+                        <div className={`flex items-center gap-2 mb-2.5 px-2.5 py-1.5 rounded-xl border ${gbDistTextColor}`}>
+                          <Route className="w-4 h-4" />
+                          <span className="text-sm font-bold">{restaurant.distance}</span>
+                          <span className="text-xs opacity-70">· 距你{gbDistRatio <= 0.33 ? '很近' : gbDistRatio <= 0.66 ? '适中' : '较远'}</span>
+                        </div>
+                      )}
                       {/* Social proof: sold count + positive rate + top review */}
                       <div className="flex items-center gap-3 mb-2.5 text-xs">
                         <div className="flex items-center gap-1 text-orange-500 font-semibold">
@@ -1965,7 +2012,8 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           )}
