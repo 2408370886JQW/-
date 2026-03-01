@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import Layout from "@/components/Layout";
-import { ArrowLeft, Clock, Check, X, MapPin, ChevronRight, ScanLine, AlertCircle, ShoppingBag, Filter } from "lucide-react";
+import { ArrowLeft, Clock, Check, X, MapPin, ChevronRight, ScanLine, AlertCircle, ShoppingBag, Filter, Star, MessageSquare, Send, ThumbsUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -8,6 +8,13 @@ import { Link } from "wouter";
 // Order status types
 type OrderStatus = "unused" | "used" | "expired";
 type FilterType = "all" | "unused" | "used" | "expired";
+
+interface ReviewData {
+  rating: number; // 1-5
+  text: string;
+  tags: string[];
+  time: string; // ISO string
+}
 
 interface OrderItem {
   id: string;
@@ -24,10 +31,18 @@ interface OrderItem {
   paymentMethod: "wechat" | "alipay";
   packageContent: string[];
   scenarioTag?: string;
+  review?: ReviewData;
 }
 
+// Review quick tags
+const REVIEW_TAGS = [
+  "味道很好", "环境优雅", "服务周到", "性价比高",
+  "分量十足", "上菜很快", "适合约会", "值得再来",
+  "拍照好看", "交通方便", "氛围感强", "推荐朋友"
+];
+
 // Mock order data
-const MOCK_ORDERS: OrderItem[] = [
+const INITIAL_ORDERS: OrderItem[] = [
   {
     id: "ORD20260301001",
     packageName: "浪漫双人晚餐",
@@ -146,10 +161,51 @@ const FILTER_OPTIONS: { key: FilterType; label: string }[] = [
   { key: "expired", label: "已过期" },
 ];
 
+// Star Rating Component
+function StarRating({ rating, size = "md", interactive = false, onChange }: { rating: number; size?: "sm" | "md" | "lg"; interactive?: boolean; onChange?: (r: number) => void }) {
+  const sizeMap = { sm: "w-4 h-4", md: "w-6 h-6", lg: "w-8 h-8" };
+  const gapMap = { sm: "gap-0.5", md: "gap-1", lg: "gap-1.5" };
+
+  return (
+    <div className={cn("flex items-center", gapMap[size])}>
+      {[1, 2, 3, 4, 5].map(i => (
+        <button
+          key={i}
+          disabled={!interactive}
+          onClick={() => onChange?.(i)}
+          className={cn(
+            "transition-all",
+            interactive && "active:scale-110 cursor-pointer",
+            !interactive && "cursor-default"
+          )}
+        >
+          <Star
+            className={cn(
+              sizeMap[size],
+              "transition-colors",
+              i <= rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"
+            )}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function OrderHistoryPage() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
+  const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
   const [, setTick] = useState(0);
+
+  // Review modal state
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewOrderId, setReviewOrderId] = useState<string | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewTags, setReviewTags] = useState<string[]>([]);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
 
   // Update countdown every minute
   useEffect(() => {
@@ -158,18 +214,211 @@ export default function OrderHistoryPage() {
   }, []);
 
   const filteredOrders = useMemo(() => {
-    if (filter === "all") return MOCK_ORDERS;
-    return MOCK_ORDERS.filter(o => o.status === filter);
-  }, [filter]);
+    if (filter === "all") return orders;
+    return orders.filter(o => o.status === filter);
+  }, [filter, orders]);
 
   const stats = useMemo(() => ({
-    total: MOCK_ORDERS.length,
-    unused: MOCK_ORDERS.filter(o => o.status === "unused").length,
-    used: MOCK_ORDERS.filter(o => o.status === "used").length,
-    expired: MOCK_ORDERS.filter(o => o.status === "expired").length,
-    totalSpent: MOCK_ORDERS.filter(o => o.status !== "expired").reduce((sum, o) => sum + o.price, 0),
-    totalSaved: MOCK_ORDERS.filter(o => o.status !== "expired").reduce((sum, o) => sum + (o.originalPrice - o.price), 0),
-  }), []);
+    total: orders.length,
+    unused: orders.filter(o => o.status === "unused").length,
+    used: orders.filter(o => o.status === "used").length,
+    expired: orders.filter(o => o.status === "expired").length,
+    totalSpent: orders.filter(o => o.status !== "expired").reduce((sum, o) => sum + o.price, 0),
+    totalSaved: orders.filter(o => o.status !== "expired").reduce((sum, o) => sum + (o.originalPrice - o.price), 0),
+  }), [orders]);
+
+  // Open review modal
+  const openReviewModal = (orderId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setReviewOrderId(orderId);
+    setReviewRating(5);
+    setReviewText("");
+    setReviewTags([]);
+    setReviewSuccess(false);
+    setShowReviewModal(true);
+  };
+
+  // Toggle review tag
+  const toggleReviewTag = (tag: string) => {
+    setReviewTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : prev.length < 5 ? [...prev, tag] : prev
+    );
+  };
+
+  // Submit review
+  const submitReview = () => {
+    if (!reviewOrderId || reviewRating === 0) return;
+    setReviewSubmitting(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      const newReview: ReviewData = {
+        rating: reviewRating,
+        text: reviewText,
+        tags: reviewTags,
+        time: new Date().toISOString(),
+      };
+
+      setOrders(prev => prev.map(o =>
+        o.id === reviewOrderId ? { ...o, review: newReview } : o
+      ));
+
+      // Also update selectedOrder if viewing detail
+      if (selectedOrder?.id === reviewOrderId) {
+        setSelectedOrder(prev => prev ? { ...prev, review: newReview } : null);
+      }
+
+      setReviewSubmitting(false);
+      setReviewSuccess(true);
+
+      // Close modal after showing success
+      setTimeout(() => {
+        setShowReviewModal(false);
+        setReviewSuccess(false);
+      }, 1500);
+    }, 800);
+  };
+
+  // Review Modal Component
+  const renderReviewModal = () => {
+    if (!showReviewModal) return null;
+    const order = orders.find(o => o.id === reviewOrderId);
+    if (!order) return null;
+
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[99999] bg-black/50 flex items-end justify-center"
+          onClick={() => !reviewSubmitting && setShowReviewModal(false)}
+        >
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="w-full max-w-lg bg-white rounded-t-3xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Success state */}
+            {reviewSuccess ? (
+              <div className="p-8 flex flex-col items-center justify-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", damping: 12 }}
+                  className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4"
+                >
+                  <Check className="w-10 h-10 text-green-600" />
+                </motion.div>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">评价提交成功</h3>
+                <p className="text-sm text-slate-500">感谢你的评价，帮助更多人做出选择</p>
+              </div>
+            ) : (
+              <>
+                {/* Header */}
+                <div className="px-6 pt-6 pb-4 border-b border-slate-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-slate-900">评价体验</h3>
+                    <button
+                      onClick={() => setShowReviewModal(false)}
+                      className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"
+                    >
+                      <X className="w-4 h-4 text-slate-500" />
+                    </button>
+                  </div>
+                  {/* Order brief */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 shrink-0">
+                      <img src={order.restaurantImage} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-slate-900 text-sm truncate">{order.packageName}</div>
+                      <div className="text-xs text-slate-500 truncate">{order.restaurantName}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rating */}
+                <div className="px-6 pt-5 pb-4">
+                  <div className="text-center mb-4">
+                    <div className="text-sm text-slate-600 mb-3">整体体验如何？</div>
+                    <StarRating rating={reviewRating} size="lg" interactive onChange={setReviewRating} />
+                    <div className="text-xs text-slate-400 mt-2">
+                      {reviewRating === 5 ? "非常满意" : reviewRating === 4 ? "比较满意" : reviewRating === 3 ? "一般般" : reviewRating === 2 ? "不太满意" : "很不满意"}
+                    </div>
+                  </div>
+
+                  {/* Quick tags */}
+                  <div className="mb-4">
+                    <div className="text-sm font-medium text-slate-700 mb-2">选择标签 <span className="text-xs text-slate-400 font-normal">（最多5个）</span></div>
+                    <div className="flex flex-wrap gap-2">
+                      {REVIEW_TAGS.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => toggleReviewTag(tag)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95",
+                            reviewTags.includes(tag)
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-slate-50 text-slate-500 border border-slate-100"
+                          )}
+                        >
+                          {reviewTags.includes(tag) && <span className="mr-1">✓</span>}
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Text review */}
+                  <div className="mb-4">
+                    <div className="text-sm font-medium text-slate-700 mb-2">写点什么 <span className="text-xs text-slate-400 font-normal">（选填）</span></div>
+                    <textarea
+                      value={reviewText}
+                      onChange={e => setReviewText(e.target.value)}
+                      placeholder="分享你的用餐体验，帮助其他人做出更好的选择..."
+                      className="w-full h-24 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-amber-300 transition-all"
+                      maxLength={200}
+                    />
+                    <div className="text-right text-xs text-slate-400 mt-1">{reviewText.length}/200</div>
+                  </div>
+
+                  {/* Submit button */}
+                  <button
+                    onClick={submitReview}
+                    disabled={reviewSubmitting || reviewRating === 0}
+                    className={cn(
+                      "w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                      reviewRating > 0
+                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200"
+                        : "bg-slate-100 text-slate-400"
+                    )}
+                  >
+                    {reviewSubmitting ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        提交评价
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Safe area padding */}
+                <div className="h-6" />
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  };
 
   // Order detail view
   if (selectedOrder) {
@@ -247,7 +496,7 @@ export default function OrderHistoryPage() {
                 </div>
                 <div className="bg-slate-50 px-4 py-2 rounded-lg mb-2">
                   <span className="text-slate-400 text-xs block mb-1">核销码</span>
-                  <span className="text-xl font-mono font-bold text-slate-900 tracking-widest">{selectedOrder.verifyCode}</span>
+                  <span className="text-2xl font-bold font-mono text-slate-900 tracking-widest">{selectedOrder.verifyCode}</span>
                 </div>
                 <p className="text-xs text-slate-400">到店给店员看这个码就行</p>
               </div>
@@ -305,15 +554,74 @@ export default function OrderHistoryPage() {
               </div>
             </div>
 
+            {/* Review Section - Show existing review or review button */}
+            {selectedOrder.status === "used" && (
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                {selectedOrder.review ? (
+                  // Show existing review
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-bold text-slate-900 text-sm">我的评价</h5>
+                      <span className="text-xs text-slate-400">{formatDate(selectedOrder.review.time)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StarRating rating={selectedOrder.review.rating} size="sm" />
+                      <span className="text-xs text-amber-600 font-medium">
+                        {selectedOrder.review.rating === 5 ? "非常满意" : selectedOrder.review.rating === 4 ? "比较满意" : selectedOrder.review.rating === 3 ? "一般般" : selectedOrder.review.rating === 2 ? "不太满意" : "很不满意"}
+                      </span>
+                    </div>
+                    {selectedOrder.review.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedOrder.review.tags.map(tag => (
+                          <span key={tag} className="px-2 py-0.5 bg-amber-50 text-amber-700 text-xs rounded-full">{tag}</span>
+                        ))}
+                      </div>
+                    )}
+                    {selectedOrder.review.text && (
+                      <p className="text-sm text-slate-600 leading-relaxed">{selectedOrder.review.text}</p>
+                    )}
+                  </div>
+                ) : (
+                  // Show review button
+                  <div className="flex flex-col items-center py-4">
+                    <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-3">
+                      <MessageSquare className="w-7 h-7 text-amber-500" />
+                    </div>
+                    <h5 className="font-bold text-slate-900 text-sm mb-1">分享你的体验</h5>
+                    <p className="text-xs text-slate-500 mb-4">你的评价将帮助更多人做出选择</p>
+                    <button
+                      onClick={() => openReviewModal(selectedOrder.id)}
+                      className="px-8 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold rounded-full shadow-lg shadow-amber-200 active:scale-95 transition-transform flex items-center gap-2"
+                    >
+                      <Star className="w-4 h-4" />
+                      去评价
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex gap-3">
               <button className="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm active:scale-95 transition-transform">联系商家</button>
               {selectedOrder.status === "unused" && (
                 <button className="flex-1 py-3 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm active:scale-95 transition-transform">申请退款</button>
               )}
+              {selectedOrder.status === "used" && !selectedOrder.review && (
+                <button
+                  onClick={() => openReviewModal(selectedOrder.id)}
+                  className="flex-1 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-sm active:scale-95 transition-transform flex items-center justify-center gap-1.5"
+                >
+                  <Star className="w-4 h-4" />
+                  去评价
+                </button>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Review Modal */}
+        {renderReviewModal()}
       </Layout>
     );
   }
@@ -462,13 +770,29 @@ export default function OrderHistoryPage() {
                       </div>
                     </div>
 
-                    {/* Bottom info */}
+                    {/* Bottom info - different for used orders with/without review */}
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-50">
                       <span className="text-xs text-slate-400">{formatDate(order.orderTime)}</span>
-                      <div className="flex items-center gap-1 text-xs text-slate-400">
-                        查看详情
-                        <ChevronRight className="w-3 h-3" />
-                      </div>
+
+                      {order.status === "used" && !order.review ? (
+                        <button
+                          onClick={(e) => openReviewModal(order.id, e)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-sm active:scale-95 transition-transform"
+                        >
+                          <Star className="w-3 h-3" />
+                          去评价
+                        </button>
+                      ) : order.status === "used" && order.review ? (
+                        <div className="flex items-center gap-1.5">
+                          <StarRating rating={order.review.rating} size="sm" />
+                          <span className="text-xs text-amber-600 font-medium">已评价</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-xs text-slate-400">
+                          查看详情
+                          <ChevronRight className="w-3 h-3" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -490,6 +814,9 @@ export default function OrderHistoryPage() {
           )}
         </div>
       </div>
+
+      {/* Review Modal */}
+      {renderReviewModal()}
     </Layout>
   );
 }
