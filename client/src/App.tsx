@@ -24,6 +24,7 @@ import StoreScenarioPage from "./pages/StoreScenarioPage";
 import StorePackageDetailPage from "./pages/StorePackageDetailPage";
 import StorePaymentSuccessPage from "./pages/StorePaymentSuccessPage";
 import ScanSimulationPage from "./pages/ScanSimulationPage";
+import OrderHistoryPage from "./pages/OrderHistoryPage";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/relations/:type" component={RelationshipPage} />
       <Route path="/notifications" component={NotificationPage} />
       <Route path="/friends" component={FriendsPage} />
+      <Route path="/orders" component={OrderHistoryPage} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { Settings, MapPin, Calendar, Heart, Image as ImageIcon, Star, ChevronRight, Grid, List, Users, Bell, Clock } from "lucide-react";
+import { Settings, MapPin, Calendar, Heart, Image as ImageIcon, Star, ChevronRight, Grid, List, Users, Bell, Clock, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -153,6 +153,27 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Order History Entry */}
+        <div className="px-4 mb-6">
+          <Link href="/orders">
+            <div className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl shadow-sm active:bg-slate-50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
+                  <ShoppingBag className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900">购买记录</h3>
+                  <p className="text-xs text-slate-500">查看已购套餐和核销码</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">2待使用</span>
+                <ChevronRight className="w-5 h-5 text-slate-400" />
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* Friends List Entry */}
