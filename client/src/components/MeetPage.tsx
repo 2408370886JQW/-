@@ -459,6 +459,53 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const lastScrollY = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Animated sold count component with count-up effect
+  const AnimatedSoldCount = ({ count }: { count: number }) => {
+    const [displayCount, setDisplayCount] = useState(0);
+    const ref = useRef<HTMLSpanElement>(null);
+    const hasAnimated = useRef(false);
+
+    useEffect(() => {
+      if (!ref.current || hasAnimated.current) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && !hasAnimated.current) {
+            hasAnimated.current = true;
+            const duration = 1200; // ms
+            const startTime = performance.now();
+            const startVal = 0;
+
+            const animate = (currentTime: number) => {
+              const elapsed = currentTime - startTime;
+              const progress = Math.min(elapsed / duration, 1);
+              // Ease-out cubic for smooth deceleration
+              const eased = 1 - Math.pow(1 - progress, 3);
+              const current = Math.round(startVal + (count - startVal) * eased);
+              setDisplayCount(current);
+              if (progress < 1) {
+                requestAnimationFrame(animate);
+              }
+            };
+            requestAnimationFrame(animate);
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.3 }
+      );
+
+      observer.observe(ref.current);
+      return () => observer.disconnect();
+    }, [count]);
+
+    const formatCount = (n: number) => {
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return String(n);
+    };
+
+    return <span ref={ref}>已售{formatCount(displayCount)}份</span>;
+  };
+
   // Scene-to-gradient color mapping
   const sceneGradients: Record<string, string> = {
     first_meet: 'linear-gradient(135deg, #f97316 0%, #f59e0b 50%, #f97316 100%)',
@@ -1180,12 +1227,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       <div className="flex items-center gap-3 mb-2.5 text-xs">
                         <div className="flex items-center gap-1 text-orange-500 font-semibold">
                           <Flame className="w-3 h-3" />
-                          <span>已售{restaurant.soldCount >= 1000 ? (restaurant.soldCount / 1000).toFixed(1) + 'k' : restaurant.soldCount}份</span>
+                          <AnimatedSoldCount count={restaurant.soldCount} />
                         </div>
                         {restaurant.topReview && (
                           <div className="flex-1 flex items-center gap-1.5 text-slate-400 truncate">
                             <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">“{restaurant.topReview.text}”</span>
+                            <span className="truncate">"{restaurant.topReview.text}"</span>
                           </div>
                         )}
                       </div>
@@ -1307,12 +1354,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       <div className="flex items-center gap-3 mb-2.5 text-xs">
                         <div className="flex items-center gap-1 text-orange-500 font-semibold">
                           <Flame className="w-3 h-3" />
-                          <span>已售{restaurant.soldCount >= 1000 ? (restaurant.soldCount / 1000).toFixed(1) + 'k' : restaurant.soldCount}份</span>
+                          <AnimatedSoldCount count={restaurant.soldCount} />
                         </div>
                         {restaurant.topReview && (
                           <div className="flex-1 flex items-center gap-1.5 text-slate-400 truncate">
                             <MessageSquare className="w-3 h-3 flex-shrink-0" />
-                            <span className="truncate">“{restaurant.topReview.text}”</span>
+                            <span className="truncate">"{restaurant.topReview.text}"</span>
                           </div>
                         )}
                       </div>
