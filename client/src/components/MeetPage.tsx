@@ -1728,6 +1728,12 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     <div className="relative h-40">
                       <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                      {/* Distance sort: ranking badge on image */}
+                      {isDistanceSort && (
+                        <div className={`absolute top-2 left-2 ${distBadgeColor} text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg z-30`}>
+                          #{index + 1}
+                        </div>
+                      )}
                       <div className="absolute bottom-3 left-3 right-3 text-white">
                         <h3 className="font-bold text-lg">{restaurant.name}</h3>
                         <div className="flex items-center gap-2 text-xs opacity-90 mt-1">
@@ -1735,12 +1741,6 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                           <span className="mx-0.5">·</span>
                           <Navigation className="w-3 h-3" /><span>{restaurant.distance}</span>
                         </div>
-                        {/* Distance sort: ranking badge on image */}
-                        {isDistanceSort && (
-                          <div className={`absolute top-3 left-3 ${distBadgeColor} text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg z-20`}>
-                            #{index + 1}
-                          </div>
-                        )}
                       </div>
                       {/* Rating badge & Favorite */}
                       <div className="absolute top-3 right-3 flex items-center gap-1.5">
@@ -1755,13 +1755,13 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       </div>
                       {/* Promo tag */}
                       {restaurant.promoTag && (
-                        <div className={`absolute top-3 left-3 bg-gradient-to-r ${restaurant.promoTag.color} px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-md`}>
+                        <div className={`absolute ${isDistanceSort ? 'top-10' : 'top-3'} left-3 bg-gradient-to-r ${restaurant.promoTag.color} px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-md z-20`}>
                           {restaurant.promoTag.text}
                         </div>
                       )}
                       {/* Scene match level badge - shift down if promo tag exists */}
                       {matchLevel && !isBestMatch && (
-                        <div className={`absolute ${restaurant.promoTag ? 'top-10' : 'top-3'} left-3 ${matchLevel.bg} backdrop-blur px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs font-bold ${matchLevel.color} shadow-sm`}>
+                        <div className={`absolute ${restaurant.promoTag ? (isDistanceSort ? 'top-[4.25rem]' : 'top-10') : (isDistanceSort ? 'top-10' : 'top-3')} left-3 ${matchLevel.bg} backdrop-blur px-2.5 py-1 rounded-lg flex items-center gap-1 text-xs font-bold ${matchLevel.color} shadow-sm`}>
                           <Sparkles className="w-3 h-3" />
                           {matchLevel.label}
                         </div>
@@ -1940,15 +1940,15 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     <div className="relative h-40">
                       <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                      {/* Distance sort: ranking badge on image */}
+                      {isGbDistanceSort && (
+                        <div className={`absolute top-2 left-2 ${gbDistBadgeColor} text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg z-30`}>
+                          #{gbIndex + 1}
+                        </div>
+                      )}
                       <div className="absolute bottom-3 left-3 right-3 text-white">
                         <h3 className="font-bold text-lg">{restaurant.name}</h3>
                         <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span><span className="mx-0.5">·</span><Navigation className="w-3 h-3" /><span>{restaurant.distance}</span></div>
-                        {/* Distance sort: ranking badge on image */}
-                        {isGbDistanceSort && (
-                          <div className={`absolute top-3 left-3 ${gbDistBadgeColor} text-white w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg z-20`}>
-                            #{gbIndex + 1}
-                          </div>
-                        )}
                       </div>
                       {/* Rating badge & Favorite */}
                       <div className="absolute top-3 right-3 flex items-center gap-1.5">
@@ -1963,7 +1963,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       </div>
                       {/* Promo tag */}
                       {restaurant.promoTag && (
-                        <div className={`absolute top-3 left-3 bg-gradient-to-r ${restaurant.promoTag.color} px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-md`}>
+                        <div className={`absolute ${isGbDistanceSort ? 'top-10' : 'top-3'} left-3 bg-gradient-to-r ${restaurant.promoTag.color} px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-md z-20`}>
                           {restaurant.promoTag.text}
                         </div>
                       )}
