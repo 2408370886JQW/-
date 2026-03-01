@@ -82,6 +82,7 @@ const ALL_RESTAURANTS = [
     rating: 4.8,
     positiveRate: 96,
     price: '¥198/人',
+    avgCost: '人均¥120-180',
     soldCount: 2847,
     topReview: { text: '第一次约会选这里，氛围感拉满，服务也很贴心', author: '小林同学', stars: 5 },
     reviews: [
@@ -236,6 +237,7 @@ const ALL_RESTAURANTS = [
     rating: 4.6,
     positiveRate: 91,
     price: '¥258/人',
+    avgCost: '人均¥200-300',
     soldCount: 1563,
     topReview: { text: '包间私密性很好，谈事请客都很有面子，菜品也很有特色', author: 'David周', stars: 5 },
     reviews: [
@@ -316,6 +318,7 @@ const ALL_RESTAURANTS = [
     rating: 4.7,
     positiveRate: 94,
     price: '¥168/人',
+    avgCost: '人均¥100-160',
     soldCount: 4210,
     topReview: { text: '和兄弟们吃的超过瘾，肉质新鲜，烤的恰到好处，必须回购', author: '烧烤爱好者', stars: 5 },
     reviews: [
@@ -397,6 +400,7 @@ const ALL_RESTAURANTS = [
     rating: 4.9,
     positiveRate: 98,
     price: '¥328/人',
+    avgCost: '人均¥250-350',
     soldCount: 986,
     topReview: { text: '夜景绝了，约会氛围感直接拉满，鸡尾酒也很专业', author: '夜猫小姐', stars: 5 },
     reviews: [
@@ -1310,7 +1314,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1 text-slate-500"><Clock className="w-4 h-4" /><span>{restaurant.hours}</span></div>
-              <span className="text-slate-900 font-bold">{restaurant.price}</span>
+              <div className="flex items-center gap-2">
+                {restaurant.avgCost && <span className="text-xs text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">{restaurant.avgCost}</span>}
+                <span className="text-slate-900 font-bold">{restaurant.price}</span>
+              </div>
             </div>
           </div>
           {selectedRelation && (
@@ -1635,7 +1642,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-500">{restaurant.relationPackages.length}个套餐 省得你挑</span>
-                        <div className="flex items-center gap-1 text-slate-900 font-bold">{restaurant.price}<ChevronRight className="w-4 h-4" /></div>
+                        <div className="flex items-center gap-2">
+                          {restaurant.avgCost && <span className="text-xs text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">{restaurant.avgCost}</span>}
+                          <div className="flex items-center gap-1 text-slate-900 font-bold">{restaurant.price}<ChevronRight className="w-4 h-4" /></div>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -1810,7 +1820,10 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-500">{restaurant.normalPackages.length}个好价套餐</span>
-                        <div className="flex items-center gap-1 text-slate-900 font-bold">{restaurant.price}<ChevronRight className="w-4 h-4" /></div>
+                        <div className="flex items-center gap-2">
+                          {restaurant.avgCost && <span className="text-xs text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded">{restaurant.avgCost}</span>}
+                          <div className="flex items-center gap-1 text-slate-900 font-bold">{restaurant.price}<ChevronRight className="w-4 h-4" /></div>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
