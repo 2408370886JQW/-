@@ -82,6 +82,12 @@ const ALL_RESTAURANTS = [
     price: '¥198/人',
     soldCount: 2847,
     topReview: { text: '第一次约会选这里，氛围感拉满，服务也很贴心', author: '小林同学', stars: 5 },
+    reviews: [
+      { text: '第一次约会选这里，氛围感拉满，服务也很贴心，服务员很会看着办事', author: '小林同学', stars: 5, date: '3天前', avatar: 'https://i.pravatar.cc/40?img=1' },
+      { text: '环境很好，灯光暗暗的很有情调，意面和牛排都很不错，分量也足', author: '吃货小张', stars: 5, date: '5天前', avatar: 'https://i.pravatar.cc/40?img=5' },
+      { text: '带女朋友来的，她很喜欢这里的装修风格，下次纪念日还来', author: '小王同学', stars: 5, date: '1周前', avatar: 'https://i.pravatar.cc/40?img=12' },
+      { text: '性价比很高，团购套餐比单点划算很多，推荐双人套餐', author: '省钱达人', stars: 4, date: '2周前', avatar: 'https://i.pravatar.cc/40?img=20' },
+    ],
     phone: '010-6417-8899',
     hours: '11:00 - 22:00',
     relationTags: ['romantic', 'friends', 'solo', 'business'],
@@ -208,6 +214,12 @@ const ALL_RESTAURANTS = [
     price: '¥258/人',
     soldCount: 1563,
     topReview: { text: '包间私密性很好，谈事请客都很有面子，菜品也很有特色', author: 'David周', stars: 5 },
+    reviews: [
+      { text: '包间私密性很好，谈事请客都很有面子，菜品融合得很有特色', author: 'David周', stars: 5, date: '2天前', avatar: 'https://i.pravatar.cc/40?img=3' },
+      { text: '很适合商务室，服务员很专业，不会频繁打扰，客户很满意', author: '商务达人', stars: 5, date: '1周前', avatar: 'https://i.pravatar.cc/40?img=8' },
+      { text: '中东风情的装修很独特，拍照很出片，羊排是招牌必点', author: '美食探店小刘', stars: 5, date: '1周前', avatar: 'https://i.pravatar.cc/40?img=15' },
+      { text: '价格偏高但团购套餐还行，环境和服务值这个价', author: '理性消费', stars: 4, date: '3周前', avatar: 'https://i.pravatar.cc/40?img=22' },
+    ],
     phone: '010-8529-3300',
     hours: '11:30 - 23:00',
     relationTags: ['romantic', 'business', 'friends'],
@@ -272,6 +284,13 @@ const ALL_RESTAURANTS = [
     price: '¥168/人',
     soldCount: 4210,
     topReview: { text: '和兄弟们吃的超过瘾，肉质新鲜，烤的恰到好处，必须回购', author: '烧烤爱好者', stars: 5 },
+    reviews: [
+      { text: '和兄弟们吃的超过瘾，肉质新鲜，烤的恰到好处，必须回购！', author: '烧烤爱好者', stars: 5, date: '1天前', avatar: 'https://i.pravatar.cc/40?img=7' },
+      { text: '聚会首选，气氛很好，服务员会帮忙烤，不用自己动手就能吃好', author: '懒人美食家', stars: 5, date: '4天前', avatar: 'https://i.pravatar.cc/40?img=11' },
+      { text: '和朋友生日聚会来的，服务员还送了小蛋糕，很有心', author: '小美同学', stars: 5, date: '1周前', avatar: 'https://i.pravatar.cc/40?img=25' },
+      { text: '团购套餐超值，肉的分量很足，啤酒也是精酿的，下次还来', author: '啤酒爱好者', stars: 5, date: '2周前', avatar: 'https://i.pravatar.cc/40?img=30' },
+      { text: '晚上去的，氛围很棒，就是人有点多需要等位，建议提前预约', author: '夜猫小哥', stars: 4, date: '3周前', avatar: 'https://i.pravatar.cc/40?img=33' },
+    ],
     phone: '010-8470-2200',
     hours: '17:00 - 02:00',
     relationTags: ['friends', 'family', 'romantic'],
@@ -336,6 +355,12 @@ const ALL_RESTAURANTS = [
     price: '¥328/人',
     soldCount: 986,
     topReview: { text: '夜景绝了，约会氛围感直接拉满，鸡尾酒也很专业', author: '夜猫小姐', stars: 5 },
+    reviews: [
+      { text: '夜景绝了，约会氛围感直接拉满，鸡尾酒也很专业，强烈推荐', author: '夜猫小姐', stars: 5, date: '2天前', avatar: 'https://i.pravatar.cc/40?img=9' },
+      { text: '视野超好，能看到整个CBD夜景，拍照随便拍都很好看', author: '摄影小白', stars: 5, date: '5天前', avatar: 'https://i.pravatar.cc/40?img=16' },
+      { text: '调酒师很专业，会根据口味推荐，每次来都能喝到不一样的惊喜', author: '微醚少女', stars: 5, date: '1周前', avatar: 'https://i.pravatar.cc/40?img=21' },
+      { text: '价格略贵但体验很值，特别适合特殊日子来庆祝，仪式感满分', author: '浪漫主义者', stars: 4, date: '2周前', avatar: 'https://i.pravatar.cc/40?img=28' },
+    ],
     phone: '010-6551-8800',
     hours: '18:00 - 02:00',
     relationTags: ['romantic', 'business', 'friends'],
@@ -667,6 +692,42 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             </div>
           </div>
         </section>
+        {/* User Reviews Section */}
+        {restaurant.reviews && restaurant.reviews.length > 0 && (
+          <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-slate-900">大家怎么说</h3>
+                <span className="text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{restaurant.reviews.length}条评价</span>
+              </div>
+              <div className="flex items-center gap-1 text-orange-500 text-sm font-semibold">
+                <Star className="w-3.5 h-3.5 fill-current" />
+                <span>{restaurant.rating}</span>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {restaurant.reviews.map((review: any, idx: number) => (
+                <div key={idx} className={`${idx > 0 ? 'border-t border-slate-50 pt-4' : ''}`}>
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <img src={review.avatar} alt={review.author} className="w-8 h-8 rounded-full object-cover" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-slate-700">{review.author}</span>
+                        <span className="text-xs text-slate-300">{review.date}</span>
+                      </div>
+                      <div className="flex items-center gap-0.5 mt-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className={`w-3 h-3 ${i < review.stars ? 'fill-orange-400 text-orange-400' : 'fill-slate-200 text-slate-200'}`} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-600 leading-relaxed pl-[42px]">{review.text}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
         <motion.button whileTap={{ scale: 0.95 }} onClick={onSelect} className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200">
