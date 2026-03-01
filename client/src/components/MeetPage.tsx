@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -422,6 +422,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       return true;
     }
   });
+  const [shuffleSeed, setShuffleSeed] = useState(0);
   const lastScrollY = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -462,11 +463,42 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
     return 0;
   };
 
-  // Filtered restaurants for online flow — sorted by match score (best first)
-  const filteredRestaurants = (relationTag
-    ? ALL_RESTAURANTS.filter(r => r.relationTags.includes(relationTag))
-    : [...ALL_RESTAURANTS]
-  ).sort((a, b) => getMatchScore(b) - getMatchScore(a));
+  // Filtered restaurants for online flow — sorted by match score (best first), with shuffle support
+  const filteredRestaurants = useMemo(() => {
+    const base = relationTag
+      ? ALL_RESTAURANTS.filter(r => r.relationTags.includes(relationTag))
+      : [...ALL_RESTAURANTS];
+    // Sort by match score first
+    base.sort((a, b) => getMatchScore(b) - getMatchScore(a));
+    // If shuffleSeed > 0, apply seeded shuffle within same match-score groups
+    if (shuffleSeed > 0) {
+      // Group by match score
+      const groups: Record<number, typeof base> = {};
+      base.forEach(r => {
+        const score = getMatchScore(r);
+        if (!groups[score]) groups[score] = [];
+        groups[score].push(r);
+      });
+      // Shuffle each group using Fisher-Yates with seed
+      const seededRandom = (seed: number) => {
+        let s = seed;
+        return () => { s = (s * 16807 + 0) % 2147483647; return s / 2147483647; };
+      };
+      const rng = seededRandom(shuffleSeed);
+      Object.values(groups).forEach(group => {
+        for (let i = group.length - 1; i > 0; i--) {
+          const j = Math.floor(rng() * (i + 1));
+          [group[i], group[j]] = [group[j], group[i]];
+        }
+      });
+      // Reassemble: highest score groups first
+      const scores = Object.keys(groups).map(Number).sort((a, b) => b - a);
+      const result: typeof base = [];
+      scores.forEach(s => result.push(...groups[s]));
+      return result;
+    }
+    return base;
+  }, [relationTag, shuffleSeed]);
 
   // Category-filtered restaurants for pure group-buy list
   const RESTAURANT_CATEGORIES = ['全部', '美食', '饮品', '娱乐'];
@@ -1085,8 +1117,18 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                 })}
               </div>
 
-              {/* Back to Top Button */}
-              <div className="flex justify-center py-6 pb-10">
+              {/* Shuffle + Back to Top Buttons */}
+              <div className="flex justify-center gap-3 py-6 pb-10">
+                <motion.button
+                  whileTap={{ scale: 0.92, rotate: 15 }}
+                  onClick={() => {
+                    setShuffleSeed(prev => prev + 1);
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 shadow-md text-white text-sm font-bold active:shadow-lg transition-all"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  换一批推荐
+                </motion.button>
                 <button
                   onClick={() => {
                     scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
