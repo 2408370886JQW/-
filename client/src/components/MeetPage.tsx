@@ -465,6 +465,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   });
   const [shuffleSeed, setShuffleSeed] = useState(0);
   const [reviewsExpanded, setReviewsExpanded] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const lastScrollY = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -809,10 +810,96 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
         )}
       </div>
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-20">
-        <motion.button whileTap={{ scale: 0.95 }} onClick={onSelect} className="w-full bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200">
-          就这个了 ¥{pkg.price}
-        </motion.button>
+        <div className="flex items-center gap-3">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowShareModal(true)}
+            className="w-12 h-12 shrink-0 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 active:bg-slate-200 transition-colors"
+          >
+            <Share2 className="w-5 h-5" />
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={onSelect} className="flex-1 bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200">
+            就这个了 ¥{pkg.price}
+          </motion.button>
+        </div>
       </div>
+
+      {/* Share Modal */}
+      <AnimatePresence>
+        {showShareModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[2001] bg-black/50 backdrop-blur-sm flex items-end justify-center"
+            onClick={() => setShowShareModal(false)}
+          >
+            <motion.div
+              initial={{ y: 300 }}
+              animate={{ y: 0 }}
+              exit={{ y: 300 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="w-full max-w-md bg-white rounded-t-3xl p-6 pb-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-5" />
+              <h3 className="font-bold text-lg text-slate-900 text-center mb-2">分享给朋友</h3>
+              <p className="text-sm text-slate-400 text-center mb-6">把这个超值套餐推荐给好友一起来</p>
+              
+              {/* Share preview card */}
+              <div className="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100">
+                <div className="flex gap-3">
+                  <img src={pkg.image} alt={pkg.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-slate-900 text-sm truncate">{pkg.name}</h4>
+                    <p className="text-xs text-slate-400 truncate mt-0.5">{restaurant.name}</p>
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <span className="text-orange-500 font-bold">¥{pkg.price}</span>
+                      <span className="text-slate-300 line-through text-xs">¥{pkg.originalPrice}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Share options */}
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                {[
+                  { icon: '💬', label: '微信', color: 'bg-green-50' },
+                  { icon: '👥', label: '朋友圈', color: 'bg-green-50' },
+                  { icon: '🔗', label: '复制链接', color: 'bg-blue-50' },
+                  { icon: '💬', label: '短信', color: 'bg-orange-50' },
+                ].map((item, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setShowShareModal(false);
+                      // Show a brief toast-like feedback
+                      const toast = document.createElement('div');
+                      toast.className = 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/80 text-white px-6 py-3 rounded-xl text-sm font-medium z-[9999] backdrop-blur-sm';
+                      toast.textContent = item.label === '复制链接' ? '链接已复制' : `即将通过${item.label}分享`;
+                      document.body.appendChild(toast);
+                      setTimeout(() => toast.remove(), 1500);
+                    }}
+                    className="flex flex-col items-center gap-2 active:scale-95 transition-transform"
+                  >
+                    <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center text-2xl`}>
+                      {item.icon}
+                    </div>
+                    <span className="text-xs text-slate-600">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="w-full py-3 bg-slate-100 rounded-full text-slate-600 font-medium text-sm active:bg-slate-200 transition-colors"
+              >
+                取消
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 
