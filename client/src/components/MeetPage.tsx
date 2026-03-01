@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -466,6 +466,24 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   const [shuffleSeed, setShuffleSeed] = useState(0);
   const [reviewsExpanded, setReviewsExpanded] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem('meet_favorites');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const toggleFavorite = (id: number, e?: React.MouseEvent) => {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    setFavoriteIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      try { localStorage.setItem('meet_favorites', JSON.stringify(Array.from(next))); } catch {}
+      return next;
+    });
+  };
   const lastScrollY = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -1334,8 +1352,17 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                           <Navigation className="w-3 h-3" /><span>{restaurant.distance}</span>
                         </div>
                       </div>
-                      {/* Rating badge */}
-                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+                      {/* Rating badge & Favorite */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        <motion.button
+                          whileTap={{ scale: 0.8 }}
+                          onClick={(e) => toggleFavorite(restaurant.id, e)}
+                          className={`w-8 h-8 rounded-lg backdrop-blur flex items-center justify-center transition-colors ${favoriteIds.has(restaurant.id) ? 'bg-orange-500 text-white' : 'bg-white/90 text-slate-400'}`}
+                        >
+                          <Bookmark className={`w-4 h-4 ${favoriteIds.has(restaurant.id) ? 'fill-current' : ''}`} />
+                        </motion.button>
+                        <div className="bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+                      </div>
                       {/* Promo tag */}
                       {restaurant.promoTag && (
                         <div className={`absolute top-3 left-3 bg-gradient-to-r ${restaurant.promoTag.color} px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-md`}>
@@ -1474,7 +1501,17 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                         <h3 className="font-bold text-lg">{restaurant.name}</h3>
                         <div className="flex items-center gap-2 text-xs opacity-90 mt-1"><MapPin className="w-3 h-3" /><span>{restaurant.location}</span></div>
                       </div>
-                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+                      {/* Rating badge & Favorite */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                        <motion.button
+                          whileTap={{ scale: 0.8 }}
+                          onClick={(e) => toggleFavorite(restaurant.id, e)}
+                          className={`w-8 h-8 rounded-lg backdrop-blur flex items-center justify-center transition-colors ${favoriteIds.has(restaurant.id) ? 'bg-orange-500 text-white' : 'bg-white/90 text-slate-400'}`}
+                        >
+                          <Bookmark className={`w-4 h-4 ${favoriteIds.has(restaurant.id) ? 'fill-current' : ''}`} />
+                        </motion.button>
+                        <div className="bg-white/90 backdrop-blur px-2 py-1 rounded-lg flex items-center gap-1 text-xs font-bold text-orange-500"><Star className="w-3 h-3 fill-current" />{restaurant.rating}</div>
+                      </div>
                       {/* Promo tag */}
                       {restaurant.promoTag && (
                         <div className={`absolute top-3 left-3 bg-gradient-to-r ${restaurant.promoTag.color} px-2.5 py-1 rounded-lg text-xs font-bold text-white shadow-md`}>
