@@ -484,6 +484,9 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       return next;
     });
   };
+  const [visibleRestaurantId, setVisibleRestaurantId] = useState<number | null>(null);
+  const [showStickyFav, setShowStickyFav] = useState(false);
+  const restaurantCardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const lastScrollY = useRef(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -696,6 +699,48 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
   useEffect(() => {
     setHeaderHidden(false);
     lastScrollY.current = 0;
+    setShowStickyFav(false);
+    setVisibleRestaurantId(null);
+  }, [onlineStep]);
+
+  // Track visible restaurant cards via IntersectionObserver for sticky favorite bar
+  useEffect(() => {
+    if (onlineStep !== 2 && onlineStep !== 8) return;
+    const cards = restaurantCardRefs.current;
+    if (cards.size === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the most visible card
+        let bestEntry: IntersectionObserverEntry | null = null;
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            if (!bestEntry || entry.intersectionRatio > bestEntry.intersectionRatio) {
+              bestEntry = entry;
+            }
+          }
+        });
+        if (bestEntry) {
+          const id = Number((bestEntry as IntersectionObserverEntry).target.getAttribute('data-restaurant-id'));
+          if (id) setVisibleRestaurantId(id);
+        }
+      },
+      { threshold: [0.3, 0.5, 0.7], root: onlineStep === 2 ? scrollContainerRef.current : null }
+    );
+
+    cards.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [onlineStep, filteredRestaurants, categoryFilteredRestaurants]);
+
+  // Show/hide sticky favorite bar based on scroll position
+  useEffect(() => {
+    const container = onlineStep === 2 ? scrollContainerRef.current : (onlineStep === 8 ? document.querySelector('[data-groupbuy-scroll]') as HTMLElement : null);
+    if (!container) return;
+    const handleFavScroll = () => {
+      setShowStickyFav(container.scrollTop > 300);
+    };
+    container.addEventListener('scroll', handleFavScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleFavScroll);
   }, [onlineStep]);
 
   // Reset all state
@@ -1191,6 +1236,49 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
       {/* ===== ONLINE FLOW ===== */}
       {flowMode === 'online' && onlineStep >= 2 && (
         <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col">
+          {/* Sticky Favorite Bar - shows when scrolling down in restaurant lists */}
+          <AnimatePresence>
+            {showStickyFav && visibleRestaurantId && (onlineStep === 2 || onlineStep === 8) && (() => {
+              const restaurant = ALL_RESTAURANTS.find(r => r.id === visibleRestaurantId);
+              if (!restaurant) return null;
+              const isFav = favoriteIds.has(restaurant.id);
+              return (
+                <motion.div
+                  key="sticky-fav"
+                  initial={{ y: -60, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -60, opacity: 0 }}
+                  transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                  className="absolute top-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-md shadow-md px-4 pt-14 pb-3 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img src={restaurant.image} alt={restaurant.name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-slate-900 truncate">{restaurant.name}</h4>
+                      <div className="flex items-center gap-1 text-xs text-orange-500">
+                        <Star className="w-3 h-3 fill-current" />
+                        <span className="font-semibold">{restaurant.rating}</span>
+                        <span className="text-slate-300 mx-1">|</span>
+                        <span className="text-slate-400">{restaurant.distance}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={(e) => toggleFavorite(restaurant.id, e)}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                      isFav
+                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-200'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    <Bookmark className={`w-4 h-4 ${isFav ? 'fill-current' : ''}`} />
+                    {isFav ? '已收藏' : '收藏'}
+                  </motion.button>
+                </motion.div>
+              );
+            })()}
+          </AnimatePresence>
           {/* Online Step 2: Multi-Restaurant List */}
           {onlineStep === 2 && (
             <>
@@ -1332,7 +1420,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   const matchLevel = getMatchLevel(restaurant);
                   const isBestMatch = index === 0 && matchLevel && matchLevel.label === '超合适';
                   return (
-                  <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className={`bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow ${isBestMatch ? 'border-2 border-orange-300 ring-2 ring-orange-100' : 'border border-slate-100'}`}>
+                  <motion.div key={restaurant.id} ref={(el: HTMLDivElement | null) => { if (el) restaurantCardRefs.current.set(restaurant.id, el); else restaurantCardRefs.current.delete(restaurant.id); }} data-restaurant-id={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurant(restaurant)} className={`bg-white rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow ${isBestMatch ? 'border-2 border-orange-300 ring-2 ring-orange-100' : 'border border-slate-100'}`}>
                     {/* Best Match Top Banner */}
                     {isBestMatch && (
                       <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-1.5 flex items-center gap-1.5">
@@ -1457,7 +1545,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
 
           {/* Online Step 8: Pure Group-Buy Restaurant List (no relation) */}
           {onlineStep === 8 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} data-groupbuy-scroll className="flex-1 flex flex-col bg-slate-50 overflow-y-auto pb-8">
               <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-100">
                 <div className="px-4 pt-12 pb-3 flex items-center gap-4">
                   <button onClick={() => { setOnlineStep(1); setFlowMode(null); }} className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5 text-slate-600" /></button>
@@ -1493,7 +1581,7 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                     <button onClick={() => setSelectedCategory('全部')} className="mt-3 text-sm text-blue-500 font-medium">看看全部</button>
                   </div>
                 ) : categoryFilteredRestaurants.map(restaurant => (
-                  <motion.div key={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurantNormal(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
+                  <motion.div key={restaurant.id} ref={(el: HTMLDivElement | null) => { if (el) restaurantCardRefs.current.set(restaurant.id, el); else restaurantCardRefs.current.delete(restaurant.id); }} data-restaurant-id={restaurant.id} whileTap={{ scale: 0.98 }} onClick={() => handleOnlineSelectRestaurantNormal(restaurant)} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow">
                     <div className="relative h-40">
                       <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
