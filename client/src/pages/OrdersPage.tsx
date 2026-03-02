@@ -211,6 +211,10 @@ export default function OrdersPage() {
   const [refundSubmitting, setRefundSubmitting] = useState(false);
   const [refundSuccess, setRefundSuccess] = useState(false);
 
+  // Cancel refund state
+  const [cancelRefundOrder, setCancelRefundOrder] = useState<OrderRecord | null>(null);
+  const [cancelRefundSubmitting, setCancelRefundSubmitting] = useState(false);
+
   const filterTabs: { key: FilterTab; label: string }[] = [
     { key: "all", label: "全部" },
     { key: "unused", label: "待使用" },
@@ -311,6 +315,30 @@ export default function OrdersPage() {
       setRefundSubmitting(false);
       setRefundSuccess(true);
     }, 1000);
+  };
+
+  // Cancel refund handlers
+  const openCancelRefundDialog = (order: OrderRecord) => {
+    setCancelRefundOrder(order);
+    setCancelRefundSubmitting(false);
+  };
+
+  const closeCancelRefundDialog = () => {
+    setCancelRefundOrder(null);
+  };
+
+  const confirmCancelRefund = () => {
+    if (!cancelRefundOrder) return;
+    setCancelRefundSubmitting(true);
+    setTimeout(() => {
+      setOrders(prev => prev.map(o =>
+        o.id === cancelRefundOrder.id
+          ? { ...o, status: "unused" as OrderStatus, refund: undefined }
+          : o
+      ));
+      setCancelRefundSubmitting(false);
+      setCancelRefundOrder(null);
+    }, 600);
   };
 
   // Star rating component
@@ -687,10 +715,22 @@ export default function OrdersPage() {
                               </>
                             )}
                             {order.status === "refunding" && (
-                              <div className="flex-1 py-2.5 bg-blue-50 text-blue-600 text-sm font-medium rounded-xl text-center flex items-center justify-center gap-2">
-                                <RotateCcw className="w-4 h-4 animate-spin" style={{ animationDuration: "3s" }} />
-                                退款处理中，请耐心等待
-                              </div>
+                              <>
+                                <div className="flex-1 py-2.5 bg-blue-50 text-blue-600 text-sm font-medium rounded-xl text-center flex items-center justify-center gap-2">
+                                  <RotateCcw className="w-4 h-4 animate-spin" style={{ animationDuration: "3s" }} />
+                                  退款处理中
+                                </div>
+                                <motion.button
+                                  whileTap={{ scale: 0.98 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openCancelRefundDialog(order);
+                                  }}
+                                  className="px-4 py-2.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-xl transition-transform active:scale-[0.98]"
+                                >
+                                  取消退款
+                                </motion.button>
+                              </>
                             )}
                             {order.status === "used" && !order.review && (
                               <motion.button
@@ -997,6 +1037,75 @@ export default function OrdersPage() {
                   </motion.button>
                 </motion.div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancel Refund Confirmation Dialog */}
+      <AnimatePresence>
+        {cancelRefundOrder && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-8"
+            onClick={closeCancelRefundDialog}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-6 text-center">
+                <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <AlertTriangle className="w-7 h-7 text-amber-500" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">确认取消退款？</h3>
+                <p className="text-sm text-slate-500 leading-relaxed mb-1">
+                  取消后订单将恢复为“待使用”状态
+                </p>
+                <p className="text-xs text-slate-400 mb-6">
+                  {cancelRefundOrder.merchantName} · {cancelRefundOrder.packageName}
+                </p>
+                <div className="flex gap-3">
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={closeCancelRefundDialog}
+                    disabled={cancelRefundSubmitting}
+                    className="flex-1 py-3 bg-slate-100 text-slate-600 text-sm font-medium rounded-xl transition-colors active:bg-slate-200"
+                  >
+                    再想想
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={confirmCancelRefund}
+                    disabled={cancelRefundSubmitting}
+                    className={cn(
+                      "flex-1 py-3 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2",
+                      cancelRefundSubmitting
+                        ? "bg-slate-200 text-slate-400"
+                        : "bg-slate-900 text-white active:bg-slate-800"
+                    )}
+                  >
+                    {cancelRefundSubmitting ? (
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                          className="w-4 h-4 border-2 border-slate-300 border-t-white rounded-full"
+                        />
+                        处理中...
+                      </>
+                    ) : (
+                      "确认取消"
+                    )}
+                  </motion.button>
+                </div>
+              </div>
             </motion.div>
           </motion.div>
         )}
