@@ -959,9 +959,9 @@ export default function Home() {
                 )}
                 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   <button 
-                    className="py-3.5 rounded-full bg-slate-900 text-white font-bold text-base shadow-lg active:scale-95 transition-transform"
+                    className="py-3 rounded-full bg-slate-900 text-white font-bold text-sm shadow-lg active:scale-95 transition-transform"
                     onClick={(e) => {
                       e.stopPropagation();
                       console.log("Say Hi clicked");
@@ -970,7 +970,17 @@ export default function Home() {
                     打招呼
                   </button>
                   <button 
-                    className="py-3.5 rounded-full bg-slate-100 text-slate-900 font-bold text-base active:scale-95 transition-transform hover:bg-slate-200"
+                    className="py-3 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-sm shadow-lg active:scale-95 transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Navigate to invite flow with selected friend's info
+                      window.location.href = `/invite/${selectedFriend.id}?name=${encodeURIComponent(selectedFriend.nickname || '好友')}&avatar=${encodeURIComponent(selectedFriend.avatar || '')}`;
+                    }}
+                  >
+                    一起去
+                  </button>
+                  <button 
+                    className="py-3 rounded-full bg-slate-100 text-slate-900 font-bold text-sm active:scale-95 transition-transform hover:bg-slate-200"
                     onClick={(e) => {
                       e.stopPropagation();
                       console.log("View Profile clicked");
