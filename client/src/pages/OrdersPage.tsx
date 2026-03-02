@@ -1,18 +1,26 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { ArrowLeft, ShoppingBag, Store, Utensils, ChevronDown, ChevronUp, Clock, CheckCircle2, XCircle, AlertCircle, QrCode, Copy, MapPin, Star, X, MessageSquare, ThumbsUp } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Store, Utensils, ChevronDown, ChevronUp, Clock, CheckCircle2, XCircle, AlertCircle, QrCode, Copy, MapPin, Star, X, MessageSquare, ThumbsUp, RotateCcw, FileText, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 
 // Types
-type OrderStatus = "unused" | "used" | "refunded" | "expired";
+type OrderStatus = "unused" | "used" | "refunded" | "refunding" | "expired";
 
 type ReviewData = {
   rating: number;
   comment: string;
   tags: string[];
   createdAt: string;
+};
+
+type RefundData = {
+  reason: string;
+  description: string;
+  appliedAt: string;
+  completedAt?: string;
+  refundAmount: number;
 };
 
 type OrderRecord = {
@@ -34,6 +42,7 @@ type OrderRecord = {
   inviteUser?: string;
   inviteAvatar?: string;
   review?: ReviewData;
+  refund?: RefundData;
 };
 
 // Review Tags
@@ -41,6 +50,16 @@ const REVIEW_TAGS = [
   "味道很棒", "环境优雅", "服务周到", "性价比高",
   "分量充足", "上菜很快", "适合约会", "值得再来",
   "拍照好看", "交通方便"
+];
+
+// Refund Reasons
+const REFUND_REASONS = [
+  { id: "plan_change", label: "行程变更", desc: "临时有事无法前往" },
+  { id: "not_interested", label: "不想去了", desc: "改变主意不想消费" },
+  { id: "wrong_package", label: "选错套餐", desc: "下单时选错了套餐" },
+  { id: "merchant_issue", label: "商家问题", desc: "商家服务或商品有问题" },
+  { id: "price_issue", label: "价格不合适", desc: "发现其他更优惠的选择" },
+  { id: "other", label: "其他原因", desc: "其他未列出的原因" },
 ];
 
 // Mock Data
@@ -150,17 +169,25 @@ const INITIAL_ORDERS: OrderRecord[] = [
     totalPrice: 188,
     createdAt: "2025-09-05 11:30",
     expireAt: "2025-10-05",
+    refund: {
+      reason: "行程变更",
+      description: "临时出差无法前往，申请退款。",
+      appliedAt: "2025-09-06 09:00",
+      completedAt: "2025-09-07 14:30",
+      refundAmount: 188,
+    },
   },
 ];
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; bg: string; icon: typeof CheckCircle2 }> = {
   unused: { label: "待使用", color: "text-green-600", bg: "bg-green-50", icon: Clock },
   used: { label: "已使用", color: "text-slate-500", bg: "bg-slate-100", icon: CheckCircle2 },
+  refunding: { label: "退款中", color: "text-blue-600", bg: "bg-blue-50", icon: RotateCcw },
   refunded: { label: "已退款", color: "text-orange-600", bg: "bg-orange-50", icon: XCircle },
   expired: { label: "已过期", color: "text-red-500", bg: "bg-red-50", icon: AlertCircle },
 };
 
-type FilterTab = "all" | "unused" | "used" | "refunded" | "expired";
+type FilterTab = "all" | "unused" | "used" | "refunding" | "refunded" | "expired";
 
 export default function OrdersPage() {
   const [, setLocation] = useLocation();
@@ -177,10 +204,18 @@ export default function OrdersPage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
+  // Refund modal state
+  const [refundingOrder, setRefundingOrder] = useState<OrderRecord | null>(null);
+  const [refundReason, setRefundReason] = useState<string>("");
+  const [refundDescription, setRefundDescription] = useState("");
+  const [refundSubmitting, setRefundSubmitting] = useState(false);
+  const [refundSuccess, setRefundSuccess] = useState(false);
+
   const filterTabs: { key: FilterTab; label: string }[] = [
     { key: "all", label: "全部" },
     { key: "unused", label: "待使用" },
     { key: "used", label: "已使用" },
+    { key: "refunding", label: "退款中" },
     { key: "refunded", label: "已退款" },
     { key: "expired", label: "已过期" },
   ];
@@ -193,7 +228,7 @@ export default function OrdersPage() {
   // Stats
   const totalOrders = orders.length;
   const unusedCount = orders.filter(o => o.status === "unused").length;
-  const totalSpent = orders.filter(o => o.status !== "refunded").reduce((sum, o) => sum + o.totalPrice, 0);
+  const totalSpent = orders.filter(o => o.status !== "refunded" && o.status !== "refunding").reduce((sum, o) => sum + o.totalPrice, 0);
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code).catch(() => {});
@@ -201,6 +236,7 @@ export default function OrdersPage() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  // Review handlers
   const openReviewModal = (order: OrderRecord) => {
     setReviewingOrder(order);
     setReviewRating(5);
@@ -224,8 +260,6 @@ export default function OrdersPage() {
   const submitReview = () => {
     if (!reviewingOrder) return;
     setReviewSubmitting(true);
-
-    // Simulate API call
     setTimeout(() => {
       const newReview: ReviewData = {
         rating: reviewRating,
@@ -236,14 +270,47 @@ export default function OrdersPage() {
           hour: "2-digit", minute: "2-digit"
         }).replace(/\//g, "-"),
       };
-
       setOrders(prev => prev.map(o =>
         o.id === reviewingOrder.id ? { ...o, review: newReview } : o
       ));
-
       setReviewSubmitting(false);
       setReviewSuccess(true);
     }, 800);
+  };
+
+  // Refund handlers
+  const openRefundModal = (order: OrderRecord) => {
+    setRefundingOrder(order);
+    setRefundReason("");
+    setRefundDescription("");
+    setRefundSubmitting(false);
+    setRefundSuccess(false);
+  };
+
+  const closeRefundModal = () => {
+    setRefundingOrder(null);
+    setRefundSuccess(false);
+  };
+
+  const submitRefund = () => {
+    if (!refundingOrder || !refundReason) return;
+    setRefundSubmitting(true);
+    setTimeout(() => {
+      const newRefund: RefundData = {
+        reason: REFUND_REASONS.find(r => r.id === refundReason)?.label || refundReason,
+        description: refundDescription,
+        appliedAt: new Date().toLocaleString("zh-CN", {
+          year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit"
+        }).replace(/\//g, "-"),
+        refundAmount: refundingOrder.totalPrice,
+      };
+      setOrders(prev => prev.map(o =>
+        o.id === refundingOrder.id ? { ...o, status: "refunding" as OrderStatus, refund: newRefund } : o
+      ));
+      setRefundSubmitting(false);
+      setRefundSuccess(true);
+    }, 1000);
   };
 
   // Star rating component
@@ -312,7 +379,7 @@ export default function OrdersPage() {
               <div className="text-xs text-slate-400 mt-1">待使用</div>
             </div>
             <div className="bg-white rounded-xl p-3 text-center border border-slate-100 shadow-sm">
-              <div className="text-2xl font-bold text-orange-500">¥{totalSpent}</div>
+              <div className="text-2xl font-bold text-amber-600">¥{totalSpent}</div>
               <div className="text-xs text-slate-400 mt-1">累计消费</div>
             </div>
           </div>
@@ -320,47 +387,54 @@ export default function OrdersPage() {
 
         {/* Filter Tabs */}
         <div className="px-4 mb-4">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-            {filterTabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveFilter(tab.key)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
-                  activeFilter === tab.key
-                    ? "bg-slate-900 text-white"
-                    : "bg-white text-slate-600 border border-slate-200"
-                )}
-              >
-                {tab.label}
-                {tab.key !== "all" && (
-                  <span className="ml-1 text-xs opacity-70">
-                    {orders.filter(o => o.status === tab.key).length}
-                  </span>
-                )}
-              </button>
-            ))}
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {filterTabs.map(tab => {
+              const count = tab.key === "all" ? orders.length : orders.filter(o => o.status === tab.key).length;
+              return (
+                <motion.button
+                  key={tab.key}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveFilter(tab.key)}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5",
+                    activeFilter === tab.key
+                      ? "bg-slate-900 text-white"
+                      : "bg-white text-slate-600 border border-slate-200"
+                  )}
+                >
+                  {tab.label}
+                  {count > 0 && (
+                    <span className={cn(
+                      "text-xs px-1.5 py-0.5 rounded-full",
+                      activeFilter === tab.key ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                    )}>
+                      {count}
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })}
           </div>
         </div>
 
         {/* Order List */}
         <div className="px-4 space-y-3">
           {filteredOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-              <ShoppingBag className="w-12 h-12 mb-3 opacity-30" />
-              <p className="text-sm">暂无相关订单</p>
+            <div className="flex flex-col items-center py-16">
+              <ShoppingBag className="w-12 h-12 text-slate-200 mb-4" />
+              <p className="text-sm text-slate-400">暂无相关订单</p>
             </div>
           ) : (
             filteredOrders.map(order => {
-              const statusConfig = STATUS_CONFIG[order.status];
-              const StatusIcon = statusConfig.icon;
+              const config = STATUS_CONFIG[order.status];
+              const StatusIcon = config.icon;
               const isExpanded = expandedId === order.id;
 
               return (
                 <motion.div
                   key={order.id}
                   layout
-                  className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"
+                  className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden"
                 >
                   {/* Order Card Header */}
                   <div
@@ -369,57 +443,33 @@ export default function OrdersPage() {
                   >
                     <div className="flex items-start gap-3">
                       {/* Merchant Image */}
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
-                        <img src={order.merchantImage} className="w-full h-full object-cover" />
+                      <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+                        <img src={order.merchantImage} className="w-full h-full object-cover" alt="" />
                       </div>
 
-                      {/* Order Info */}
+                      {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-bold text-slate-900 text-sm truncate">{order.merchantName}</h3>
-                          <span className={cn(
-                            "px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 flex items-center gap-1",
-                            statusConfig.bg, statusConfig.color
-                          )}>
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-bold text-sm text-slate-900 truncate">{order.merchantName}</h3>
+                          <span className={cn("text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1", config.color, config.bg)}>
                             <StatusIcon className="w-3 h-3" />
-                            {statusConfig.label}
+                            {config.label}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1 truncate">{order.packageName}</p>
+                        <p className="text-xs text-slate-500 truncate">{order.packageName}</p>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-sm font-bold text-orange-500">¥{order.totalPrice}</span>
-                          <span className="text-xs text-slate-400">{order.createdAt}</span>
+                          <span className="text-base font-bold text-slate-900">¥{order.totalPrice}</span>
+                          <div className="flex items-center gap-1.5">
+                            {order.inviteUser && (
+                              <div className="flex items-center gap-1 bg-pink-50 px-2 py-0.5 rounded-full">
+                                <img src={order.inviteAvatar} className="w-4 h-4 rounded-full object-cover" alt="" />
+                                <span className="text-xs text-pink-600">{order.inviteUser}</span>
+                              </div>
+                            )}
+                            {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                          </div>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Invite User Badge */}
-                    {order.inviteUser && (
-                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
-                        <img src={order.inviteAvatar} className="w-5 h-5 rounded-full object-cover" />
-                        <span className="text-xs text-slate-500">与 <span className="font-medium text-slate-700">{order.inviteUser}</span> 的邀约订单</span>
-                      </div>
-                    )}
-
-                    {/* Review Preview (collapsed) - show star rating inline */}
-                    {order.review && !isExpanded && (
-                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-50">
-                        <div className="flex items-center gap-0.5">
-                          {[1, 2, 3, 4, 5].map(s => (
-                            <Star key={s} className={cn("w-3 h-3", s <= order.review!.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200")} />
-                          ))}
-                        </div>
-                        <span className="text-xs text-slate-400 truncate flex-1">"{order.review.comment}"</span>
-                      </div>
-                    )}
-
-                    {/* Expand Indicator */}
-                    <div className="flex justify-center mt-2">
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-slate-300" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-slate-300" />
-                      )}
                     </div>
                   </div>
 
@@ -433,71 +483,68 @@ export default function OrdersPage() {
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-4 border-t border-slate-100">
+                        <div className="px-4 pb-4 border-t border-slate-100 pt-4">
                           {/* Merchant Image Full */}
-                          <div className="mt-3 rounded-lg overflow-hidden h-32">
-                            <img src={order.merchantImage} className="w-full h-full object-cover" />
+                          <div className="w-full h-36 rounded-xl overflow-hidden mb-4">
+                            <img src={order.merchantImage} className="w-full h-full object-cover" alt="" />
                           </div>
 
-                          {/* Merchant Address */}
-                          <div className="flex items-center gap-2 mt-3 text-xs text-slate-500">
+                          {/* Address */}
+                          <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
                             <MapPin className="w-3.5 h-3.5 text-slate-400" />
                             {order.merchantAddress}
                           </div>
 
                           {/* Package Items */}
-                          <div className="mt-3">
+                          <div className="bg-slate-50 rounded-xl p-3 mb-3">
                             <div className="flex items-center gap-1.5 mb-2">
                               <Utensils className="w-3.5 h-3.5 text-slate-400" />
-                              <span className="text-xs font-medium text-slate-700">套餐内容</span>
+                              <span className="text-xs font-medium text-slate-600">套餐内容</span>
                             </div>
-                            <div className="bg-slate-50 rounded-lg p-3">
+                            <div className="space-y-1">
                               {order.packageItems.map((item, i) => (
-                                <div key={i} className="flex items-center gap-2 py-1">
-                                  <div className="w-1 h-1 rounded-full bg-slate-300" />
-                                  <span className="text-xs text-slate-600">{item}</span>
+                                <div key={i} className="text-xs text-slate-500 flex items-center gap-1.5">
+                                  <span className="w-1 h-1 bg-slate-300 rounded-full flex-shrink-0" />
+                                  {item}
                                 </div>
                               ))}
                             </div>
                           </div>
 
-                          {/* Order Details */}
-                          <div className="mt-3 space-y-2">
-                            <div className="flex justify-between text-xs">
+                          {/* Order Info */}
+                          <div className="space-y-2 mb-3 text-xs">
+                            <div className="flex justify-between">
                               <span className="text-slate-400">订单编号</span>
                               <span className="text-slate-600 font-mono">{order.orderNo}</span>
                             </div>
-                            <div className="flex justify-between text-xs">
+                            <div className="flex justify-between">
                               <span className="text-slate-400">下单时间</span>
                               <span className="text-slate-600">{order.createdAt}</span>
                             </div>
-                            <div className="flex justify-between text-xs">
-                              <span className="text-slate-400">有效期至</span>
-                              <span className="text-slate-600">{order.expireAt}</span>
-                            </div>
                             {order.usedAt && (
-                              <div className="flex justify-between text-xs">
+                              <div className="flex justify-between">
                                 <span className="text-slate-400">使用时间</span>
                                 <span className="text-slate-600">{order.usedAt}</span>
                               </div>
                             )}
+                            <div className="flex justify-between">
+                              <span className="text-slate-400">有效期至</span>
+                              <span className="text-slate-600">{order.expireAt}</span>
+                            </div>
                           </div>
 
                           {/* Verify Code (for unused orders) */}
                           {order.status === "unused" && order.verifyCode && (
-                            <div className="mt-4 bg-green-50 border border-green-100 rounded-xl p-4">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
+                            <div className="bg-green-50 rounded-xl p-4 mb-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-1.5">
                                   <QrCode className="w-4 h-4 text-green-600" />
-                                  <span className="text-sm font-bold text-green-700">核销码</span>
+                                  <span className="text-xs font-bold text-green-700">核销码</span>
                                 </div>
                                 <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCopyCode(order.verifyCode!);
-                                  }}
+                                  onClick={(e) => { e.stopPropagation(); handleCopyCode(order.verifyCode!); }}
                                   className={cn(
-                                    "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors",
+                                    "px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1 transition-colors",
                                     copiedCode === order.verifyCode
                                       ? "bg-green-200 text-green-800"
                                       : "bg-green-100 text-green-600 active:bg-green-200"
@@ -516,22 +563,93 @@ export default function OrdersPage() {
                             </div>
                           )}
 
+                          {/* Refund Info (for refunding/refunded orders) */}
+                          {order.refund && (order.status === "refunding" || order.status === "refunded") && (
+                            <div className={cn(
+                              "rounded-xl p-4 mb-3 border",
+                              order.status === "refunding"
+                                ? "bg-blue-50 border-blue-100"
+                                : "bg-orange-50 border-orange-100"
+                            )}>
+                              <div className="flex items-center gap-2 mb-3">
+                                {order.status === "refunding" ? (
+                                  <RotateCcw className="w-4 h-4 text-blue-600" />
+                                ) : (
+                                  <CheckCircle2 className="w-4 h-4 text-orange-600" />
+                                )}
+                                <span className={cn(
+                                  "text-sm font-bold",
+                                  order.status === "refunding" ? "text-blue-700" : "text-orange-700"
+                                )}>
+                                  {order.status === "refunding" ? "退款处理中" : "退款已完成"}
+                                </span>
+                              </div>
+
+                              {/* Refund Progress */}
+                              {order.status === "refunding" && (
+                                <div className="mb-4">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex-1 h-1.5 bg-blue-100 rounded-full overflow-hidden">
+                                      <motion.div
+                                        initial={{ width: "0%" }}
+                                        animate={{ width: "60%" }}
+                                        transition={{ duration: 1, ease: "easeOut" }}
+                                        className="h-full bg-blue-500 rounded-full"
+                                      />
+                                    </div>
+                                    <span className="text-xs text-blue-600 font-medium">处理中</span>
+                                  </div>
+                                  <p className="text-xs text-blue-500">预计1-3个工作日内退款到账</p>
+                                </div>
+                              )}
+
+                              <div className="space-y-2 text-xs">
+                                <div className="flex justify-between">
+                                  <span className={order.status === "refunding" ? "text-blue-400" : "text-orange-400"}>退款原因</span>
+                                  <span className={order.status === "refunding" ? "text-blue-700" : "text-orange-700"}>{order.refund.reason}</span>
+                                </div>
+                                {order.refund.description && (
+                                  <div className="flex justify-between">
+                                    <span className={order.status === "refunding" ? "text-blue-400" : "text-orange-400"}>退款说明</span>
+                                    <span className={cn(
+                                      "text-right max-w-[60%]",
+                                      order.status === "refunding" ? "text-blue-700" : "text-orange-700"
+                                    )}>{order.refund.description}</span>
+                                  </div>
+                                )}
+                                <div className="flex justify-between">
+                                  <span className={order.status === "refunding" ? "text-blue-400" : "text-orange-400"}>退款金额</span>
+                                  <span className={cn(
+                                    "font-bold",
+                                    order.status === "refunding" ? "text-blue-700" : "text-orange-700"
+                                  )}>¥{order.refund.refundAmount}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className={order.status === "refunding" ? "text-blue-400" : "text-orange-400"}>申请时间</span>
+                                  <span className={order.status === "refunding" ? "text-blue-600" : "text-orange-600"}>{order.refund.appliedAt}</span>
+                                </div>
+                                {order.refund.completedAt && (
+                                  <div className="flex justify-between">
+                                    <span className="text-orange-400">完成时间</span>
+                                    <span className="text-orange-600">{order.refund.completedAt}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Review Display (for reviewed orders) */}
                           {order.review && (
-                            <div className="mt-4 bg-amber-50 border border-amber-100 rounded-xl p-4">
+                            <div className="mt-1 bg-amber-50 border border-amber-100 rounded-xl p-4">
                               <div className="flex items-center gap-2 mb-3">
                                 <MessageSquare className="w-4 h-4 text-amber-600" />
                                 <span className="text-sm font-bold text-amber-700">我的评价</span>
                                 <span className="text-xs text-amber-500 ml-auto">{order.review.createdAt}</span>
                               </div>
-
-                              {/* Stars */}
                               <div className="flex items-center gap-2 mb-3">
                                 <StarRating rating={order.review.rating} size="sm" />
                                 <span className="text-xs font-medium text-amber-600">{ratingText(order.review.rating)}</span>
                               </div>
-
-                              {/* Tags */}
                               {order.review.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 mb-3">
                                   {order.review.tags.map(tag => (
@@ -541,8 +659,6 @@ export default function OrdersPage() {
                                   ))}
                                 </div>
                               )}
-
-                              {/* Comment */}
                               {order.review.comment && (
                                 <p className="text-sm text-slate-700 leading-relaxed bg-white rounded-lg p-3 border border-amber-100">
                                   "{order.review.comment}"
@@ -558,10 +674,23 @@ export default function OrdersPage() {
                                 <button className="flex-1 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl active:scale-[0.98] transition-transform">
                                   到店核销
                                 </button>
-                                <button className="px-4 py-2.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-xl active:scale-[0.98] transition-transform">
+                                <motion.button
+                                  whileTap={{ scale: 0.98 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openRefundModal(order);
+                                  }}
+                                  className="px-4 py-2.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-xl transition-transform"
+                                >
                                   申请退款
-                                </button>
+                                </motion.button>
                               </>
+                            )}
+                            {order.status === "refunding" && (
+                              <div className="flex-1 py-2.5 bg-blue-50 text-blue-600 text-sm font-medium rounded-xl text-center flex items-center justify-center gap-2">
+                                <RotateCcw className="w-4 h-4 animate-spin" style={{ animationDuration: "3s" }} />
+                                退款处理中，请耐心等待
+                              </div>
                             )}
                             {order.status === "used" && !order.review && (
                               <motion.button
@@ -582,6 +711,11 @@ export default function OrdersPage() {
                                 order.review ? "flex-1" : "px-4"
                               )}>
                                 再来一单
+                              </button>
+                            )}
+                            {order.status === "refunded" && (
+                              <button className="flex-1 py-2.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-xl active:scale-[0.98] transition-transform">
+                                重新购买
                               </button>
                             )}
                             {order.status === "expired" && (
@@ -621,86 +755,199 @@ export default function OrdersPage() {
             >
               {!reviewSuccess ? (
                 <>
-                  {/* Modal Header */}
                   <div className="flex items-center justify-between px-5 pt-5 pb-3">
                     <div>
                       <h2 className="text-lg font-bold text-slate-900">评价订单</h2>
                       <p className="text-xs text-slate-400 mt-0.5">{reviewingOrder.merchantName} · {reviewingOrder.packageName}</p>
                     </div>
-                    <button
-                      onClick={closeReviewModal}
-                      className="p-2 rounded-full bg-slate-100 active:bg-slate-200 transition-colors"
-                    >
+                    <button onClick={closeReviewModal} className="p-2 rounded-full bg-slate-100 active:bg-slate-200 transition-colors">
+                      <X className="w-4 h-4 text-slate-500" />
+                    </button>
+                  </div>
+                  <div className="px-5 pb-8 max-h-[70vh] overflow-y-auto">
+                    <div className="flex flex-col items-center py-5 bg-gradient-to-b from-amber-50 to-white rounded-2xl mb-4">
+                      <p className="text-sm text-slate-500 mb-3">整体体验如何？</p>
+                      <StarRating rating={reviewRating} onRate={setReviewRating} />
+                      <motion.p key={reviewRating} initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-sm font-bold text-amber-600 mt-3">
+                        {ratingText(reviewRating)}
+                      </motion.p>
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-sm font-medium text-slate-700 mb-2.5">选择标签</p>
+                      <div className="flex flex-wrap gap-2">
+                        {REVIEW_TAGS.map(tag => (
+                          <motion.button key={tag} whileTap={{ scale: 0.95 }} onClick={() => toggleReviewTag(tag)}
+                            className={cn("px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
+                              reviewTags.includes(tag) ? "bg-amber-500 text-white border-amber-500" : "bg-white text-slate-600 border-slate-200 active:bg-slate-50"
+                            )}>
+                            {reviewTags.includes(tag) && <span className="mr-1">✓</span>}{tag}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-5">
+                      <p className="text-sm font-medium text-slate-700 mb-2.5">写下你的感受</p>
+                      <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
+                        placeholder="分享你的用餐体验，帮助更多人做出选择..."
+                        className="w-full h-28 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all"
+                        maxLength={500} />
+                      <div className="flex justify-end mt-1"><span className="text-xs text-slate-300">{reviewComment.length}/500</span></div>
+                    </div>
+                    <motion.button whileTap={{ scale: 0.98 }} onClick={submitReview} disabled={reviewSubmitting}
+                      className={cn("w-full py-3.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2",
+                        reviewSubmitting ? "bg-slate-200 text-slate-400" : "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200/50 active:shadow-md"
+                      )}>
+                      {reviewSubmitting ? (
+                        <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full" />提交中...</>
+                      ) : (<><ThumbsUp className="w-4 h-4" />提交评价</>)}
+                    </motion.button>
+                  </div>
+                </>
+              ) : (
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center py-12 px-5">
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.1 }}
+                    className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-5">
+                    <CheckCircle2 className="w-10 h-10 text-green-500" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">评价成功！</h3>
+                  <p className="text-sm text-slate-500 mb-8">感谢你的评价，帮助更多人发现好去处</p>
+                  <motion.button whileTap={{ scale: 0.98 }} onClick={closeReviewModal} className="w-full py-3.5 bg-slate-900 text-white text-sm font-bold rounded-xl">完成</motion.button>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Refund Modal */}
+      <AnimatePresence>
+        {refundingOrder && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+            onClick={closeRefundModal}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-lg bg-white rounded-t-3xl overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              {!refundSuccess ? (
+                <>
+                  {/* Refund Modal Header */}
+                  <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900">申请退款</h2>
+                      <p className="text-xs text-slate-400 mt-0.5">{refundingOrder.merchantName} · {refundingOrder.packageName}</p>
+                    </div>
+                    <button onClick={closeRefundModal} className="p-2 rounded-full bg-slate-100 active:bg-slate-200 transition-colors">
                       <X className="w-4 h-4 text-slate-500" />
                     </button>
                   </div>
 
                   <div className="px-5 pb-8 max-h-[70vh] overflow-y-auto">
-                    {/* Star Rating */}
-                    <div className="flex flex-col items-center py-5 bg-gradient-to-b from-amber-50 to-white rounded-2xl mb-4">
-                      <p className="text-sm text-slate-500 mb-3">整体体验如何？</p>
-                      <StarRating rating={reviewRating} onRate={setReviewRating} />
-                      <motion.p
-                        key={reviewRating}
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-sm font-bold text-amber-600 mt-3"
-                      >
-                        {ratingText(reviewRating)}
-                      </motion.p>
+                    {/* Refund Amount Info */}
+                    <div className="flex flex-col items-center py-5 bg-gradient-to-b from-red-50 to-white rounded-2xl mb-5">
+                      <p className="text-sm text-slate-500 mb-2">退款金额</p>
+                      <div className="text-3xl font-bold text-red-600">¥{refundingOrder.totalPrice}</div>
+                      <p className="text-xs text-slate-400 mt-2">退款将原路返回至支付账户</p>
                     </div>
 
-                    {/* Quick Tags */}
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-slate-700 mb-2.5">选择标签</p>
-                      <div className="flex flex-wrap gap-2">
-                        {REVIEW_TAGS.map(tag => (
+                    {/* Refund Reason Selection */}
+                    <div className="mb-5">
+                      <p className="text-sm font-medium text-slate-700 mb-3">请选择退款原因</p>
+                      <div className="space-y-2">
+                        {REFUND_REASONS.map(reason => (
                           <motion.button
-                            key={tag}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => toggleReviewTag(tag)}
+                            key={reason.id}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setRefundReason(reason.id)}
                             className={cn(
-                              "px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
-                              reviewTags.includes(tag)
-                                ? "bg-amber-500 text-white border-amber-500"
-                                : "bg-white text-slate-600 border-slate-200 active:bg-slate-50"
+                              "w-full flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left",
+                              refundReason === reason.id
+                                ? "border-red-400 bg-red-50 shadow-sm"
+                                : "border-slate-200 bg-white active:bg-slate-50"
                             )}
                           >
-                            {reviewTags.includes(tag) && <span className="mr-1">✓</span>}
-                            {tag}
+                            <div className={cn(
+                              "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors",
+                              refundReason === reason.id
+                                ? "border-red-500 bg-red-500"
+                                : "border-slate-300"
+                            )}>
+                              {refundReason === reason.id && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  className="w-2 h-2 bg-white rounded-full"
+                                />
+                              )}
+                            </div>
+                            <div>
+                              <div className={cn(
+                                "text-sm font-medium",
+                                refundReason === reason.id ? "text-red-700" : "text-slate-700"
+                              )}>
+                                {reason.label}
+                              </div>
+                              <div className="text-xs text-slate-400 mt-0.5">{reason.desc}</div>
+                            </div>
                           </motion.button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Comment Input */}
+                    {/* Refund Description */}
                     <div className="mb-5">
-                      <p className="text-sm font-medium text-slate-700 mb-2.5">写下你的感受</p>
+                      <p className="text-sm font-medium text-slate-700 mb-2.5">补充说明 <span className="text-slate-400 font-normal">(选填)</span></p>
                       <textarea
-                        value={reviewComment}
-                        onChange={e => setReviewComment(e.target.value)}
-                        placeholder="分享你的用餐体验，帮助更多人做出选择..."
-                        className="w-full h-28 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all"
-                        maxLength={500}
+                        value={refundDescription}
+                        onChange={e => setRefundDescription(e.target.value)}
+                        placeholder="请补充退款原因的详细说明，帮助我们更快处理..."
+                        className="w-full h-24 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all"
+                        maxLength={200}
                       />
                       <div className="flex justify-end mt-1">
-                        <span className="text-xs text-slate-300">{reviewComment.length}/500</span>
+                        <span className="text-xs text-slate-300">{refundDescription.length}/200</span>
+                      </div>
+                    </div>
+
+                    {/* Refund Notice */}
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-5">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <div className="text-xs text-amber-700 leading-relaxed">
+                          <p className="font-medium mb-1">退款须知</p>
+                          <ul className="space-y-0.5 text-amber-600">
+                            <li>· 退款申请提交后将在1-3个工作日内处理</li>
+                            <li>· 退款金额将原路退回至支付账户</li>
+                            <li>· 已使用的订单不支持退款</li>
+                            <li>· 退款成功后，相关邀约将自动取消</li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
 
                     {/* Submit Button */}
                     <motion.button
                       whileTap={{ scale: 0.98 }}
-                      onClick={submitReview}
-                      disabled={reviewSubmitting}
+                      onClick={submitRefund}
+                      disabled={refundSubmitting || !refundReason}
                       className={cn(
                         "w-full py-3.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2",
-                        reviewSubmitting
+                        refundSubmitting
                           ? "bg-slate-200 text-slate-400"
-                          : "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200/50 active:shadow-md"
+                          : !refundReason
+                            ? "bg-slate-100 text-slate-400"
+                            : "bg-red-500 text-white shadow-lg shadow-red-200/50 active:shadow-md"
                       )}
                     >
-                      {reviewSubmitting ? (
+                      {refundSubmitting ? (
                         <>
                           <motion.div
                             animate={{ rotate: 360 }}
@@ -711,15 +958,15 @@ export default function OrdersPage() {
                         </>
                       ) : (
                         <>
-                          <ThumbsUp className="w-4 h-4" />
-                          提交评价
+                          <FileText className="w-4 h-4" />
+                          提交退款申请
                         </>
                       )}
                     </motion.button>
                   </div>
                 </>
               ) : (
-                /* Success State */
+                /* Refund Success State */
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -729,18 +976,24 @@ export default function OrdersPage() {
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.1 }}
-                    className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-5"
+                    className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-5"
                   >
-                    <CheckCircle2 className="w-10 h-10 text-green-500" />
+                    <CheckCircle2 className="w-10 h-10 text-blue-500" />
                   </motion.div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">评价成功！</h3>
-                  <p className="text-sm text-slate-500 mb-8">感谢你的评价，帮助更多人发现好去处</p>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">退款申请已提交</h3>
+                  <p className="text-sm text-slate-500 mb-2">预计1-3个工作日内处理</p>
+                  <div className="bg-blue-50 rounded-xl px-4 py-3 mb-8 w-full">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-blue-500">退款金额</span>
+                      <span className="font-bold text-blue-700">¥{refundingOrder.totalPrice}</span>
+                    </div>
+                  </div>
                   <motion.button
                     whileTap={{ scale: 0.98 }}
-                    onClick={closeReviewModal}
+                    onClick={closeRefundModal}
                     className="w-full py-3.5 bg-slate-900 text-white text-sm font-bold rounded-xl"
                   >
-                    完成
+                    我知道了
                   </motion.button>
                 </motion.div>
               )}
