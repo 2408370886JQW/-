@@ -1,12 +1,19 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { ArrowLeft, ShoppingBag, Store, Utensils, ChevronDown, ChevronUp, Clock, CheckCircle2, XCircle, AlertCircle, QrCode, Copy, MapPin } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Store, Utensils, ChevronDown, ChevronUp, Clock, CheckCircle2, XCircle, AlertCircle, QrCode, Copy, MapPin, Star, X, MessageSquare, ThumbsUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 
 // Types
 type OrderStatus = "unused" | "used" | "refunded" | "expired";
+
+type ReviewData = {
+  rating: number;
+  comment: string;
+  tags: string[];
+  createdAt: string;
+};
 
 type OrderRecord = {
   id: number;
@@ -26,10 +33,18 @@ type OrderRecord = {
   verifyCode?: string;
   inviteUser?: string;
   inviteAvatar?: string;
+  review?: ReviewData;
 };
 
+// Review Tags
+const REVIEW_TAGS = [
+  "味道很棒", "环境优雅", "服务周到", "性价比高",
+  "分量充足", "上菜很快", "适合约会", "值得再来",
+  "拍照好看", "交通方便"
+];
+
 // Mock Data
-const ORDER_RECORDS: OrderRecord[] = [
+const INITIAL_ORDERS: OrderRecord[] = [
   {
     id: 1,
     orderNo: "ORD20251024001",
@@ -99,6 +114,12 @@ const ORDER_RECORDS: OrderRecord[] = [
     expireAt: "2025-11-10",
     inviteUser: "小美",
     inviteAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+    review: {
+      rating: 5,
+      comment: "和闺蜜度过了一个美好的下午，咖啡很香，甜点也很精致！环境特别适合拍照，下次还来～",
+      tags: ["味道很棒", "环境优雅", "拍照好看", "适合约会"],
+      createdAt: "2025-10-13 10:30",
+    },
   },
   {
     id: 5,
@@ -146,6 +167,15 @@ export default function OrdersPage() {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [orders, setOrders] = useState<OrderRecord[]>(INITIAL_ORDERS);
+
+  // Review modal state
+  const [reviewingOrder, setReviewingOrder] = useState<OrderRecord | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewTags, setReviewTags] = useState<string[]>([]);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
 
   const filterTabs: { key: FilterTab; label: string }[] = [
     { key: "all", label: "全部" },
@@ -155,20 +185,102 @@ export default function OrdersPage() {
     { key: "expired", label: "已过期" },
   ];
 
-  const filteredOrders = ORDER_RECORDS.filter(order => {
+  const filteredOrders = orders.filter(order => {
     if (activeFilter === "all") return true;
     return order.status === activeFilter;
   });
 
   // Stats
-  const totalOrders = ORDER_RECORDS.length;
-  const unusedCount = ORDER_RECORDS.filter(o => o.status === "unused").length;
-  const totalSpent = ORDER_RECORDS.filter(o => o.status !== "refunded").reduce((sum, o) => sum + o.totalPrice, 0);
+  const totalOrders = orders.length;
+  const unusedCount = orders.filter(o => o.status === "unused").length;
+  const totalSpent = orders.filter(o => o.status !== "refunded").reduce((sum, o) => sum + o.totalPrice, 0);
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code).catch(() => {});
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const openReviewModal = (order: OrderRecord) => {
+    setReviewingOrder(order);
+    setReviewRating(5);
+    setReviewComment("");
+    setReviewTags([]);
+    setReviewSubmitting(false);
+    setReviewSuccess(false);
+  };
+
+  const closeReviewModal = () => {
+    setReviewingOrder(null);
+    setReviewSuccess(false);
+  };
+
+  const toggleReviewTag = (tag: string) => {
+    setReviewTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const submitReview = () => {
+    if (!reviewingOrder) return;
+    setReviewSubmitting(true);
+
+    // Simulate API call
+    setTimeout(() => {
+      const newReview: ReviewData = {
+        rating: reviewRating,
+        comment: reviewComment,
+        tags: reviewTags,
+        createdAt: new Date().toLocaleString("zh-CN", {
+          year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit"
+        }).replace(/\//g, "-"),
+      };
+
+      setOrders(prev => prev.map(o =>
+        o.id === reviewingOrder.id ? { ...o, review: newReview } : o
+      ));
+
+      setReviewSubmitting(false);
+      setReviewSuccess(true);
+    }, 800);
+  };
+
+  // Star rating component
+  const StarRating = ({ rating, onRate, size = "lg" }: { rating: number; onRate?: (r: number) => void; size?: "sm" | "lg" }) => {
+    const starSize = size === "lg" ? "w-8 h-8" : "w-4 h-4";
+    return (
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map(star => (
+          <motion.button
+            key={star}
+            whileTap={onRate ? { scale: 1.3 } : undefined}
+            onClick={() => onRate?.(star)}
+            className={cn(
+              "transition-colors",
+              onRate ? "cursor-pointer" : "cursor-default"
+            )}
+          >
+            <Star
+              className={cn(
+                starSize,
+                star <= rating
+                  ? "fill-amber-400 text-amber-400"
+                  : "fill-slate-200 text-slate-200"
+              )}
+            />
+          </motion.button>
+        ))}
+      </div>
+    );
+  };
+
+  const ratingText = (r: number) => {
+    if (r === 5) return "非常满意";
+    if (r === 4) return "比较满意";
+    if (r === 3) return "一般般";
+    if (r === 2) return "不太满意";
+    return "很不满意";
   };
 
   return (
@@ -223,7 +335,7 @@ export default function OrdersPage() {
                 {tab.label}
                 {tab.key !== "all" && (
                   <span className="ml-1 text-xs opacity-70">
-                    {ORDER_RECORDS.filter(o => o.status === tab.key).length}
+                    {orders.filter(o => o.status === tab.key).length}
                   </span>
                 )}
               </button>
@@ -286,6 +398,18 @@ export default function OrdersPage() {
                       <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-50">
                         <img src={order.inviteAvatar} className="w-5 h-5 rounded-full object-cover" />
                         <span className="text-xs text-slate-500">与 <span className="font-medium text-slate-700">{order.inviteUser}</span> 的邀约订单</span>
+                      </div>
+                    )}
+
+                    {/* Review Preview (collapsed) - show star rating inline */}
+                    {order.review && !isExpanded && (
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-50">
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map(s => (
+                            <Star key={s} className={cn("w-3 h-3", s <= order.review!.rating ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200")} />
+                          ))}
+                        </div>
+                        <span className="text-xs text-slate-400 truncate flex-1">"{order.review.comment}"</span>
                       </div>
                     )}
 
@@ -392,6 +516,41 @@ export default function OrdersPage() {
                             </div>
                           )}
 
+                          {/* Review Display (for reviewed orders) */}
+                          {order.review && (
+                            <div className="mt-4 bg-amber-50 border border-amber-100 rounded-xl p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <MessageSquare className="w-4 h-4 text-amber-600" />
+                                <span className="text-sm font-bold text-amber-700">我的评价</span>
+                                <span className="text-xs text-amber-500 ml-auto">{order.review.createdAt}</span>
+                              </div>
+
+                              {/* Stars */}
+                              <div className="flex items-center gap-2 mb-3">
+                                <StarRating rating={order.review.rating} size="sm" />
+                                <span className="text-xs font-medium text-amber-600">{ratingText(order.review.rating)}</span>
+                              </div>
+
+                              {/* Tags */}
+                              {order.review.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                  {order.review.tags.map(tag => (
+                                    <span key={tag} className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full font-medium">
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Comment */}
+                              {order.review.comment && (
+                                <p className="text-sm text-slate-700 leading-relaxed bg-white rounded-lg p-3 border border-amber-100">
+                                  "{order.review.comment}"
+                                </p>
+                              )}
+                            </div>
+                          )}
+
                           {/* Action Buttons */}
                           <div className="mt-4 flex gap-2">
                             {order.status === "unused" && (
@@ -404,8 +563,24 @@ export default function OrdersPage() {
                                 </button>
                               </>
                             )}
+                            {order.status === "used" && !order.review && (
+                              <motion.button
+                                whileTap={{ scale: 0.98 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openReviewModal(order);
+                                }}
+                                className="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold rounded-xl flex items-center justify-center gap-2 shadow-md shadow-amber-200/50"
+                              >
+                                <Star className="w-4 h-4" />
+                                去评价
+                              </motion.button>
+                            )}
                             {order.status === "used" && (
-                              <button className="flex-1 py-2.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-xl active:scale-[0.98] transition-transform">
+                              <button className={cn(
+                                "py-2.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-xl active:scale-[0.98] transition-transform",
+                                order.review ? "flex-1" : "px-4"
+                              )}>
                                 再来一单
                               </button>
                             )}
@@ -425,6 +600,154 @@ export default function OrdersPage() {
           )}
         </div>
       </div>
+
+      {/* Review Modal */}
+      <AnimatePresence>
+        {reviewingOrder && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+            onClick={closeReviewModal}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-lg bg-white rounded-t-3xl overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              {!reviewSuccess ? (
+                <>
+                  {/* Modal Header */}
+                  <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900">评价订单</h2>
+                      <p className="text-xs text-slate-400 mt-0.5">{reviewingOrder.merchantName} · {reviewingOrder.packageName}</p>
+                    </div>
+                    <button
+                      onClick={closeReviewModal}
+                      className="p-2 rounded-full bg-slate-100 active:bg-slate-200 transition-colors"
+                    >
+                      <X className="w-4 h-4 text-slate-500" />
+                    </button>
+                  </div>
+
+                  <div className="px-5 pb-8 max-h-[70vh] overflow-y-auto">
+                    {/* Star Rating */}
+                    <div className="flex flex-col items-center py-5 bg-gradient-to-b from-amber-50 to-white rounded-2xl mb-4">
+                      <p className="text-sm text-slate-500 mb-3">整体体验如何？</p>
+                      <StarRating rating={reviewRating} onRate={setReviewRating} />
+                      <motion.p
+                        key={reviewRating}
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm font-bold text-amber-600 mt-3"
+                      >
+                        {ratingText(reviewRating)}
+                      </motion.p>
+                    </div>
+
+                    {/* Quick Tags */}
+                    <div className="mb-4">
+                      <p className="text-sm font-medium text-slate-700 mb-2.5">选择标签</p>
+                      <div className="flex flex-wrap gap-2">
+                        {REVIEW_TAGS.map(tag => (
+                          <motion.button
+                            key={tag}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => toggleReviewTag(tag)}
+                            className={cn(
+                              "px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
+                              reviewTags.includes(tag)
+                                ? "bg-amber-500 text-white border-amber-500"
+                                : "bg-white text-slate-600 border-slate-200 active:bg-slate-50"
+                            )}
+                          >
+                            {reviewTags.includes(tag) && <span className="mr-1">✓</span>}
+                            {tag}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Comment Input */}
+                    <div className="mb-5">
+                      <p className="text-sm font-medium text-slate-700 mb-2.5">写下你的感受</p>
+                      <textarea
+                        value={reviewComment}
+                        onChange={e => setReviewComment(e.target.value)}
+                        placeholder="分享你的用餐体验，帮助更多人做出选择..."
+                        className="w-full h-28 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-300 resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-300 transition-all"
+                        maxLength={500}
+                      />
+                      <div className="flex justify-end mt-1">
+                        <span className="text-xs text-slate-300">{reviewComment.length}/500</span>
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={submitReview}
+                      disabled={reviewSubmitting}
+                      className={cn(
+                        "w-full py-3.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2",
+                        reviewSubmitting
+                          ? "bg-slate-200 text-slate-400"
+                          : "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-200/50 active:shadow-md"
+                      )}
+                    >
+                      {reviewSubmitting ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                            className="w-4 h-4 border-2 border-slate-300 border-t-slate-500 rounded-full"
+                          />
+                          提交中...
+                        </>
+                      ) : (
+                        <>
+                          <ThumbsUp className="w-4 h-4" />
+                          提交评价
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
+                </>
+              ) : (
+                /* Success State */
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex flex-col items-center py-12 px-5"
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.1 }}
+                    className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-5"
+                  >
+                    <CheckCircle2 className="w-10 h-10 text-green-500" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">评价成功！</h3>
+                  <p className="text-sm text-slate-500 mb-8">感谢你的评价，帮助更多人发现好去处</p>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={closeReviewModal}
+                    className="w-full py-3.5 bg-slate-900 text-white text-sm font-bold rounded-xl"
+                  >
+                    完成
+                  </motion.button>
+                </motion.div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Layout>
   );
 }
