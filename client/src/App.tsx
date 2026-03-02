@@ -26,6 +26,7 @@ import OrdersPage from "./pages/OrdersPage";
 import UserMomentsPage from "./pages/UserMomentsPage";
 import InvitePage from "./pages/InvitePage";
 import InviteHistoryPage from "./pages/InviteHistoryPage";
+import LikedUsersPage from "./pages/LikedUsersPage";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/user-moments/:userId" component={UserMomentsPage} />
       <Route path="/invite/:userId" component={InvitePage} />
       <Route path="/invite-history" component={InviteHistoryPage} />
+      <Route path="/liked-users" component={LikedUsersPage} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

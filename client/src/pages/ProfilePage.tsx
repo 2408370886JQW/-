@@ -155,6 +155,27 @@ export default function ProfilePage() {
           </Link>
         </div>
 
+        {/* Liked Users Entry */}
+        <div className="px-4 mb-6">
+          <Link href="/liked-users">
+            <div className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl shadow-sm active:bg-slate-50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center text-rose-500">
+                  <Heart className="w-5 h-5 fill-rose-500" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900">我喜欢的人</h3>
+                  <p className="text-xs text-slate-500">查看和管理喜欢的用户</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs rounded-full font-medium">3人</span>
+                <ChevronRight className="w-5 h-5 text-slate-400" />
+              </div>
+            </div>
+          </Link>
+        </div>
+
         {/* Friends List Entry */}
         <div className="px-4 mb-6">
           <Link href="/friends">
