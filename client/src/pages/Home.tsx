@@ -984,7 +984,7 @@ export default function Home() {
                       setActiveTab('meet');
                     }}
                   >
-                    一起去
+                    约TA相见
                   </button>
                   <button 
                     className="py-3 rounded-full bg-slate-100 text-slate-900 font-bold text-sm active:scale-95 transition-transform hover:bg-slate-200"
