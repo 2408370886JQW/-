@@ -259,6 +259,20 @@ export default function Home() {
   const [distanceFilter, setDistanceFilter] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
 
+  // State for Liked Users
+  const [likedUsers, setLikedUsers] = useState<Set<number>>(new Set());
+  const toggleLike = (userId: number) => {
+    setLikedUsers(prev => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  };
+
   // State for Friend Card and Dynamics Detail
   const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [selectedMoment, setSelectedMoment] = useState<any>(null);
@@ -401,6 +415,7 @@ export default function Home() {
       const div = document.createElement('div');
       
       if (marker.type === 'encounter' || marker.type === 'friend') {
+        const isLiked = likedUsers.has(marker.id);
         const root = createRoot(div);
         root.render(
           <div 
@@ -411,16 +426,33 @@ export default function Home() {
               setSelectedFriend(marker);
             }}
           >
-            {/* Online Halo Effect */}
-            {marker.status === "online" && (
+            {/* Liked User - Heart Halo Effect */}
+            {isLiked && (
+              <>
+                <div className="absolute -inset-3 rounded-full z-0" style={{
+                  background: 'radial-gradient(circle, rgba(244,63,94,0.35) 0%, rgba(244,63,94,0.15) 50%, transparent 70%)',
+                  animation: 'likeGlow 2s ease-in-out infinite'
+                }} />
+                <div className="absolute -top-2 -right-1 z-30 w-5 h-5 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-rose-500 drop-shadow-sm" style={{ filter: 'drop-shadow(0 1px 2px rgba(244,63,94,0.5))' }}>
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
+                </div>
+              </>
+            )}
+            {/* Online Halo Effect (only when not liked) */}
+            {!isLiked && marker.status === "online" && (
               <div className="absolute -inset-2 bg-green-400/30 rounded-full animate-pulse z-0" />
             )}
 
             <div className={cn(
-              "relative z-10 w-12 h-12 rounded-full border-[3px] shadow-lg overflow-hidden transition-transform hover:scale-110",
-              (marker.gender === "female" || marker.gender === "Woman") ? "!border-pink-500" : "!border-blue-500"
+              "relative z-10 w-12 h-12 rounded-full shadow-lg overflow-hidden transition-transform hover:scale-110",
             )}
-            style={{ borderColor: (marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6' }}>
+            style={{ 
+              borderWidth: '3px', 
+              borderStyle: 'solid',
+              borderColor: isLiked ? '#F43F5E' : ((marker.gender === "female" || marker.gender === "Woman") ? '#EC4899' : '#3B82F6')
+            }}>
               <img src={marker.avatar} className="w-full h-full object-cover" />
             </div>
             {/* Status Dot */}
@@ -475,7 +507,7 @@ export default function Home() {
     return () => {
       newOverlays.forEach(overlay => overlay.setMap(null));
     };
-  }, [mapInstance, activeTab, markerData, genderFilter, distanceFilter]);
+  }, [mapInstance, activeTab, markerData, genderFilter, distanceFilter, likedUsers]);
 
   return (
     <Layout showNav={true}>
@@ -898,11 +930,29 @@ export default function Home() {
               <div className="px-6 pb-8">
                 <div className="flex items-center gap-4 mb-4">
                   {/* Avatar with Gender Border */}
-                  <div className={cn(
-                    "w-20 h-20 rounded-full border-[3px] p-0.5 overflow-hidden shadow-sm shrink-0",
-                    (selectedFriend.gender === "female" || selectedFriend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
-                  )}>
-                    <img src={selectedFriend.avatar} className="w-full h-full object-cover rounded-full" />
+                  <div className="relative shrink-0">
+                    <div className={cn(
+                      "w-20 h-20 rounded-full border-[3px] p-0.5 overflow-hidden shadow-sm",
+                      likedUsers.has(selectedFriend.id) ? "border-rose-500" :
+                      (selectedFriend.gender === "female" || selectedFriend.gender === "Woman") ? "border-pink-500" : "border-blue-500"
+                    )}>
+                      <img src={selectedFriend.avatar} className="w-full h-full object-cover rounded-full" />
+                    </div>
+                    {/* Like Button on Avatar */}
+                    <button
+                      className={cn(
+                        "absolute -bottom-1 -right-1 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all active:scale-90",
+                        likedUsers.has(selectedFriend.id)
+                          ? "bg-rose-500 text-white"
+                          : "bg-white text-slate-400 border border-slate-200"
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLike(selectedFriend.id);
+                      }}
+                    >
+                      <Heart className={cn("w-4 h-4", likedUsers.has(selectedFriend.id) && "fill-white")} />
+                    </button>
                   </div>
                   
                   {/* User Info */}
