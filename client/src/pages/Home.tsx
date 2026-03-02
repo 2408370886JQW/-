@@ -13,10 +13,24 @@ import { createRoot } from "react-dom/client";
 // Mock data for map markers
 const INITIAL_MARKERS = {
   encounter: [
-    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线" },
-    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "15分钟前在线" },
-    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male", lastSeen: "在线" },
-    { id: 12, lat: 39.912, lng: 116.402, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "5小时前在线" },
+    { id: 1, lat: 39.9042, lng: 116.4074, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", status: "online", gender: "female", lastSeen: "在线", nickname: "小鹿", zodiac: "双子座", tags: ["摄影", "咖啡"], moments: [
+      { id: "m1", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=300&fit=crop", likes: 24, content: "海边日落" },
+      { id: "m2", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=300&h=300&fit=crop", likes: 156, content: "下午茶时光" },
+      { id: "m3", image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=300&h=300&fit=crop", likes: 45, content: "周末聚餐" },
+      { id: "m4", image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=300&fit=crop", likes: 89, content: "偶遇小猫" },
+      { id: "m5", image: "https://images.unsplash.com/photo-1561053720-76cd73ff22c3?w=300&h=300&fit=crop", likes: 67, content: "闺蜜出游" },
+    ] },
+    { id: 2, lat: 39.915, lng: 116.404, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "recent", gender: "male", lastSeen: "15分钟前在线", nickname: "阿杰", zodiac: "天蝎座", tags: ["健身", "电影"], moments: [
+      { id: "m6", image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&h=300&fit=crop", likes: 32, content: "今日训练" },
+      { id: "m7", image: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=300&h=300&fit=crop", likes: 78, content: "光影展" },
+    ] },
+    { id: 3, lat: 39.908, lng: 116.397, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male", lastSeen: "在线", nickname: "大卫", zodiac: "狮子座", tags: ["美食", "旅行", "音乐"], moments: [
+      { id: "m8", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=300&fit=crop", likes: 210, content: "必吃汉堡" },
+      { id: "m9", image: "https://images.unsplash.com/photo-1508189860359-777d945909ef?w=300&h=300&fit=crop", likes: 445, content: "北京秋色" },
+      { id: "m10", image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=300&h=300&fit=crop", likes: 128, content: "兄弟聚会" },
+      { id: "m11", image: "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=300&h=300&fit=crop", likes: 56, content: "生日派对" },
+    ] },
+    { id: 12, lat: 39.912, lng: 116.402, type: "encounter", icon: Smile, avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop", status: "offline", gender: "male", lastSeen: "5小时前在线", nickname: "Leo", zodiac: "水瓶座", tags: ["篮球"], moments: [] },
   ],
   friends: [
     { id: 4, lat: 39.908, lng: 116.397, type: "friend", icon: User, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", status: "online", gender: "male" },
@@ -864,7 +878,7 @@ export default function Home() {
             >
               <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-6" />
               <div className="px-6 pb-8">
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-4">
                   {/* Avatar with Gender Border */}
                   <div className={cn(
                     "w-20 h-20 rounded-full border-[3px] p-0.5 overflow-hidden shadow-sm shrink-0",
@@ -876,7 +890,9 @@ export default function Home() {
                   {/* User Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h2 className="text-2xl font-bold text-slate-900 truncate">用户 {selectedFriend.id}</h2>
+                      <h2 className="text-2xl font-bold text-slate-900 truncate">
+                        {selectedFriend.nickname || `用户 ${selectedFriend.id}`}
+                      </h2>
                       
                       {/* Status Badge */}
                       <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-full">
@@ -892,12 +908,54 @@ export default function Home() {
                     
                     {/* Tags Row */}
                     <div className="flex flex-wrap gap-2 mt-2">
-                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">双子座</span>
-                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">摄影</span>
-                      <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">咖啡</span>
+                      {(selectedFriend.zodiac ? [selectedFriend.zodiac] : ["双子座"]).concat(
+                        selectedFriend.tags || ["摄影", "咖啡"]
+                      ).map((tag: string, idx: number) => (
+                        <span key={idx} className="px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">{tag}</span>
+                      ))}
                     </div>
                   </div>
                 </div>
+
+                {/* TA 的动态 Section */}
+                {selectedFriend.moments && selectedFriend.moments.length > 0 && (
+                  <div className="mb-4 pt-3 border-t border-slate-100">
+                    <h3 className="text-sm font-bold text-slate-900 mb-3">TA 的动态</h3>
+                    <div className="flex gap-3 overflow-x-auto pb-1">
+                      {(selectedFriend.moments as any[]).slice(0, 3).map((moment: any) => (
+                        <div key={moment.id} className="shrink-0 w-[100px]">
+                          <div className="w-[100px] h-[100px] rounded-xl overflow-hidden bg-slate-100 mb-1.5">
+                            <img src={moment.image} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                            <span className="text-xs font-semibold text-slate-600">{moment.likes}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedFriend.moments.length > 3 && (
+                      <button
+                        className="mt-3 w-full py-2 rounded-xl bg-slate-50 text-xs font-medium text-blue-600 hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-1 border border-slate-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log("View more moments for user", selectedFriend.id);
+                        }}
+                      >
+                        查看更多动态
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* No Moments Placeholder */}
+                {(!selectedFriend.moments || selectedFriend.moments.length === 0) && (
+                  <div className="mb-4 pt-3 border-t border-slate-100">
+                    <h3 className="text-sm font-bold text-slate-900 mb-2">TA 的动态</h3>
+                    <p className="text-xs text-slate-400 text-center py-3">暂无动态</p>
+                  </div>
+                )}
                 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-3">
