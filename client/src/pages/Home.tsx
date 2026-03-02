@@ -921,7 +921,7 @@ export default function Home() {
                 {selectedFriend.moments && selectedFriend.moments.length > 0 && (
                   <div className="mb-4 pt-3 border-t border-slate-100">
                     <h3 className="text-sm font-bold text-slate-900 mb-3">TA 的动态</h3>
-                    <div className="flex gap-3 overflow-x-auto pb-1">
+                    <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
                       {(selectedFriend.moments as any[]).slice(0, 3).map((moment: any) => (
                         <div key={moment.id} className="shrink-0 w-[100px]">
                           <div className="relative w-[100px] h-[100px] rounded-xl overflow-hidden bg-slate-100">
@@ -933,19 +933,20 @@ export default function Home() {
                           </div>
                         </div>
                       ))}
+                      {selectedFriend.moments.length > 3 && (
+                        <Link
+                          to={`/user-moments/${selectedFriend.id}`}
+                          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                          className="shrink-0 w-[100px] h-[100px] rounded-xl bg-slate-100 flex flex-col items-center justify-center gap-1.5 active:scale-95 transition-transform border border-slate-200 hover:bg-slate-200"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
+                            <ChevronRight className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <span className="text-[11px] font-medium text-blue-600">查看更多</span>
+                          <span className="text-[10px] text-slate-400">{selectedFriend.moments.length}条动态</span>
+                        </Link>
+                      )}
                     </div>
-                    {selectedFriend.moments.length > 3 && (
-                      <button
-                        className="mt-3 w-full py-2 rounded-xl bg-slate-50 text-xs font-medium text-blue-600 hover:bg-slate-100 active:scale-[0.98] transition-all flex items-center justify-center gap-1 border border-slate-200"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("View more moments for user", selectedFriend.id);
-                        }}
-                      >
-                        查看更多动态
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    )}
                   </div>
                 )}
 
