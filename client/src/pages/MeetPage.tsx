@@ -101,11 +101,9 @@ export default function MeetPage() {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Search className="w-6 h-6 text-slate-900" />
               </Button>
-              <Link href="/appointment/create">
-                <Button variant="ghost" size="icon" className="rounded-full text-blue-600">
-                  <Plus className="w-6 h-6" />
-                </Button>
-              </Link>
+              <Button variant="ghost" size="icon" className="rounded-full text-blue-600">
+                <Plus className="w-6 h-6" />
+              </Button>
             </div>
           </div>
 

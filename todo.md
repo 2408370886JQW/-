@@ -345,3 +345,9 @@
 - [x] 点击后跳转到相见模块并携带该好友的邀约信息
 - [x] 按钮样式与偶遇卡片的「约TA相见」保持一致
 - [x] 交互逻辑与偶遇卡片一致：切换到相见Tab+显示邀约横幅
+
+## 删除“我的预约”模块
+- [x] 删除ProfilePage中“我的预约”入口
+- [x] 删除相关页面组件文件（AppointmentDetailPage.tsx、CreateAppointmentPage.tsx）
+- [x] 删除App.tsx中相关路由
+- [x] 删除MeetPage中预约创建链接
