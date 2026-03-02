@@ -22,7 +22,7 @@ import StoreScenarioPage from "./pages/StoreScenarioPage";
 import StorePackageDetailPage from "./pages/StorePackageDetailPage";
 import StorePaymentSuccessPage from "./pages/StorePaymentSuccessPage";
 import ScanSimulationPage from "./pages/ScanSimulationPage";
-import OrderHistoryPage from "./pages/OrderHistoryPage";
+import OrdersPage from "./pages/OrdersPage";
 import UserMomentsPage from "./pages/UserMomentsPage";
 import InvitePage from "./pages/InvitePage";
 import InviteHistoryPage from "./pages/InviteHistoryPage";
@@ -49,7 +49,7 @@ function Router() {
       <Route path="/relations/:type" component={RelationshipPage} />
       <Route path="/notifications" component={NotificationPage} />
       <Route path="/friends" component={FriendsPage} />
-      <Route path="/orders" component={OrderHistoryPage} />
+      <Route path="/orders" component={OrdersPage} />
       <Route path="/user-moments/:userId" component={UserMomentsPage} />
       <Route path="/invite/:userId" component={InvitePage} />
       <Route path="/invite-history" component={InviteHistoryPage} />
