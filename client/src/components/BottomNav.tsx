@@ -37,11 +37,14 @@ export default function BottomNav() {
   const POPULAR_HASHTAGS = ["#周末去哪儿", "#探店", "#美食", "#打卡", "#生活记录", "#OOTD"];
 
   // Original Navigation Structure
+  // Mock unread notification count (includes "喜欢了你" notifications)
+  const unreadCount = 3;
+
   const navItems = [
     { path: "/", icon: MapPin, label: "地图", isMap: true, activeColor: "text-blue-500" },
     { path: "/circles", icon: Users, label: "圈子", activeColor: "text-pink-500" },
     { path: "/publish", icon: Plus, label: "发动态", isSpecial: true },
-    { path: "/chat", icon: MessageSquare, label: "消息", activeColor: "text-green-500" },
+    { path: "/chat", icon: MessageSquare, label: "消息", activeColor: "text-green-500", badge: unreadCount },
     { path: "/profile", icon: User, label: "我的", activeColor: "text-yellow-500" },
   ];
 
@@ -411,13 +414,27 @@ export default function BottomNav() {
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                     className="flex flex-col items-center gap-1"
                   >
-                    <item.icon 
-                      className={cn(
-                        "w-6 h-6 transition-colors duration-300",
-                        isActive ? item.activeColor : "text-slate-400"
-                      )} 
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
+                    <div className="relative">
+                      <item.icon 
+                        className={cn(
+                          "w-6 h-6 transition-colors duration-300",
+                          isActive ? item.activeColor : "text-slate-400"
+                        )} 
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                      {/* Unread Badge */}
+                      {item.badge && item.badge > 0 && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute -top-2 -right-3 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-white shadow-sm"
+                        >
+                          <span className="text-[10px] font-bold text-white leading-none">
+                            {item.badge > 99 ? '99+' : item.badge}
+                          </span>
+                        </motion.div>
+                      )}
+                    </div>
                     <span className={cn(
                       "text-[10px] font-medium transition-colors duration-300",
                       isActive ? item.activeColor : "text-slate-400"
