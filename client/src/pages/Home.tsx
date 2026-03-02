@@ -192,6 +192,7 @@ type TabType = "encounter" | "friends" | "moments" | "meet";
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("encounter");
   const [searchQuery, setSearchQuery] = useState("");
+  const [inviteTarget, setInviteTarget] = useState<{ id: number; name: string; avatar: string } | null>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [markerData, setMarkerData] = useState<any>(INITIAL_MARKERS);
@@ -973,8 +974,14 @@ export default function Home() {
                     className="py-3 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-sm shadow-lg active:scale-95 transition-transform"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Navigate to invite flow with selected friend's info
-                      window.location.href = `/invite/${selectedFriend.id}?name=${encodeURIComponent(selectedFriend.nickname || '好友')}&avatar=${encodeURIComponent(selectedFriend.avatar || '')}`;
+                      // Set invite target and switch to Meet tab
+                      setInviteTarget({
+                        id: selectedFriend.id,
+                        name: selectedFriend.nickname || '好友',
+                        avatar: selectedFriend.avatar || ''
+                      });
+                      setSelectedFriend(null);
+                      setActiveTab('meet');
                     }}
                   >
                     一起去
@@ -1013,7 +1020,11 @@ export default function Home() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="absolute inset-0 bg-slate-50 z-0 flex flex-col"
             >
-              <MeetPage onNavigate={(tab) => setActiveTab(tab as TabType)} />
+              <MeetPage 
+                onNavigate={(tab) => setActiveTab(tab as TabType)} 
+                inviteTarget={inviteTarget}
+                onCancelInvite={() => setInviteTarget(null)}
+              />
             </motion.div>
           )}
         </AnimatePresence>

@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import { 
   ArrowLeft, Camera, Beer, Briefcase, Coffee, Moon, Heart, Gift, User, Users, 
   Share2, Check, ScanLine, ChevronRight, MapPin, Clock, Star, Navigation, X, 
-  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark, ShieldCheck, AlertCircle, CalendarDays, ArrowUpDown, ThumbsUp, Route, Wallet, Tag
+  Utensils, Receipt, Sparkles, Cake, ShoppingBag, Handshake, Wine, BookOpen, RefreshCw, Award, ArrowUp, ChevronDown, ChevronUp, Flame, MessageSquare, Bookmark, ShieldCheck, AlertCircle, CalendarDays, ArrowUpDown, ThumbsUp, Route, Wallet, Tag, Send
 } from 'lucide-react';
 
 // ========== DATA ==========
@@ -453,11 +453,17 @@ type RestaurantType = typeof ALL_RESTAURANTS[0];
 
 interface MeetPageProps {
   onNavigate: (tab: string) => void;
+  inviteTarget?: { id: number; name: string; avatar: string } | null;
+  onCancelInvite?: () => void;
 }
 
 const BADGE_TEXTS = ['推荐', '热门', '新手推荐'];
 
-export default function MeetPage({ onNavigate }: MeetPageProps) {
+export default function MeetPage({ onNavigate, inviteTarget, onCancelInvite }: MeetPageProps) {
+  // Invite mode state
+  const [inviteStep, setInviteStep] = useState<'browsing' | 'preview' | 'sent'>('browsing');
+  const [inviteMerchant, setInviteMerchant] = useState<RestaurantType | null>(null);
+  const [invitePackage, setInvitePackage] = useState<PackageType | null>(null);
   // Badge text rotation for hero card
   const [badgeTextIndex, setBadgeTextIndex] = useState(0);
 
@@ -1050,9 +1056,20 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
           >
             <Share2 className="w-5 h-5" />
           </motion.button>
-          <motion.button whileTap={{ scale: 0.95 }} onClick={onSelect} className="flex-1 bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200">
-            就这个了 ¥{pkg.price}
-          </motion.button>
+          {inviteTarget ? (
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => {
+              setInviteMerchant(restaurant);
+              setInvitePackage(pkg);
+              setInviteStep('preview');
+            }} className="flex-1 bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-orange-200 flex items-center justify-center gap-2">
+              <Send className="w-5 h-5" />
+              发送邀约给{inviteTarget.name}
+            </motion.button>
+          ) : (
+            <motion.button whileTap={{ scale: 0.95 }} onClick={onSelect} className="flex-1 bg-slate-900 text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-slate-200">
+              就这个了 ¥{pkg.price}
+            </motion.button>
+          )}
         </div>
       </div>
 
@@ -1552,6 +1569,20 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   <p className="text-xs text-slate-400">{RELATIONS.find(r => r.id === selectedRelation)?.label} · 省时省心</p>
                 </div>
               </div>
+              {/* Invite Mode Mini Banner in restaurant list */}
+              {inviteTarget && inviteStep === 'browsing' && (
+                <div className="mx-4 mt-2 rounded-xl overflow-hidden" style={{ background: 'linear-gradient(90deg, #FF6B35, #F7418F)' }}>
+                  <div className="px-3 py-2 flex items-center gap-2.5">
+                    <img src={inviteTarget.avatar} alt={inviteTarget.name} className="w-7 h-7 rounded-full border-2 border-white/40 object-cover flex-shrink-0" />
+                    <p className="text-white text-xs font-bold flex-1 truncate">
+                      正在为 <span className="text-yellow-200">{inviteTarget.name}</span> 选择好去处
+                    </p>
+                    <button onClick={() => onCancelInvite?.()} className="text-white/60 hover:text-white/90 transition-colors">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
               {/* Scrollable Content Area */}
               <div ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-8">
               {/* Smart Recommendation Banner */}
@@ -2046,8 +2077,66 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
 
+          {/* Invite Banner - shown when entering from encounter card "一起去" button */}
+          <AnimatePresence>
+            {inviteTarget && inviteStep === 'browsing' && (
+              <motion.div
+                initial={{ y: -80, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -80, opacity: 0 }}
+                transition={{ type: 'spring', damping: 22, stiffness: 260 }}
+                className="mx-4 mt-20 mb-2 rounded-2xl overflow-hidden shadow-lg relative z-[100]"
+                style={{ background: 'linear-gradient(135deg, #FF6B35 0%, #F7418F 50%, #FC5C9C 100%)' }}
+              >
+                <div className="px-4 py-3.5 flex items-center gap-3">
+                  {/* User avatar */}
+                  <div className="relative flex-shrink-0">
+                    <img src={inviteTarget.avatar} alt={inviteTarget.name} className="w-11 h-11 rounded-full border-2 border-white/40 object-cover" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-400 border-2 border-white" />
+                  </div>
+                  {/* Text content */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold text-[14px] leading-snug">
+                      邀请 <span className="text-yellow-200">{inviteTarget.name}</span> 一起去
+                    </p>
+                    <p className="text-white/75 text-[12px] mt-0.5">
+                      选一个好去处，发送邀约吧 ✨
+                    </p>
+                  </div>
+                  {/* Close button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCancelInvite?.();
+                    }}
+                    className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-colors active:scale-90"
+                  >
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </button>
+                </div>
+                {/* Progress indicator */}
+                <div className="px-4 pb-3 flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 text-white/80 text-[11px]">
+                    <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-[10px] font-bold text-white">1</div>
+                    <span>选场景</span>
+                  </div>
+                  <div className="flex-1 h-[1px] bg-white/20" />
+                  <div className="flex items-center gap-1.5 text-white/50 text-[11px]">
+                    <div className="w-5 h-5 rounded-full bg-white/15 flex items-center justify-center text-[10px] font-bold">2</div>
+                    <span>选套餐</span>
+                  </div>
+                  <div className="flex-1 h-[1px] bg-white/20" />
+                  <div className="flex items-center gap-1.5 text-white/50 text-[11px]">
+                    <div className="w-5 h-5 rounded-full bg-white/15 flex items-center justify-center text-[10px] font-bold">3</div>
+                    <span>发邀约</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Header + Subtitle + User Count */}
-          <div className="px-5 pt-24 pb-1">
+          <div className={`px-5 ${inviteTarget && inviteStep === 'browsing' ? 'pt-4' : 'pt-24'} pb-1`}>
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-[28px] font-extrabold text-slate-900 tracking-tight">相见</h1>
@@ -2621,6 +2710,187 @@ export default function MeetPage({ onNavigate }: MeetPageProps) {
                   取消
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* ===== Invite Card Preview Portal ===== */}
+      {inviteStep === 'preview' && inviteTarget && inviteMerchant && invitePackage && createPortal(
+        <AnimatePresence>
+          <motion.div
+            key="invite-preview-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6"
+            onClick={() => setInviteStep('browsing')}
+          >
+            <motion.div
+              initial={{ scale: 0.85, y: 40, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.85, y: 40, opacity: 0 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm"
+            >
+              {/* Invite Card */}
+              <div className="rounded-3xl overflow-hidden shadow-2xl" style={{ background: 'linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' }}>
+                {/* Header with merchant image */}
+                <div className="relative h-40">
+                  <img src={inviteMerchant.image} alt={inviteMerchant.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#1a1a2e]" />
+                  <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md rounded-full px-3 py-1">
+                    <span className="text-white text-xs font-bold">✨ 邀约卡</span>
+                  </div>
+                </div>
+
+                {/* Card Content */}
+                <div className="px-5 pb-6 -mt-4 relative z-10">
+                  {/* User avatars */}
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <div className="text-center">
+                      <div className="w-14 h-14 rounded-full border-3 border-orange-400 overflow-hidden shadow-lg mx-auto" style={{ borderWidth: '3px' }}>
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop" alt="我" className="w-full h-full object-cover" />
+                      </div>
+                      <p className="text-white/70 text-[11px] mt-1.5 font-medium">我</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <Heart className="w-5 h-5 text-pink-400 fill-pink-400" />
+                      <span className="text-white/40 text-[10px]">邀请</span>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-14 h-14 rounded-full border-3 border-pink-400 overflow-hidden shadow-lg mx-auto" style={{ borderWidth: '3px' }}>
+                        <img src={inviteTarget.avatar} alt={inviteTarget.name} className="w-full h-full object-cover" />
+                      </div>
+                      <p className="text-white/70 text-[11px] mt-1.5 font-medium">{inviteTarget.name}</p>
+                    </div>
+                  </div>
+
+                  {/* Merchant & Package info */}
+                  <div className="bg-white/10 rounded-2xl p-4 mb-4 border border-white/5">
+                    <h3 className="text-white font-bold text-base">{inviteMerchant.name}</h3>
+                    <div className="flex items-center gap-2 mt-1.5 text-white/50 text-xs">
+                      <MapPin className="w-3 h-3" />
+                      <span>{inviteMerchant.location}</span>
+                    </div>
+                    <div className="h-px bg-white/10 my-3" />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-white/60 text-[11px]">套餐</p>
+                        <p className="text-white font-bold text-sm mt-0.5">{invitePackage.name}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-orange-400 font-extrabold text-lg">¥{invitePackage.price}</p>
+                        <p className="text-white/40 text-[11px] line-through">¥{invitePackage.originalPrice}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Validity */}
+                  <div className="flex items-center justify-center gap-2 text-white/40 text-xs mb-5">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>有效期：{invitePackage.validity || '购买后30天内有效'}</span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setInviteStep('browsing')}
+                      className="flex-1 py-3.5 rounded-full border border-white/20 text-white/70 font-bold text-sm active:bg-white/10 transition-colors"
+                    >
+                      换一个
+                    </button>
+                    <button
+                      onClick={() => {
+                        setInviteStep('sent');
+                        // Trigger confetti
+                        confetti({
+                          particleCount: 80,
+                          spread: 70,
+                          origin: { y: 0.6 },
+                          colors: ['#FF6B35', '#F7418F', '#FFD700', '#4CAF50']
+                        });
+                      }}
+                      className="flex-1 py-3.5 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold text-sm shadow-lg active:from-orange-600 active:to-pink-600 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Send className="w-4 h-4" />
+                      发送邀约
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* ===== Invite Sent Success Portal ===== */}
+      {inviteStep === 'sent' && inviteTarget && createPortal(
+        <AnimatePresence>
+          <motion.div
+            key="invite-sent-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100001] bg-white flex flex-col items-center justify-center p-8"
+          >
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 15, stiffness: 200, delay: 0.1 }}
+              className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-6 shadow-xl shadow-green-200"
+            >
+              <Check className="w-12 h-12 text-white" />
+            </motion.div>
+            <motion.h2
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.25 }}
+              className="text-2xl font-extrabold text-slate-900 mb-2"
+            >
+              邀约已发送！
+            </motion.h2>
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.35 }}
+              className="text-slate-400 text-sm mb-8 text-center"
+            >
+              已向 <span className="text-slate-700 font-bold">{inviteTarget.name}</span> 发送了邀约卡片，等待TA的回复吧
+            </motion.p>
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.45 }}
+              className="flex gap-3 w-full max-w-xs"
+            >
+              <button
+                onClick={() => {
+                  setInviteStep('browsing');
+                  setInviteMerchant(null);
+                  setInvitePackage(null);
+                  onCancelInvite?.();
+                  onNavigate('encounter');
+                }}
+                className="flex-1 py-3.5 rounded-full border border-slate-200 text-slate-600 font-bold text-sm active:bg-slate-50 transition-colors"
+              >
+                返回地图
+              </button>
+              <button
+                onClick={() => {
+                  setInviteStep('browsing');
+                  setInviteMerchant(null);
+                  setInvitePackage(null);
+                  onCancelInvite?.();
+                  // Could navigate to messages in future
+                }}
+                className="flex-1 py-3.5 rounded-full bg-slate-900 text-white font-bold text-sm shadow-lg active:bg-slate-800 transition-colors"
+              >
+                查看消息
+              </button>
             </motion.div>
           </motion.div>
         </AnimatePresence>,
