@@ -1,19 +1,23 @@
 import { useState } from "react";
 import Layout from "@/components/Layout";
-import { ArrowLeft, Heart, UserPlus, MessageCircle, Bell } from "lucide-react";
-import { Link } from "wouter";
+import { ArrowLeft, Heart, UserPlus, MessageCircle, Bell, ChevronRight } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 
 // Mock Data
 const NOTIFICATIONS = [
+  { id: 10, type: "liked_me", user: "小鹿", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", content: "喜欢了你", time: "刚刚", read: false },
   { id: 1, type: "like", user: "Alice", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", content: "赞了你的动态", time: "10分钟前", read: false, image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop" },
+  { id: 11, type: "liked_me", user: "大卫", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", content: "喜欢了你", time: "30分钟前", read: false },
   { id: 2, type: "friend_request", user: "Bob", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", content: "请求添加你为好友", time: "1小时前", read: false },
   { id: 3, type: "comment", user: "Charlie", avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop", content: "评论：这家店真的很好吃！", time: "2小时前", read: true, image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=100&h=100&fit=crop" },
+  { id: 12, type: "liked_me", user: "阿杰", avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop", content: "喜欢了你", time: "3小时前", read: true },
   { id: 4, type: "system", user: "系统通知", avatar: "", content: "欢迎加入社交生活圈！", time: "1天前", read: true },
 ];
 
 export default function NotificationPage() {
   const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const [, navigate] = useLocation();
 
   const markAllAsRead = () => {
     setNotifications(notifications.map(n => ({ ...n, read: true })));
@@ -49,8 +53,14 @@ export default function NotificationPage() {
               key={notification.id} 
               className={cn(
                 "flex gap-3 px-4 py-4 border-b border-slate-50 transition-colors",
-                !notification.read ? "bg-blue-50/30" : "hover:bg-slate-50"
+                !notification.read ? "bg-blue-50/30" : "hover:bg-slate-50",
+                notification.type === "liked_me" && "cursor-pointer active:bg-rose-50/50"
               )}
+              onClick={() => {
+                if (notification.type === "liked_me") {
+                  navigate("/who-liked-me");
+                }
+              }}
             >
               {/* Avatar / Icon */}
               <div className="relative shrink-0">
@@ -65,10 +75,12 @@ export default function NotificationPage() {
                 {/* Type Badge */}
                 <div className={cn(
                   "absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-white text-[10px]",
+                 notification.type === "liked_me" ? "bg-rose-500" :
                   notification.type === "like" ? "bg-red-500" :
                   notification.type === "friend_request" ? "bg-blue-500" :
                   notification.type === "comment" ? "bg-green-500" : "hidden"
                 )}>
+                  {notification.type === "liked_me" && <Heart className="w-3 h-3 fill-white" />}
                   {notification.type === "like" && <Heart className="w-3 h-3 fill-white" />}
                   {notification.type === "friend_request" && <UserPlus className="w-3 h-3" />}
                   {notification.type === "comment" && <MessageCircle className="w-3 h-3" />}
@@ -81,7 +93,10 @@ export default function NotificationPage() {
                   <span className="font-bold text-slate-900 text-sm">{notification.user}</span>
                   <span className="text-xs text-slate-400 whitespace-nowrap ml-2">{notification.time}</span>
                 </div>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className={cn(
+                  "text-sm leading-relaxed",
+                  notification.type === "liked_me" ? "text-rose-500 font-medium" : "text-slate-600"
+                )}>
                   {notification.content}
                 </p>
               </div>
@@ -93,6 +108,13 @@ export default function NotificationPage() {
                 </div>
               )}
               
+              {/* Liked Me - Go to detail hint */}
+              {notification.type === "liked_me" && (
+                <div className="self-center ml-1 shrink-0">
+                  <ChevronRight className="w-4 h-4 text-slate-300" />
+                </div>
+              )}
+
               {/* Friend Request Actions */}
               {notification.type === "friend_request" && (
                 <div className="self-center ml-2 flex gap-2">
