@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { ArrowLeft, Heart, UserPlus, MessageCircle, Bell, ChevronRight } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { useNotification } from "@/contexts/NotificationContext";
 
 // Mock Data
 const NOTIFICATIONS = [
@@ -18,6 +19,12 @@ const NOTIFICATIONS = [
 export default function NotificationPage() {
   const [notifications, setNotifications] = useState(NOTIFICATIONS);
   const [, navigate] = useLocation();
+  const { clearUnread } = useNotification();
+
+  // 进入通知页时自动清除未读红点
+  useEffect(() => {
+    clearUnread();
+  }, []);
 
   const markAllAsRead = () => {
     setNotifications(notifications.map(n => ({ ...n, read: true })));

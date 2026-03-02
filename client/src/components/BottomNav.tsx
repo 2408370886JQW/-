@@ -3,6 +3,7 @@ import { MapPin, Users, Plus, MessageSquare, User, X, Image as ImageIcon, Video,
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef } from "react";
+import { useNotification } from "@/contexts/NotificationContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -37,8 +38,7 @@ export default function BottomNav() {
   const POPULAR_HASHTAGS = ["#周末去哪儿", "#探店", "#美食", "#打卡", "#生活记录", "#OOTD"];
 
   // Original Navigation Structure
-  // Mock unread notification count (includes "喜欢了你" notifications)
-  const unreadCount = 3;
+  const { unreadCount } = useNotification();
 
   const navItems = [
     { path: "/", icon: MapPin, label: "地图", isMap: true, activeColor: "text-blue-500" },
@@ -423,7 +423,7 @@ export default function BottomNav() {
                         strokeWidth={isActive ? 2.5 : 2}
                       />
                       {/* Unread Badge */}
-                      {item.badge && item.badge > 0 && (
+                      {item.badge != null && item.badge > 0 && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}

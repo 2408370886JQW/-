@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/Layout";
+import { useNotification } from "@/contexts/NotificationContext";
 import { Search, MapPin, Image as ImageIcon, Smile, Mic, Plus, ArrowLeft, MoreHorizontal, Send, Check, X, Clock, Store, Utensils, CalendarDays } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -301,6 +302,12 @@ export default function ChatPage() {
   const [activeConversation, setActiveConversation] = useState<number | null>(null);
   const [messageText, setMessageText] = useState("");
   const [allMessages, setAllMessages] = useState<Record<number, Message[]>>(MOCK_MESSAGES_BY_CONVERSATION);
+  const { clearUnread } = useNotification();
+
+  // 进入消息页时自动清除未读红点
+  useEffect(() => {
+    clearUnread();
+  }, []);
 
   const currentMessages = activeConversation ? (allMessages[activeConversation] || []) : [];
 
