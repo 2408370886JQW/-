@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Search, MapPin, Smile, User, Image as ImageIcon, ShoppingBag, Star, Tag, Heart, Coffee, Beer, Film, Moon, Camera, ArrowRight, ChevronRight, Cake, Briefcase, X, MessageCircle, MessageSquare, Users, ArrowLeft, Filter, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapView from "@/components/Map";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { createRoot } from "react-dom/client";
 
@@ -193,6 +193,23 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("encounter");
   const [searchQuery, setSearchQuery] = useState("");
   const [inviteTarget, setInviteTarget] = useState<{ id: number; name: string; avatar: string } | null>(null);
+  const searchString = useSearch();
+
+  // Handle invite from friends page via URL params
+  useEffect(() => {
+    const params = new URLSearchParams(searchString);
+    if (params.get('invite') === 'true') {
+      const id = parseInt(params.get('inviteId') || '0');
+      const name = decodeURIComponent(params.get('inviteName') || '');
+      const avatar = decodeURIComponent(params.get('inviteAvatar') || '');
+      if (id && name) {
+        setInviteTarget({ id, name, avatar });
+        setActiveTab('meet');
+        // Clean up URL params
+        window.history.replaceState({}, '', '/');
+      }
+    }
+  }, [searchString]);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [markerData, setMarkerData] = useState<any>(INITIAL_MARKERS);

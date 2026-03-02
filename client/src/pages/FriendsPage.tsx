@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, UserPlus, MessageCircle, MapPin, ChevronLeft, MoreHorizontal, Edit2, Folder, Tag } from "lucide-react";
+import { Search, UserPlus, MessageCircle, MapPin, ChevronLeft, MoreHorizontal, Edit2, Folder, Tag, Handshake } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -192,6 +192,22 @@ export default function FriendsPage() {
                   </div>
                   
                   <div className="flex items-center gap-1">
+                    <button
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-bold shadow-sm active:scale-95 transition-transform whitespace-nowrap"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const params = new URLSearchParams({
+                          invite: 'true',
+                          inviteId: String(friend.id),
+                          inviteName: friend.alias || friend.name,
+                          inviteAvatar: friend.avatar,
+                        });
+                        setLocation(`/?${params.toString()}`);
+                      }}
+                    >
+                      <Handshake className="w-3.5 h-3.5" />
+                      约TA相见
+                    </button>
                     <Button 
                       variant="ghost" 
                       size="icon" 
