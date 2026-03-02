@@ -924,12 +924,12 @@ export default function Home() {
                     <div className="flex gap-3 overflow-x-auto pb-1">
                       {(selectedFriend.moments as any[]).slice(0, 3).map((moment: any) => (
                         <div key={moment.id} className="shrink-0 w-[100px]">
-                          <div className="w-[100px] h-[100px] rounded-xl overflow-hidden bg-slate-100 mb-1.5">
+                          <div className="relative w-[100px] h-[100px] rounded-xl overflow-hidden bg-slate-100">
                             <img src={moment.image} className="w-full h-full object-cover" />
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-                            <span className="text-xs font-semibold text-slate-600">{moment.likes}</span>
+                            <div className="absolute bottom-1 right-1 flex items-center gap-0.5 bg-black/50 rounded-full px-1.5 py-0.5">
+                              <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                              <span className="text-[10px] font-semibold text-white">{moment.likes}</span>
+                            </div>
                           </div>
                         </div>
                       ))}
